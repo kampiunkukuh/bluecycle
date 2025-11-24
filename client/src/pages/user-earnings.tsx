@@ -43,6 +43,18 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
+  // Load bank accounts from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(`user_bank_accounts_${userId}`);
+    if (saved) {
+      try {
+        setBankAccounts(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load bank accounts:", e);
+      }
+    }
+  }, [userId]);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -72,7 +84,9 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
         bankAccount: newBankData.bankAccount,
         isDefault: bankAccounts.length === 0,
       };
-      setBankAccounts([newAccount, ...bankAccounts]);
+      const updatedAccounts = [newAccount, ...bankAccounts];
+      setBankAccounts(updatedAccounts);
+      localStorage.setItem(`user_bank_accounts_${userId}`, JSON.stringify(updatedAccounts));
       setNewBankData({ bankName: "", bankAccount: "" });
       setShowAddBankDialog(false);
     }

@@ -43,6 +43,18 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
+  // Load bank accounts from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(`driver_bank_accounts_${driverId}`);
+    if (saved) {
+      try {
+        setBankAccounts(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load bank accounts:", e);
+      }
+    }
+  }, [driverId]);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -75,7 +87,9 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
         bankAccount: newBankData.bankAccount,
         isDefault: bankAccounts.length === 0,
       };
-      setBankAccounts([newAccount, ...bankAccounts]);
+      const updatedAccounts = [newAccount, ...bankAccounts];
+      setBankAccounts(updatedAccounts);
+      localStorage.setItem(`driver_bank_accounts_${driverId}`, JSON.stringify(updatedAccounts));
       setNewBankData({ bankName: "", bankAccount: "" });
       setShowAddBankDialog(false);
     }

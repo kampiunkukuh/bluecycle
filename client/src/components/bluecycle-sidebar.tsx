@@ -58,15 +58,9 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       roles: ["user"],
     },
     {
-      title: "Pendapatan",
+      title: "Pendapatan & Pembayaran",
       url: "/earnings",
       icon: TrendingUp,
-      roles: ["driver"],
-    },
-    {
-      title: "Pembayaran",
-      url: "/payment-settings",
-      icon: CreditCard,
       roles: ["driver"],
     },
     {

@@ -73,7 +73,7 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
           status: "pending",
           requestedById: userId,
           notes: formData.notes,
-          price: item.price,
+          price: totalPrice,
           catalogItemId: parseInt(item.id),
         }),
       });
@@ -89,6 +89,9 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
       setIsSubmitting(false);
     }
   };
+
+  // Calculate total price (base price * quantity)
+  const totalPrice = item.price * (parseInt(formData.quantity) || 0);
 
   return (
     <div className="space-y-6">
