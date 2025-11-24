@@ -48,26 +48,7 @@ interface BankAccount {
 export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([
-    {
-      id: "1",
-      amount: 250000,
-      status: "pending",
-      bankName: "BNI",
-      bankAccount: "1234567890",
-      requestedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-    },
-    {
-      id: "2",
-      amount: 150000,
-      status: "approved",
-      bankName: "BCA",
-      bankAccount: "0987654321",
-      requestedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      approvedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      adminNotes: "Disetujui - proses 1-2 hari kerja",
-    },
-  ]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showAddBankDialog, setShowAddBankDialog] = useState(false);
@@ -100,11 +81,29 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/pickups?requestedById=${userId}`);
-        const data = await response.json();
-        setPickups(Array.isArray(data) ? data : []);
+        const [pickupsRes, paymentsRes] = await Promise.all([
+          fetch(`/api/pickups?requestedById=${userId}`),
+          fetch(`/api/user-payments/${userId}`),
+        ]);
+        
+        const pickupsData = await pickupsRes.json();
+        setPickups(Array.isArray(pickupsData) ? pickupsData : []);
+        
+        const paymentsData = await paymentsRes.json();
+        if (Array.isArray(paymentsData)) {
+          setPayments(paymentsData.map((p: any) => ({
+            id: p.id.toString(),
+            amount: p.amount,
+            status: p.status,
+            bankName: p.bankName,
+            bankAccount: p.bankAccount,
+            requestedAt: new Date(p.requestedAt).toLocaleDateString("id-ID"),
+            approvedAt: p.approvedAt ? new Date(p.approvedAt).toLocaleDateString("id-ID") : undefined,
+            adminNotes: p.adminNotes,
+          })));
+        }
       } catch (error) {
-        console.error("Failed to fetch pickups:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }

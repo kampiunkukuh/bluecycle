@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -46,6 +46,16 @@ export interface IStorage {
   createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
   listWithdrawalRequests(userId: number): Promise<WithdrawalRequest[]>;
   updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
+
+  // User Payments
+  createUserPayment(payment: InsertUserPayment): Promise<UserPayment>;
+  listUserPayments(userId: number): Promise<UserPayment[]>;
+  updateUserPayment(id: number, payment: Partial<InsertUserPayment>): Promise<UserPayment | undefined>;
+
+  // Driver Payments
+  createDriverPayment(payment: InsertDriverPayment): Promise<DriverPayment>;
+  listDriverPayments(driverId: number): Promise<DriverPayment[]>;
+  updateDriverPayment(id: number, payment: Partial<InsertDriverPayment>): Promise<DriverPayment | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -270,6 +280,50 @@ export class DrizzleStorage implements IStorage {
       .update(schema.withdrawalRequests)
       .set(request)
       .where(eq(schema.withdrawalRequests.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // User Payments
+  async createUserPayment(payment: InsertUserPayment) {
+    const result = await this.db.insert(schema.userPayments).values(payment).returning();
+    return result[0];
+  }
+
+  async listUserPayments(userId: number) {
+    return await this.db
+      .select()
+      .from(schema.userPayments)
+      .where(eq(schema.userPayments.userId, userId));
+  }
+
+  async updateUserPayment(id: number, payment: Partial<InsertUserPayment>) {
+    const result = await this.db
+      .update(schema.userPayments)
+      .set(payment)
+      .where(eq(schema.userPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Driver Payments
+  async createDriverPayment(payment: InsertDriverPayment) {
+    const result = await this.db.insert(schema.driverPayments).values(payment).returning();
+    return result[0];
+  }
+
+  async listDriverPayments(driverId: number) {
+    return await this.db
+      .select()
+      .from(schema.driverPayments)
+      .where(eq(schema.driverPayments.driverId, driverId));
+  }
+
+  async updateDriverPayment(id: number, payment: Partial<InsertDriverPayment>) {
+    const result = await this.db
+      .update(schema.driverPayments)
+      .set(payment)
+      .where(eq(schema.driverPayments.id, id))
       .returning();
     return result[0];
   }

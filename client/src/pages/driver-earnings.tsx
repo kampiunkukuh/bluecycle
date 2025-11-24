@@ -48,36 +48,7 @@ interface BankAccount {
 export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([
-    {
-      id: "1",
-      amount: 450000,
-      status: "pending",
-      bankName: "Mandiri",
-      bankAccount: "1111222233334444",
-      requestedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-    },
-    {
-      id: "2",
-      amount: 350000,
-      status: "approved",
-      bankName: "BCA",
-      bankAccount: "5555666677778888",
-      requestedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      approvedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      adminNotes: "Disetujui - transfer dalam 1-2 hari kerja",
-    },
-    {
-      id: "3",
-      amount: 200000,
-      status: "completed",
-      bankName: "BNI",
-      bankAccount: "9999888877776666",
-      requestedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      approvedAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
-      adminNotes: "Pembayaran telah diproses",
-    },
-  ]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showAddBankDialog, setShowAddBankDialog] = useState(false);
@@ -110,11 +81,29 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/pickups?assignedDriverId=${driverId}`);
-        const data = await response.json();
-        setPickups(Array.isArray(data) ? data : []);
+        const [pickupsRes, paymentsRes] = await Promise.all([
+          fetch(`/api/pickups?assignedDriverId=${driverId}`),
+          fetch(`/api/driver-payments/${driverId}`),
+        ]);
+        
+        const pickupsData = await pickupsRes.json();
+        setPickups(Array.isArray(pickupsData) ? pickupsData : []);
+        
+        const paymentsData = await paymentsRes.json();
+        if (Array.isArray(paymentsData)) {
+          setPayments(paymentsData.map((p: any) => ({
+            id: p.id.toString(),
+            amount: p.amount,
+            status: p.status,
+            bankName: p.bankName,
+            bankAccount: p.bankAccount,
+            requestedAt: new Date(p.requestedAt).toLocaleDateString("id-ID"),
+            approvedAt: p.approvedAt ? new Date(p.approvedAt).toLocaleDateString("id-ID") : undefined,
+            adminNotes: p.adminNotes,
+          })));
+        }
       } catch (error) {
-        console.error("Failed to fetch pickups:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }

@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -228,6 +228,66 @@ api.patch("/api/withdrawals/:id", async (req, res) => {
     res.json(withdrawal);
   } catch (error) {
     res.status(400).json({ error: "Invalid withdrawal data" });
+  }
+});
+
+// User Payments endpoints
+api.get("/api/user-payments/:userId", async (req, res) => {
+  const payments = await storage.listUserPayments(parseInt(req.params.userId));
+  res.json(payments);
+});
+
+api.post("/api/user-payments", async (req, res) => {
+  try {
+    const data = insertUserPaymentSchema.parse(req.body);
+    const payment = await storage.createUserPayment(data);
+    res.status(201).json(payment);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid user payment data" });
+  }
+});
+
+api.patch("/api/user-payments/:id", async (req, res) => {
+  try {
+    const partial = insertUserPaymentSchema.partial().parse(req.body);
+    const payment = await storage.updateUserPayment(parseInt(req.params.id), partial);
+    if (!payment) {
+      res.status(404).json({ error: "User payment not found" });
+      return;
+    }
+    res.json(payment);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid user payment data" });
+  }
+});
+
+// Driver Payments endpoints
+api.get("/api/driver-payments/:driverId", async (req, res) => {
+  const payments = await storage.listDriverPayments(parseInt(req.params.driverId));
+  res.json(payments);
+});
+
+api.post("/api/driver-payments", async (req, res) => {
+  try {
+    const data = insertDriverPaymentSchema.parse(req.body);
+    const payment = await storage.createDriverPayment(data);
+    res.status(201).json(payment);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid driver payment data" });
+  }
+});
+
+api.patch("/api/driver-payments/:id", async (req, res) => {
+  try {
+    const partial = insertDriverPaymentSchema.partial().parse(req.body);
+    const payment = await storage.updateDriverPayment(parseInt(req.params.id), partial);
+    if (!payment) {
+      res.status(404).json({ error: "Driver payment not found" });
+      return;
+    }
+    res.json(payment);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid driver payment data" });
   }
 });
 
