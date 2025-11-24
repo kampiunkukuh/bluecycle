@@ -32,6 +32,7 @@ interface CollectionPoint {
   status: string;
   capacity: number;
   currentKg: number;
+  imageUrl?: string;
 }
 
 export default function Landing() {
@@ -156,32 +157,51 @@ export default function Landing() {
         <div className="relative">
           <div className="grid md:grid-cols-3 gap-6">
             {collectionPoints.map((point: CollectionPoint, idx: number) => (
-              <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
-                <div className="flex items-start gap-3 mb-4">
-                  <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-bold text-lg">{point.name}</h3>
-                    <p className="text-sm text-muted-foreground">{point.address}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Kapasitas:</span>
-                    <span className="font-semibold">{point.capacity} kg</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Terisi:</span>
-                    <span className="font-semibold">{point.currentKg} kg</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full"
-                      style={{ width: `${(point.currentKg / point.capacity) * 100}%` }}
+              <div key={idx} className="overflow-hidden bg-white dark:bg-slate-950 rounded-2xl border hover-elevate transition-all duration-300">
+                {/* Image Section */}
+                {point.imageUrl && (
+                  <div className="relative h-48 overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+                    <img 
+                      src={point.imageUrl} 
+                      alt={point.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://images.unsplash.com/photo-1559931265-cd4628902ee4?w=400&h=300&fit=crop`;
+                      }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <span className="text-green-600 text-xs font-semibold">Buka Sekarang</span>
+                )}
+                
+                {/* Content Section */}
+                <div className="p-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-lg">{point.name}</h3>
+                      <p className="text-sm text-muted-foreground">{point.address}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Kapasitas:</span>
+                      <span className="font-semibold">{point.capacity} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Terisi:</span>
+                      <span className="font-semibold">{point.currentKg} kg</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full"
+                        style={{ width: `${(point.currentKg / point.capacity) * 100}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <span className="text-green-600 text-xs font-semibold">Buka Sekarang</span>
+                    </div>
                   </div>
                 </div>
               </div>

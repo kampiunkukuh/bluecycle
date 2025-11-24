@@ -117,6 +117,7 @@ export const collectionPoints = pgTable("collection_points", {
   operatingHours: varchar("operating_hours", { length: 100 }), // e.g., "08:00-17:00"
   contactPerson: varchar("contact_person", { length: 255 }),
   phone: varchar("phone", { length: 20 }),
+  imageUrl: varchar("image_url", { length: 500 }), // URL/path to collection point image
   createdAt: timestamp("created_at").defaultNow(),
 });
 
