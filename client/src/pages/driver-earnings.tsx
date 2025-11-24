@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TrendingUp, DollarSign, Calendar, Wallet, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface Earning {
-  id: string;
-  date: string;
-  amount: number;
-  description: string;
+interface PickupOrder {
+  id: number;
+  wasteType: string;
+  price: number;
+  status: string;
+  createdAt: Date;
+  address: string;
 }
 
 interface WithdrawalRequest {
@@ -23,29 +25,36 @@ interface WithdrawalRequest {
   bankName: string;
 }
 
-const mockEarnings: Earning[] = [
-  { id: "1", date: "24 Nov 2024", amount: 40000, description: "Pickup di Jl. Sudirman (80% dari Rp 50.000)" },
-  { id: "2", date: "24 Nov 2024", amount: 36000, description: "Pickup di Jl. Gatot Subroto (80% dari Rp 45.000)" },
-  { id: "3", date: "23 Nov 2024", amount: 48000, description: "Pickup di Jl. Thamrin (80% dari Rp 60.000)" },
-  { id: "4", date: "23 Nov 2024", amount: 44000, description: "Pickup di Jl. Ahmad Yani (80% dari Rp 55.000)" },
-];
-
-const mockWithdrawals: WithdrawalRequest[] = [
-  { id: "1", date: "20 Nov 2024", amount: 500000, status: "completed", bankName: "BCA" },
-  { id: "2", date: "15 Nov 2024", amount: 400000, status: "completed", bankName: "Mandiri" },
-  { id: "3", date: "24 Nov 2024", amount: 300000, status: "pending", bankName: "BNI" },
-];
-
-export default function DriverEarnings() {
-  const [earnings] = useState<Earning[]>(mockEarnings);
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(mockWithdrawals);
+export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) {
+  const [pickups, setPickups] = useState<PickupOrder[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({ amount: "", bankName: "", bankAccount: "" });
+  const [loading, setLoading] = useState(true);
 
-  const totalEarnings = earnings.reduce((sum, e) => sum + e.amount, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/pickups?assignedDriverId=${driverId}`);
+        const data = await response.json();
+        setPickups(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch pickups:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [driverId]);
+
+  const completedPickups = pickups.filter((p) => p.status === "completed");
+  const totalEarnings = completedPickups.reduce((sum, p) => sum + Math.floor(p.price * 0.8), 0);
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalEarnings - totalWithdrawn;
-  const dailyEarnings = 210000;
+  const dailyEarnings = pickups
+    .filter((p) => p.status === "completed" && new Date(p.createdAt).toDateString() === new Date().toDateString())
+    .reduce((sum, p) => sum + Math.floor(p.price * 0.8), 0);
 
   const handleWithdrawal = () => {
     if (withdrawalData.amount && withdrawalData.bankName) {
@@ -138,25 +147,31 @@ export default function DriverEarnings() {
             <CardTitle>Riwayat Pendapatan (80% dari Harga Order)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {earnings.map((earning) => (
-              <div key={earning.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+            {loading ? (
+              <p className="text-sm text-gray-500">Memuat data...</p>
+            ) : completedPickups.length === 0 ? (
+              <p className="text-sm text-gray-500">Belum ada order yang diselesaikan</p>
+            ) : (
+              completedPickups.map((pickup) => (
+                <div key={pickup.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">Pickup di {pickup.address.split(",")[0]} (80% dari Rp {pickup.price.toLocaleString("id-ID")})</p>
+                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(pickup.createdAt).toLocaleDateString("id-ID")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{earning.description}</p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {earning.date}
-                    </p>
+                  <div className="font-semibold text-green-600 dark:text-green-400">
+                    +Rp {Math.floor(pickup.price * 0.8).toLocaleString("id-ID")}
                   </div>
                 </div>
-                <div className="font-semibold text-green-600 dark:text-green-400">
-                  +Rp {earning.amount.toLocaleString("id-ID")}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 

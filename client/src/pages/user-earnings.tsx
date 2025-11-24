@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Gift, DollarSign, Calendar, Wallet, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface Reward {
-  id: string;
-  date: string;
-  amount: number;
-  description: string;
+interface PickupOrder {
+  id: number;
+  wasteType: string;
+  price: number;
+  status: string;
+  createdAt: Date;
+  address: string;
 }
 
 interface WithdrawalRequest {
@@ -23,24 +25,31 @@ interface WithdrawalRequest {
   bankName: string;
 }
 
-const mockRewards: Reward[] = [
-  { id: "1", date: "24 Nov 2024", amount: 25000, description: "Bonus referral - Budi Santoso" },
-  { id: "2", date: "23 Nov 2024", amount: 30000, description: "Reward pembayaran tepat waktu" },
-  { id: "3", date: "22 Nov 2024", amount: 20000, description: "Bonus pengumpulan sampah organik" },
-];
-
-const mockWithdrawals: WithdrawalRequest[] = [
-  { id: "1", date: "20 Nov 2024", amount: 100000, status: "completed", bankName: "BCA" },
-  { id: "2", date: "24 Nov 2024", amount: 50000, status: "pending", bankName: "Mandiri" },
-];
-
-export default function UserEarnings() {
-  const [rewards] = useState<Reward[]>(mockRewards);
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(mockWithdrawals);
+export default function UserEarnings({ userId = 2 }: { userId?: number }) {
+  const [pickups, setPickups] = useState<PickupOrder[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({ amount: "", bankName: "", bankAccount: "" });
+  const [loading, setLoading] = useState(true);
 
-  const totalRewards = rewards.reduce((sum, r) => sum + r.amount, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/pickups?requestedById=${userId}`);
+        const data = await response.json();
+        setPickups(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch pickups:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [userId]);
+
+  const completedPickups = pickups.filter((p) => p.status === "completed");
+  const totalRewards = completedPickups.reduce((sum, p) => sum + p.price, 0);
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalRewards - totalWithdrawn;
 
@@ -122,25 +131,31 @@ export default function UserEarnings() {
             <CardTitle>Riwayat Reward</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {rewards.map((reward) => (
-              <div key={reward.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                    <Gift className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            {loading ? (
+              <p className="text-sm text-gray-500">Memuat data...</p>
+            ) : completedPickups.length === 0 ? (
+              <p className="text-sm text-gray-500">Belum ada reward yang diterima</p>
+            ) : (
+              completedPickups.map((pickup) => (
+                <div key={pickup.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                      <Gift className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">Reward Selesai - {pickup.wasteType}</p>
+                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(pickup.createdAt).toLocaleDateString("id-ID")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{reward.description}</p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {reward.date}
-                    </p>
+                  <div className="font-semibold text-blue-600 dark:text-blue-400">
+                    +Rp {pickup.price.toLocaleString("id-ID")}
                   </div>
                 </div>
-                <div className="font-semibold text-blue-600 dark:text-blue-400">
-                  +Rp {reward.amount.toLocaleString("id-ID")}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 

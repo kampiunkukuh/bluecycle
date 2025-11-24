@@ -53,7 +53,7 @@ export function AppSidebar({ userRole, userName, userEmail, onLogout }: AppSideb
       roles: ["admin"],
     },
     {
-      title: "Earning",
+      title: "Earning & Penarikan",
       url: "/earnings",
       icon: TrendingUp,
       roles: ["user", "driver"],
