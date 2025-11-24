@@ -30,10 +30,10 @@ interface UserDashboardProps {
 }
 
 const mockCatalog: CatalogItem[] = [
-  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: "attached_assets/stock_images/plastic_waste_garbag_74fd1d20.jpg" },
-  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: "attached_assets/stock_images/plastic_waste_garbag_727aee39.jpg" },
-  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: "attached_assets/stock_images/plastic_waste_garbag_6029a7f5.jpg" },
-  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg" },
+  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: "attached_assets/generated_images/plastic_waste_product_photo.png" },
+  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: "attached_assets/generated_images/paper_waste_product_photo.png" },
+  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: "attached_assets/generated_images/metal_waste_product_photo.png" },
+  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: "attached_assets/generated_images/organic_waste_product_photo.png" },
 ];
 
 export default function UserDashboard({ userId, userName }: UserDashboardProps) {
