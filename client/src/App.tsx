@@ -19,6 +19,7 @@ import WasteCatalog from "@/pages/waste-catalog";
 import DriverEarnings from "@/pages/driver-earnings";
 import UserEarnings from "@/pages/user-earnings";
 import DriverPaymentSettings from "@/pages/driver-payment-settings";
+import UserDashboard from "@/pages/user-dashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -117,7 +118,11 @@ function Router() {
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Switch>
-              <Route path="/dashboard" component={() => currentUser?.role === "driver" ? <DriverDashboard /> : <BlueCycleDashboard />} />
+              <Route path="/dashboard" component={() => {
+                if (currentUser?.role === "driver") return <DriverDashboard />;
+                if (currentUser?.role === "user") return <UserDashboard userId={currentUser?.id} userName={currentUser?.name} />;
+                return <BlueCycleDashboard />;
+              }} />
               <Route path="/pickups" component={PickupRequests} />
               <Route path="/catalog" component={WasteCatalog} />
               <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings /> : <UserEarnings />} />

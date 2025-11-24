@@ -79,6 +79,8 @@ export class MemStorage implements IStorage {
       role: user.role,
       password: user.password || null,
       phone: user.phone || null,
+      bankName: user.bankName || null,
+      bankAccount: user.bankAccount || null,
       createdAt: new Date(),
     };
     this.users.set(id, newUser);
@@ -113,6 +115,7 @@ export class MemStorage implements IStorage {
       userId: item.userId,
       wasteType: item.wasteType,
       description: item.description || null,
+      price: item.price || 0,
       createdAt: new Date(),
     };
     this.wasteCatalog.set(id, newItem);
@@ -134,6 +137,9 @@ export class MemStorage implements IStorage {
 
   async createPickup(pickup: InsertPickup) {
     const id = this.pickupCounter++;
+    const price = pickup.price || 0;
+    const driverEarnings = Math.floor(price * 0.8);
+    const adminCommission = Math.floor(price * 0.2);
     const newPickup: Pickup = {
       id,
       address: pickup.address,
@@ -143,6 +149,10 @@ export class MemStorage implements IStorage {
       assignedDriverId: pickup.assignedDriverId || null,
       scheduledDate: pickup.scheduledDate || null,
       notes: pickup.notes || null,
+      price,
+      catalogItemId: pickup.catalogItemId || null,
+      driverEarnings,
+      adminCommission,
       createdAt: new Date(),
       completedAt: null,
       cancelledAt: null,
@@ -238,7 +248,7 @@ export class MemStorage implements IStorage {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
     return Array.from(this.driverEarnings.values()).filter(
-      (e) => e.driverId === driverId && e.date >= cutoffDate
+      (e) => e.driverId === driverId && (e.date instanceof Date ? e.date >= cutoffDate : true)
     );
   }
 
@@ -267,7 +277,7 @@ export class MemStorage implements IStorage {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
     return Array.from(this.userRewards.values()).filter(
-      (r) => r.userId === userId && r.date >= cutoffDate
+      (r) => r.userId === userId && (r.date instanceof Date ? r.date >= cutoffDate : true)
     );
   }
 
