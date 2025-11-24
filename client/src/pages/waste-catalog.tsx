@@ -1,312 +1,104 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2 } from "lucide-react";
-
-interface CatalogItem {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  image?: string;
-  imageUrl?: string;
-}
-
-const mockCatalog: CatalogItem[] = [
-  { 
-    id: "1", 
-    name: "Plastik", 
-    price: 50000, 
-    description: "Sampah plastik umum seperti botol, tas, dan wadah",
-    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_74fd1d20.jpg"
-  },
-  { 
-    id: "2", 
-    name: "Kertas", 
-    price: 45000, 
-    description: "Kertas bekas, kardus, dan kemasan kertas lainnya",
-    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_727aee39.jpg"
-  },
-  { 
-    id: "3", 
-    name: "Logam", 
-    price: 80000, 
-    description: "Kaleng aluminium, besi bekas, dan logam lainnya",
-    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_6029a7f5.jpg"
-  },
-  { 
-    id: "4", 
-    name: "Organik", 
-    price: 30000, 
-    description: "Sisa makanan, daun, dan limbah organik",
-    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg"
-  },
-];
+import { Loader2 } from "lucide-react";
+import { WasteCatalogItem } from "@shared/schema";
 
 interface WasteCatalogProps {
   userRole?: string;
 }
 
 export default function WasteCatalog({ userRole }: WasteCatalogProps = {}) {
-  if (userRole !== "admin") {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const { data: catalog = [], isLoading } = useQuery<WasteCatalogItem[]>({
+    queryKey: ["/api/waste-catalog"],
+  });
+
+  const categories = Array.from(new Set(catalog.map((item) => item.wasteType)));
+  const filteredItems = selectedCategory
+    ? catalog.filter((item) => item.wasteType === selectedCategory)
+    : catalog;
+
+  if (isLoading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">Hanya admin yang dapat mengakses halaman ini</p>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-  const [catalog, setCatalog] = useState<CatalogItem[]>(mockCatalog);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", price: "", description: "", image: "" });
-
-  const handleAddItem = () => {
-    if (formData.name && formData.price && formData.description) {
-      const newItem: CatalogItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        price: parseInt(formData.price),
-        description: formData.description,
-        image: formData.image || "📦",
-      };
-      setCatalog([...catalog, newItem]);
-      setFormData({ name: "", price: "", description: "", image: "" });
-      setShowAddDialog(false);
-    }
-  };
-
-  const handleEditItem = () => {
-    if (editingId && formData.name && formData.price && formData.description) {
-      setCatalog(
-        catalog.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                name: formData.name,
-                price: parseInt(formData.price),
-                description: formData.description,
-                image: formData.image || item.image,
-              }
-            : item
-        )
-      );
-      setFormData({ name: "", price: "", description: "", image: "" });
-      setEditingId(null);
-      setShowEditDialog(false);
-    }
-  };
-
-  const handleDeleteItem = (id: string) => {
-    setCatalog(catalog.filter((item) => item.id !== id));
-  };
-
-  const openEditDialog = (item: CatalogItem) => {
-    setFormData({
-      name: item.name,
-      price: item.price.toString(),
-      description: item.description,
-      image: item.image || "",
-    });
-    setEditingId(item.id);
-    setShowEditDialog(true);
-  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Katalog Sampah</h1>
-        <p className="text-gray-600 dark:text-gray-400">Kelola harga dan jenis sampah yang bisa diambil</p>
+        <h1 className="text-3xl font-bold mb-2">Katalog Sampah</h1>
+        <p className="text-muted-foreground">
+          Lihat daftar lengkap jenis sampah dan harganya
+        </p>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Daftar Sampah dengan Harga</CardTitle>
-          <Button onClick={() => setShowAddDialog(true)} size="sm" data-testid="button-add-catalog">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Jenis
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={selectedCategory === null ? "default" : "outline"}
+          onClick={() => setSelectedCategory(null)}
+          data-testid="button-filter-all"
+        >
+          Semua ({catalog.length})
+        </Button>
+        {categories.map((category) => (
+          <Button
+            key={category}
+            variant={selectedCategory === category ? "default" : "outline"}
+            onClick={() => setSelectedCategory(category)}
+            data-testid={`button-filter-${category}`}
+          >
+            {category} ({catalog.filter((i) => i.wasteType === category).length})
           </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {catalog.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-lg hover-elevate overflow-hidden flex flex-col"
-                data-testid={`catalog-item-${item.id}`}
-              >
-                {item.imageUrl && (
-                  <div className="h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
-                  </div>
-                )}
-                <div className="p-4 flex flex-col flex-1">
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                  </div>
+        ))}
+      </div>
 
-                  <div className="pt-2 border-t mt-3">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Harga Standar</p>
-                    <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                      Rp {item.price.toLocaleString("id-ID")}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2 mt-auto">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => openEditDialog(item)}
-                      data-testid={`button-edit-${item.id}`}
-                    >
-                      <Edit2 className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleDeleteItem(item.id)}
-                      data-testid={`button-delete-${item.id}`}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Hapus
-                    </Button>
-                  </div>
-                </div>
+      {/* Catalog Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filteredItems.map((item) => (
+          <Card key={item.id} className="hover-elevate overflow-hidden flex flex-col" data-testid={`card-waste-${item.id}`}>
+            {item.imageUrl && (
+              <div className="h-48 bg-muted overflow-hidden">
+                <img
+                  src={item.imageUrl}
+                  alt={item.wasteType}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://images.unsplash.com/photo-1559931265-cd4628902ee4?w=500&h=400&fit=crop`;
+                  }}
+                />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            )}
+            <CardContent className="pt-6 flex-1 flex flex-col">
+              <h3 className="font-bold text-lg mb-2">{item.wasteType}</h3>
+              {item.description && (
+                <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
+              )}
+              <div className="mt-auto pt-4 border-t">
+                <p className="text-xs text-muted-foreground mb-1">Harga per kilogram</p>
+                <p className="text-2xl font-bold text-primary" data-testid={`price-${item.id}`}>
+                  Rp {item.price.toLocaleString("id-ID")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-      {/* Add Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tambah Jenis Sampah Baru</DialogTitle>
-            <DialogDescription>Tambahkan jenis sampah baru ke katalog dengan harga dan gambar</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nama Jenis Sampah *</Label>
-              <Input
-                id="name"
-                placeholder="Contoh: Plastik, Kertas"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                data-testid="input-catalog-name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="price">Harga (Rp) *</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="Contoh: 50000"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                data-testid="input-catalog-price"
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Deskripsi *</Label>
-              <Input
-                id="description"
-                placeholder="Jelaskan jenis sampah ini"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                data-testid="input-catalog-description"
-              />
-            </div>
-            <div>
-              <Label htmlFor="image">Emoji/Icon</Label>
-              <Input
-                id="image"
-                placeholder="Contoh: 📦 atau 🏺"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                data-testid="input-catalog-image"
-              />
-              <p className="text-xs text-gray-500 mt-1">Gunakan emoji untuk visual (opsional)</p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Batal
-            </Button>
-            <Button onClick={handleAddItem} data-testid="button-submit-catalog">
-              Tambah
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Jenis Sampah</DialogTitle>
-            <DialogDescription>Perbarui informasi harga dan gambar sampah</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-name">Nama Jenis Sampah *</Label>
-              <Input
-                id="edit-name"
-                placeholder="Contoh: Plastik, Kertas"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                data-testid="input-edit-catalog-name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-price">Harga (Rp) *</Label>
-              <Input
-                id="edit-price"
-                type="number"
-                placeholder="Contoh: 50000"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                data-testid="input-edit-catalog-price"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-description">Deskripsi *</Label>
-              <Input
-                id="edit-description"
-                placeholder="Jelaskan jenis sampah ini"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                data-testid="input-edit-catalog-description"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-image">Emoji/Icon</Label>
-              <Input
-                id="edit-image"
-                placeholder="Contoh: 📦 atau 🏺"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                data-testid="input-edit-catalog-image"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Batal
-            </Button>
-            <Button onClick={handleEditItem} data-testid="button-update-catalog">
-              Simpan Perubahan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {filteredItems.length === 0 && (
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground">Tidak ada item sampah di kategori ini</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

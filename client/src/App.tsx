@@ -168,6 +168,9 @@ function Router() {
                 if (currentUser?.role === "admin") return <AdminCatalog />;
                 return <NotFound />;
               }} />
+              <Route path="/catalog/:id" component={(props) => {
+                return <WasteCatalog userRole={currentUser?.role} />;
+              }} />
               <Route path="/earnings" component={() => {
                 if (currentUser?.role === "driver") return <DriverEarnings driverId={currentUser?.id} />;
                 return <UserEarnings />;
