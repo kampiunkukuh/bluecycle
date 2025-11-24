@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
 import partnershipImage from "@assets/stock_images/professional_busines_501d84a4.jpg";
 import pickupImage from "@assets/stock_images/truck_collecting_was_763e7111.jpg";
-import dropoffImage from "@assets/stock_images/recycling_collection_e7cb9713.jpg";
+import dropoffImage from "@assets/stock_images/waste_management_fac_8b505f6b.jpg";
 
 interface Stats {
   pickups: number;
@@ -262,14 +262,14 @@ export default function Landing() {
       </section>
 
       {/* Services Section */}
-      <section className="px-6 py-24 max-w-6xl mx-auto" id="services">
+      <section className="px-6 py-24 bg-gradient-to-b from-transparent via-primary/5 to-transparent max-w-6xl mx-auto" id="services">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold mb-4">Layanan Kami</h2>
+          <h2 className="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">Layanan Kami</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Dua cara mudah untuk mengelola sampah Anda dengan BlueCycle</p>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
           {services.map((service, idx) => (
-            <div key={idx} className="overflow-hidden bg-white dark:bg-slate-950 rounded-3xl border-2 border-primary/30 hover-elevate group transition-all duration-300">
+            <div key={idx} className="overflow-hidden bg-white dark:bg-slate-950 rounded-3xl border-2 border-primary/40 shadow-lg hover-elevate group transition-all duration-300">
               {/* Image Section */}
               <div className="relative h-64 overflow-hidden bg-gradient-to-br from-muted to-muted/50">
                 <img 
@@ -419,7 +419,7 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="px-6 py-24 relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/90 -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/95 -z-10" />
         
         {/* Decorative Elements */}
         <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
