@@ -62,7 +62,7 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard {userName || "Pelanggan"}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard Pelanggan</h1>
         <p className="text-gray-600 dark:text-gray-400">Kelola pemesanan dan reward Anda bersama BlueCycle</p>
       </div>
 

@@ -22,6 +22,7 @@ export const wasteCatalog = pgTable("waste_catalog", {
   wasteType: varchar("waste_type", { length: 100 }).notNull(),
   description: text("description"),
   price: integer("price").notNull().default(0), // in cents (Rp)
+  imageUrl: varchar("image_url", { length: 500 }), // URL/path to image
   createdAt: timestamp("created_at").defaultNow(),
 });
 

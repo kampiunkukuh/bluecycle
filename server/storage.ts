@@ -116,6 +116,7 @@ export class MemStorage implements IStorage {
       wasteType: item.wasteType,
       description: item.description || null,
       price: item.price || 0,
+      imageUrl: item.imageUrl || null,
       createdAt: new Date(),
     };
     this.wasteCatalog.set(id, newItem);

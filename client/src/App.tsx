@@ -25,6 +25,7 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const [location, setLocation] = useLocation();
   const [currentUser, setCurrentUser] = useState<{
+    id: number;
     role: "admin" | "user" | "driver";
     name: string;
     email: string;
@@ -70,9 +71,9 @@ function Router() {
 
   const handleLogin = (role: "admin" | "user" | "driver") => {
     const userData = {
-      admin: { name: "Admin BlueCycle", email: "admin@bluecycle.com", role: "admin" as const },
-      user: { name: "Budi Santoso", email: "budi@example.com", role: "user" as const },
-      driver: { name: "Joko Wijaya", email: "joko@bluecycle.com", role: "driver" as const },
+      admin: { id: 1, name: "Admin BlueCycle", email: "admin@bluecycle.com", role: "admin" as const },
+      user: { id: 2, name: "Budi Santoso", email: "budi@example.com", role: "user" as const },
+      driver: { id: 3, name: "Joko Wijaya", email: "joko@bluecycle.com", role: "driver" as const },
     };
     setCurrentUser(userData[role]);
     setLocation("/dashboard");
