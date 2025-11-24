@@ -56,7 +56,7 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
-  // Load bank accounts and withdrawals from localStorage
+  // Load bank accounts from localStorage only
   useEffect(() => {
     const savedAccounts = localStorage.getItem(`driver_bank_accounts_${driverId}`);
     if (savedAccounts) {
@@ -64,15 +64,6 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
         setBankAccounts(JSON.parse(savedAccounts));
       } catch (e) {
         console.error("Failed to load bank accounts:", e);
-      }
-    }
-    
-    const savedWithdrawals = localStorage.getItem(`driver_withdrawals_${driverId}`);
-    if (savedWithdrawals) {
-      try {
-        setWithdrawals(JSON.parse(savedWithdrawals));
-      } catch (e) {
-        console.error("Failed to load withdrawals:", e);
       }
     }
   }, [driverId]);
@@ -151,7 +142,7 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
     }
   };
 
-  const handleWithdrawal = () => {
+  const handleWithdrawal = async () => {
     if (!withdrawalData.amount || !withdrawalData.bankName || !withdrawalData.bankAccount) {
       alert("Semua field harus diisi");
       return;
@@ -161,17 +152,49 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
       alert("Jumlah penarikan melebihi saldo tersedia");
       return;
     }
-    const newWithdrawal: WithdrawalRequest = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString("id-ID"),
-      amount: amount,
-      status: "pending",
-      bankName: withdrawalData.bankName,
-      bankAccount: withdrawalData.bankAccount,
-    };
-    const updatedWithdrawals = [newWithdrawal, ...withdrawals];
-    setWithdrawals(updatedWithdrawals);
-    localStorage.setItem(`driver_withdrawals_${driverId}`, JSON.stringify(updatedWithdrawals));
+    // Call API to create withdrawal request instead of localStorage
+    try {
+      const response = await fetch("/api/driver-payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driverId,
+          amount,
+          status: "pending",
+          bankName: withdrawalData.bankName,
+          bankAccount: withdrawalData.bankAccount,
+        }),
+      });
+      
+      if (response.ok) {
+        const newPayment = await response.json();
+        const newWithdrawal: WithdrawalRequest = {
+          id: newPayment.id.toString(),
+          date: new Date().toLocaleDateString("id-ID"),
+          amount: amount,
+          status: "pending",
+          bankName: withdrawalData.bankName,
+          bankAccount: withdrawalData.bankAccount,
+        };
+        setWithdrawals([newWithdrawal, ...withdrawals]);
+        setPayments([{
+          id: newPayment.id.toString(),
+          amount,
+          status: "pending",
+          bankName: withdrawalData.bankName,
+          bankAccount: withdrawalData.bankAccount,
+          requestedAt: new Date().toLocaleDateString("id-ID"),
+          approvedAt: undefined,
+          adminNotes: undefined,
+        }, ...payments]);
+        alert("Permintaan penarikan berhasil diajukan!");
+      } else {
+        alert("Gagal mengajukan penarikan. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error("Failed to submit withdrawal:", error);
+      alert("Gagal mengajukan penarikan");
+    }
     setWithdrawalData({ amount: "", bankName: "", bankAccount: "" });
     setShowWithdrawDialog(false);
   };
