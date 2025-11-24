@@ -35,18 +35,18 @@ export default function Landing() {
   const [selectedWasteFilter, setSelectedWasteFilter] = useState<string | null>(null);
 
   // Fetch real-time stats
-  const { data: stats = { pickups: 15847, drivers: 324, users: 8923, waste: 450 } as Stats } = useQuery<Stats>({
+  const { data: stats = { pickups: 15847, drivers: 324, users: 8923, waste: 450 } as Stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ['/api/stats'],
     refetchInterval: 5000,
   });
 
   // Fetch waste catalog
-  const { data: wasteCatalog = [] as WasteCatalog[] } = useQuery<WasteCatalog[]>({
+  const { data: wasteCatalog = [] as WasteCatalog[], isLoading: wasteLoading } = useQuery<WasteCatalog[]>({
     queryKey: ['/api/waste-catalog'],
   });
 
   // Fetch collection points
-  const { data: collectionPoints = [] as CollectionPoint[] } = useQuery<CollectionPoint[]>({
+  const { data: collectionPoints = [] as CollectionPoint[], isLoading: pointsLoading } = useQuery<CollectionPoint[]>({
     queryKey: ['/api/collection-points'],
   });
 
@@ -239,7 +239,7 @@ export default function Landing() {
 
       {/* Features Section */}
       <section className="px-6 py-20 max-w-6xl mx-auto" id="features">
-        <h2 className="text-4xl font-bold text-center mb-16">Fitur Unggulan</h2>
+        <h2 className="text-4xl font-bold text-center mb-16">Layanan Kami</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {features.map((feature, idx) => (
             <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
@@ -274,29 +274,39 @@ export default function Landing() {
 
       {/* Partnership Section */}
       <section className="px-6 py-20 max-w-6xl mx-auto" id="partnership">
-        <div className="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-r from-primary/10 to-primary/5 p-12 rounded-3xl border-2 border-primary/30">
+        <div className="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-12 rounded-3xl border-2 border-primary/50 shadow-xl">
           <div>
-            <h2 className="text-4xl font-bold mb-6 flex items-center gap-3">
-              <Briefcase className="h-8 w-8 text-primary" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-primary/20 rounded-full">
+                <Briefcase className="h-6 w-6 text-primary" />
+              </div>
+              <span className="text-sm font-bold text-primary uppercase tracking-widest">Partnership</span>
+            </div>
+            <h2 className="text-5xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">
               Bergabung Sebagai Mitra
             </h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular.
+            <p className="text-lg text-muted-foreground mb-8">
+              Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular. Raih kesempatan emas untuk berkembang bersama BlueCycle.
             </p>
-            <div className="space-y-3 mb-8">
-              {["Komisi menarik untuk setiap transaksi", "Akses ke dashboard analytics lengkap", "Dukungan teknis 24/7", "Peningkatan brand awareness"].map((item, i) => (
-                <div key={i} className="flex gap-3">
-                  <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                  <span>{item}</span>
+            <div className="space-y-4 mb-8">
+              {["✨ Komisi menarik untuk setiap transaksi", "📊 Akses ke dashboard analytics lengkap", "🎯 Dukungan teknis 24/7", "🚀 Peningkatan brand awareness"].map((item, i) => (
+                <div key={i} className="flex gap-3 items-center">
+                  <div className="flex-shrink-0 w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="font-medium">{item}</span>
                 </div>
               ))}
             </div>
-            <Button size="lg" className="rounded-full h-12 px-8" data-testid="button-partnership">
+            <Button size="lg" className="rounded-full h-12 px-8 bg-primary hover:bg-primary/90 font-semibold shadow-lg" data-testid="button-partnership">
               Hubungi Tim Partnership
             </Button>
           </div>
-          <div className="relative h-80 bg-white dark:bg-slate-950 rounded-2xl flex items-center justify-center border">
-            <Briefcase className="h-32 w-32 text-primary/20" />
+          <div className="relative h-80 bg-gradient-to-br from-primary/30 to-primary/10 rounded-2xl flex items-center justify-center border-2 border-primary/30 shadow-lg">
+            <div className="text-center">
+              <Briefcase className="h-32 w-32 text-primary/40 mx-auto mb-4" />
+              <p className="text-primary/60 font-semibold">Peluang Tak Terbatas</p>
+            </div>
           </div>
         </div>
       </section>
@@ -324,7 +334,7 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="px-6 py-24 relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/80 -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/90 -z-10" />
         
         {/* Decorative Elements */}
         <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
