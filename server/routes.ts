@@ -7,6 +7,28 @@ import { z } from "zod";
 export async function registerRoutes(app: Express) {
   const api = Router();
 
+// Login endpoint
+api.post("/api/login", async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+    const user = await storage.getUserByEmail(email);
+    
+    if (!user || user.role !== role) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+    
+    res.json({ 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role 
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
 // Pickups endpoints
 api.get("/api/pickups", async (req, res) => {
   const { status, requestedById, assignedDriverId } = req.query;
@@ -155,6 +177,20 @@ api.post("/api/waste-catalog", async (req, res) => {
     const data = insertWasteCatalogSchema.parse(req.body);
     const item = await storage.createWasteCatalogItem(data);
     res.status(201).json(item);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid waste catalog data" });
+  }
+});
+
+api.patch("/api/waste-catalog/:id", async (req, res) => {
+  try {
+    const partial = insertWasteCatalogSchema.partial().parse(req.body);
+    const item = await storage.updateWasteCatalogItem?.(parseInt(req.params.id), partial);
+    if (!item) {
+      res.status(404).json({ error: "Catalog item not found" });
+      return;
+    }
+    res.json(item);
   } catch (error) {
     res.status(400).json({ error: "Invalid waste catalog data" });
   }

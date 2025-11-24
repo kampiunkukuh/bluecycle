@@ -18,6 +18,7 @@ import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
 import BlueCycleDashboard from "@/pages/bluecycle-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminCatalog from "@/pages/admin-catalog";
 import DriverDashboard from "@/pages/driver-dashboard";
 import PickupRequests from "@/pages/pickup-requests";
 import UserManagement from "@/pages/user-management";
@@ -160,6 +161,10 @@ function Router() {
               }} />
               <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
               <Route path="/catalog" component={() => <WasteCatalog userRole={currentUser?.role} />} />
+              <Route path="/admin/catalog" component={() => {
+                if (currentUser?.role === "admin") return <AdminCatalog />;
+                return <NotFound />;
+              }} />
               <Route path="/earnings" component={() => {
                 if (currentUser?.role === "driver") return <DriverEarnings driverId={currentUser?.id} />;
                 return <UserEarnings />;

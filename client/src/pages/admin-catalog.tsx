@@ -66,11 +66,11 @@ export default function AdminCatalog() {
 
   const resetForm = () => {
     setFormData({
+      userId: 1,
       wasteType: "",
       description: "",
-      pricePerKg: 0,
+      price: 0,
       imageUrl: "",
-      category: "",
     });
     setEditingId(null);
   };
