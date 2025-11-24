@@ -27,6 +27,7 @@ import CollectionPoints from "@/pages/collection-points";
 import WasteDisposal from "@/pages/waste-disposal";
 import ComplianceReports from "@/pages/compliance-reports";
 import AdminPaymentManagement from "@/pages/admin-payment-management";
+import FleetManagement from "@/pages/fleet-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -144,7 +145,7 @@ function Router() {
               <Route path="/compliance" component={ComplianceReports} />
               <Route path="/environmental-impact" component={EnvironmentalImpact} />
               <Route path="/routes" component={BlueCycleDashboard} />
-              <Route path="/fleet" component={BlueCycleDashboard} />
+              <Route path="/fleet" component={FleetManagement} />
               <Route path="/users" component={UserManagement} />
               <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
