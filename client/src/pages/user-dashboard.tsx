@@ -5,6 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, AlertCircle, Send, Calendar, Zap } from "lucide-react";
 import { useLocation } from "wouter";
+import plasticImg from "@assets/generated_images/plastic_waste_product_photo.png";
+import paperImg from "@assets/generated_images/paper_waste_product_photo.png";
+import metalImg from "@assets/generated_images/metal_waste_product_photo.png";
+import organicImg from "@assets/generated_images/organic_waste_product_photo.png";
 
 interface CatalogItem {
   id: string;
@@ -30,10 +34,10 @@ interface UserDashboardProps {
 }
 
 const mockCatalog: CatalogItem[] = [
-  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: "attached_assets/generated_images/plastic_waste_product_photo.png" },
-  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: "attached_assets/generated_images/paper_waste_product_photo.png" },
-  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: "attached_assets/generated_images/metal_waste_product_photo.png" },
-  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: "attached_assets/generated_images/organic_waste_product_photo.png" },
+  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: plasticImg },
+  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: paperImg },
+  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: metalImg },
+  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: organicImg },
 ];
 
 export default function UserDashboard({ userId, userName }: UserDashboardProps) {
