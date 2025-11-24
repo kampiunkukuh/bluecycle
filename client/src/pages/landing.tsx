@@ -56,13 +56,19 @@ export default function Landing() {
 
   const wasteTypes = Array.from(new Set(wasteCatalog.map((w: WasteCatalog) => w.wasteType)));
 
-  const features = [
-    { title: "Pelacakan GPS Real-Time", desc: "Pantau pengambilan sampah secara real-time dengan akurasi tinggi", icon: MapPin },
-    { title: "Dashboard Analitik", desc: "Laporan komprehensif dampak lingkungan dan efisiensi operasional", icon: TrendingUp },
-    { title: "Sistem Pembayaran Aman", desc: "Komisi transparan 80/20 untuk pengemudi dan administrasi", icon: Shield },
-    { title: "Kelola Tim Mudah", desc: "Manajemen pengguna, pengemudi, dan admin dalam satu platform", icon: Users },
-    { title: "Otomasi Cerdas", desc: "Optimasi rute otomatis dan penjadwalan pickup yang efisien", icon: Zap },
-    { title: "Verifikasi QR", desc: "Sistem QR dengan bukti foto untuk keamanan dan transparansi", icon: CheckCircle2 },
+  const services = [
+    { 
+      title: "Pengambilan Sampah (Pickup)", 
+      desc: "Driver kami akan datang ke lokasi Anda untuk mengambil sampah secara langsung dengan jadwal yang fleksibel dan terjadwal.",
+      icon: MapPin,
+      features: ["GPS Real-Time Tracking", "Verifikasi QR dengan Foto", "Pembayaran Langsung", "Komisi 80% untuk Driver"]
+    },
+    { 
+      title: "Titik Drop-off", 
+      desc: "Kunjungi titik pengumpulan sampah terdekat untuk mengirimkan sampah Anda dengan mudah kapan saja.",
+      icon: MapPin,
+      features: ["Lokasi Tersebar di Batam", "Operasional 24/7", "Pembayaran Digital", "Sistem Terintegrasi"]
+    },
   ];
 
   const faqs = [
@@ -94,7 +100,7 @@ export default function Landing() {
                   Mulai Sekarang <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="#features">
+              <Link href="#services">
                 <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg">
                   Pelajari Lebih Lanjut
                 </Button>
@@ -180,19 +186,22 @@ export default function Landing() {
       </section>
 
       {/* Waste Catalog with Filter */}
-      <section className="px-6 py-20">
+      <section className="px-6 py-24 bg-gradient-to-b from-muted/30 to-transparent">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Daftar Jenis Sampah</h2>
-          <p className="text-center text-muted-foreground mb-12">Filter sampah berdasarkan jenisnya dan lihat harga</p>
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4">Jenis Sampah yang Kami Kelola</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Lihat daftar lengkap sampah yang dapat Anda kirimkan dan dapatkan kompenasi terbaik</p>
+          </div>
           
           {/* Filter Buttons */}
-          <div className="flex gap-3 justify-center mb-12 flex-wrap">
+          <div className="flex gap-3 justify-center mb-16 flex-wrap">
             <Button 
               variant={selectedWasteFilter === null ? "default" : "outline"}
               onClick={() => setSelectedWasteFilter(null)}
               data-testid="filter-all-waste"
+              className="rounded-full"
             >
-              Semua Jenis ({wasteCatalog.length})
+              Semua ({wasteCatalog.length})
             </Button>
             {wasteTypes.map(type => {
               const count = wasteCatalog.filter(w => w.wasteType === type).length;
@@ -202,6 +211,7 @@ export default function Landing() {
                   variant={selectedWasteFilter === type ? "default" : "outline"}
                   onClick={() => setSelectedWasteFilter(type)}
                   data-testid={`filter-${type.toLowerCase()}`}
+                  className="rounded-full"
                 >
                   {type} ({count})
                 </Button>
@@ -211,41 +221,63 @@ export default function Landing() {
 
           {/* Waste Grid */}
           <div className="grid md:grid-cols-4 gap-6">
-            {filteredWaste.map((waste: WasteCatalog, idx: number) => (
-              <div key={idx} className="bg-white dark:bg-slate-950 rounded-2xl border overflow-hidden hover-elevate">
-                <div className="aspect-square overflow-hidden bg-muted">
+            {filteredWaste.length > 0 ? filteredWaste.map((waste: WasteCatalog, idx: number) => (
+              <div key={idx} className="bg-white dark:bg-slate-950 rounded-2xl border overflow-hidden hover-elevate transition-all duration-300">
+                <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50">
                   <img 
                     src={waste.imageUrl} 
                     alt={waste.wasteType}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = `https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=300&fit=crop`;
                     }}
                   />
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-lg mb-1">{waste.wasteType}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{waste.description}</p>
-                  <div className="text-2xl font-bold text-primary">
-                    Rp {(waste.price / 1000).toLocaleString()}K
+                <div className="p-5">
+                  <h3 className="font-bold text-lg mb-2">{waste.wasteType}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{waste.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-primary">
+                      Rp {(waste.price / 1000).toLocaleString()}K
+                    </div>
+                    <Button size="sm" variant="ghost" className="rounded-full" data-testid={`btn-waste-${idx}`}>
+                      Pesan
+                    </Button>
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground text-lg">Tidak ada jenis sampah untuk filter ini</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-20 max-w-6xl mx-auto" id="features">
-        <h2 className="text-4xl font-bold text-center mb-16">Layanan Kami</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, idx) => (
-            <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
-              <feature.icon className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.desc}</p>
+      {/* Services Section */}
+      <section className="px-6 py-24 max-w-6xl mx-auto" id="services">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl font-bold mb-4">Layanan Kami</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Dua cara mudah untuk mengelola sampah Anda dengan BlueCycle</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          {services.map((service, idx) => (
+            <div key={idx} className="p-8 bg-white dark:bg-slate-950 rounded-3xl border-2 border-primary/30 hover-elevate group">
+              <div className="p-4 bg-primary/10 rounded-2xl w-fit mb-6">
+                <service.icon className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-3xl font-bold mb-4">{service.title}</h3>
+              <p className="text-lg text-muted-foreground mb-8">{service.desc}</p>
+              <div className="space-y-3">
+                {service.features.map((feat, i) => (
+                  <div key={i} className="flex gap-3 items-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-medium">{feat}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
