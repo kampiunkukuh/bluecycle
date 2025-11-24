@@ -142,15 +142,15 @@ export default function FleetManagement() {
           </div>
           <div className="bg-green-500 bg-opacity-30 p-3 rounded-lg">
             <p className="text-xs text-blue-100">Total Earnings</p>
-            <p className="text-2xl font-bold">Rp {(totalEarnings / 1000000).toFixed(1)}M</p>
+            <p className="text-2xl font-bold">Rp {totalEarnings.toLocaleString("id-ID")}</p>
           </div>
           <div className="bg-yellow-500 bg-opacity-30 p-3 rounded-lg">
             <p className="text-xs text-blue-100">Rata-Rata Earnings</p>
-            <p className="text-2xl font-bold">Rp {(avgEarnings / 1000).toFixed(0)}K</p>
+            <p className="text-2xl font-bold">Rp {avgEarnings.toLocaleString("id-ID")}</p>
           </div>
           <div className="bg-purple-500 bg-opacity-30 p-3 rounded-lg">
             <p className="text-xs text-blue-100">80% Revenue Split</p>
-            <p className="text-2xl font-bold">{(totalEarnings * 0.8 / 1000000).toFixed(1)}M</p>
+            <p className="text-2xl font-bold">Rp {Math.round(totalEarnings * 0.8).toLocaleString("id-ID")}</p>
           </div>
         </div>
       </div>

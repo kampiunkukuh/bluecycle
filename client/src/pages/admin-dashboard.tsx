@@ -205,7 +205,7 @@ Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{totalUsers}K</div>
+            <div className="text-3xl font-bold text-purple-600">{totalUsers.toLocaleString("id-ID")}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">Akun terdaftar</p>
           </CardContent>
         </Card>
@@ -218,8 +218,8 @@ Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-emerald-600">{totalWaste / 1000}K</div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">kg bulan ini</p>
+            <div className="text-3xl font-bold text-emerald-600">{totalWaste.toLocaleString("id-ID")} kg</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">bulan ini</p>
           </CardContent>
         </Card>
       </div>
@@ -231,10 +231,10 @@ Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
             <CardTitle>Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">Rp {(totalRevenue / 1000000).toFixed(2)}M</div>
+            <div className="text-3xl font-bold text-green-600">Rp {totalRevenue.toLocaleString("id-ID")}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              <p>Driver (80%): Rp {(driverBalance / 1000000).toFixed(2)}M</p>
-              <p>Admin (20%): Rp {(adminBalance / 1000000).toFixed(2)}M</p>
+              <p>Driver (80%): Rp {driverBalance.toLocaleString("id-ID")}</p>
+              <p>Admin (20%): Rp {adminBalance.toLocaleString("id-ID")}</p>
             </div>
           </CardContent>
         </Card>

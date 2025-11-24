@@ -224,7 +224,7 @@ export default function AdminPaymentManagement() {
             <CardTitle className="text-sm">Total Dana</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold text-purple-600">Rp {(stats.totalAmount / 1000000).toFixed(1)}M</div>
+            <div className="text-lg font-bold text-purple-600">Rp {stats.totalAmount.toLocaleString("id-ID")}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">menunggu/disetujui</p>
           </CardContent>
         </Card>
