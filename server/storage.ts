@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QRTracking, InsertQRTracking } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -75,6 +75,11 @@ export interface IStorage {
   createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport>;
   listComplianceReports(filters?: { reportMonth?: string; reportType?: string }): Promise<ComplianceReport[]>;
   updateComplianceReport(id: number, report: Partial<InsertComplianceReport>): Promise<ComplianceReport | undefined>;
+
+  // QR Tracking
+  createQRTracking(tracking: InsertQRTracking): Promise<QRTracking>;
+  listQRTracking(filters?: { pickupId?: number }): Promise<QRTracking[]>;
+  updateQRTracking(id: number, tracking: Partial<InsertQRTracking>): Promise<QRTracking | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -422,14 +427,16 @@ export class DrizzleStorage implements IStorage {
   }
 
   async listComplianceReports(filters?: { reportMonth?: string; reportType?: string }) {
-    let query = this.db.select().from(schema.complianceReports);
+    if (filters?.reportMonth && filters?.reportType) {
+      return await this.db.select().from(schema.complianceReports).where(and(eq(schema.complianceReports.reportMonth, filters.reportMonth), eq(schema.complianceReports.reportType, filters.reportType)));
+    }
     if (filters?.reportMonth) {
-      query = query.where(eq(schema.complianceReports.reportMonth, filters.reportMonth));
+      return await this.db.select().from(schema.complianceReports).where(eq(schema.complianceReports.reportMonth, filters.reportMonth));
     }
     if (filters?.reportType) {
-      query = query.where(eq(schema.complianceReports.reportType, filters.reportType));
+      return await this.db.select().from(schema.complianceReports).where(eq(schema.complianceReports.reportType, filters.reportType));
     }
-    return await query;
+    return await this.db.select().from(schema.complianceReports);
   }
 
   async updateComplianceReport(id: number, report: Partial<InsertComplianceReport>) {
@@ -438,6 +445,24 @@ export class DrizzleStorage implements IStorage {
       .set(report)
       .where(eq(schema.complianceReports.id, id))
       .returning();
+    return result[0];
+  }
+
+  // QR Tracking
+  async createQRTracking(tracking: InsertQRTracking) {
+    const result = await this.db.insert(schema.qrTracking).values(tracking).returning();
+    return result[0];
+  }
+
+  async listQRTracking(filters?: { pickupId?: number }) {
+    if (filters?.pickupId) {
+      return await this.db.select().from(schema.qrTracking).where(eq(schema.qrTracking.pickupId, filters.pickupId));
+    }
+    return await this.db.select().from(schema.qrTracking);
+  }
+
+  async updateQRTracking(id: number, tracking: Partial<InsertQRTracking>) {
+    const result = await this.db.update(schema.qrTracking).set(tracking).where(eq(schema.qrTracking.id, id)).returning();
     return result[0];
   }
 }

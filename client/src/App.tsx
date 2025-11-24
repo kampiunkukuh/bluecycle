@@ -25,6 +25,7 @@ import EnvironmentalImpact from "@/pages/environmental-impact";
 import OrderCheckout from "@/pages/order-checkout";
 import CollectionPoints from "@/pages/collection-points";
 import WasteDisposalTracking from "@/pages/waste-disposal-tracking";
+import QRTracking from "@/pages/qr-tracking";
 import ComplianceReports from "@/pages/compliance-reports";
 import AdminPaymentManagement from "@/pages/admin-payment-management";
 import FleetManagement from "@/pages/fleet-management";
@@ -136,13 +137,17 @@ function Router() {
               }} />
               <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
               <Route path="/catalog" component={() => <WasteCatalog userRole={currentUser?.role} />} />
-              <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings driverId={currentUser?.id} /> : <UserEarnings />} />
+              <Route path="/earnings" component={() => {
+                if (currentUser?.role === "driver") return <DriverEarnings driverId={currentUser?.id} />;
+                return <UserEarnings />;
+              }} />
               <Route path="/payment-settings" component={DriverPaymentSettings} />
               <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} userId={currentUser?.id} />} />
               <Route path="/payment-management" component={AdminPaymentManagement} />
               <Route path="/collection-points" component={CollectionPoints} />
               <Route path="/waste-disposal" component={WasteDisposalTracking} />
               <Route path="/compliance" component={ComplianceReports} />
+              <Route path="/qr-tracking" component={QRTracking} />
               <Route path="/environmental-impact" component={EnvironmentalImpact} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={FleetManagement} />

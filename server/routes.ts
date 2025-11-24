@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema, insertComplianceReportSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema, insertComplianceReportSchema, insertQrTrackingSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -454,7 +454,9 @@ api.post("/api/compliance-reports/generate/:month/:year", async (req, res) => {
     const disposals = await storage.listWasteDisposals();
     
     const monthPickups = pickups.filter(p => {
-      const pDate = new Date(p.completedAt || p.createdAt);
+      const dateToUse = p.completedAt || p.createdAt;
+      if (!dateToUse) return false;
+      const pDate = new Date(dateToUse);
       return pDate.getMonth() + 1 === parseInt(month) && pDate.getFullYear() === parseInt(year);
     });
     
@@ -490,6 +492,43 @@ api.post("/api/compliance-reports/generate/:month/:year", async (req, res) => {
   } catch (error) {
     console.error("Error generating report:", error);
     res.status(500).json({ error: "Failed to generate report" });
+  }
+});
+
+// QR Tracking endpoints
+api.get("/api/qr-tracking", async (req, res) => {
+  try {
+    const { pickupId } = req.query;
+    const tracking = await storage.listQRTracking({
+      pickupId: pickupId ? parseInt(pickupId as string) : undefined,
+    });
+    res.json(tracking);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch QR tracking" });
+  }
+});
+
+api.post("/api/qr-tracking", async (req, res) => {
+  try {
+    const data = insertQrTrackingSchema.parse(req.body);
+    const tracking = await storage.createQRTracking(data);
+    res.status(201).json(tracking);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid QR tracking data" });
+  }
+});
+
+api.patch("/api/qr-tracking/:id", async (req, res) => {
+  try {
+    const partial = insertQrTrackingSchema.partial().parse(req.body);
+    const tracking = await storage.updateQRTracking(parseInt(req.params.id), partial);
+    if (!tracking) {
+      res.status(404).json({ error: "QR tracking not found" });
+      return;
+    }
+    res.json(tracking);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid QR tracking data" });
   }
 });
 
