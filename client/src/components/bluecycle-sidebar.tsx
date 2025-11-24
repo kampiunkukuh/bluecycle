@@ -9,6 +9,7 @@ import {
   Recycle,
   TrendingUp,
   Gift,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -60,6 +61,12 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       title: "Pendapatan",
       url: "/earnings",
       icon: TrendingUp,
+      roles: ["driver"],
+    },
+    {
+      title: "Pembayaran",
+      url: "/payment-settings",
+      icon: CreditCard,
       roles: ["driver"],
     },
     {

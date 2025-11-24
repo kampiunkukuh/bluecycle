@@ -18,6 +18,7 @@ import Settings from "@/pages/settings";
 import WasteCatalog from "@/pages/waste-catalog";
 import DriverEarnings from "@/pages/driver-earnings";
 import UserEarnings from "@/pages/user-earnings";
+import DriverPaymentSettings from "@/pages/driver-payment-settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -120,6 +121,7 @@ function Router() {
               <Route path="/pickups" component={PickupRequests} />
               <Route path="/catalog" component={WasteCatalog} />
               <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings /> : <UserEarnings />} />
+              <Route path="/payment-settings" component={DriverPaymentSettings} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={BlueCycleDashboard} />
               <Route path="/users" component={UserManagement} />

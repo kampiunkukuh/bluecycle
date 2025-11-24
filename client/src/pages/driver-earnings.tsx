@@ -24,10 +24,10 @@ interface WithdrawalRequest {
 }
 
 const mockEarnings: Earning[] = [
-  { id: "1", date: "24 Nov 2024", amount: 50000, description: "Pickup di Jl. Sudirman" },
-  { id: "2", date: "24 Nov 2024", amount: 45000, description: "Pickup di Jl. Gatot Subroto" },
-  { id: "3", date: "23 Nov 2024", amount: 60000, description: "Pickup di Jl. Thamrin" },
-  { id: "4", date: "23 Nov 2024", amount: 55000, description: "Pickup di Jl. Ahmad Yani" },
+  { id: "1", date: "24 Nov 2024", amount: 40000, description: "Pickup di Jl. Sudirman (80% dari Rp 50.000)" },
+  { id: "2", date: "24 Nov 2024", amount: 36000, description: "Pickup di Jl. Gatot Subroto (80% dari Rp 45.000)" },
+  { id: "3", date: "23 Nov 2024", amount: 48000, description: "Pickup di Jl. Thamrin (80% dari Rp 60.000)" },
+  { id: "4", date: "23 Nov 2024", amount: 44000, description: "Pickup di Jl. Ahmad Yani (80% dari Rp 55.000)" },
 ];
 
 const mockWithdrawals: WithdrawalRequest[] = [
@@ -119,10 +119,23 @@ export default function DriverEarnings() {
         </Card>
       </div>
 
+      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-lg">Sistem Komisi</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm space-y-2">
+          <p><strong>Komisi Partner:</strong> 80% dari harga order</p>
+          <p><strong>Komisi Admin:</strong> 20% dari harga order (untuk operasional BlueCycle)</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">
+            Contoh: Order Rp 100.000 → Anda dapat Rp 80.000 (80%), Admin dapat Rp 20.000 (20%)
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Riwayat Pendapatan</CardTitle>
+            <CardTitle>Riwayat Pendapatan (80% dari Harga Order)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {earnings.map((earning) => (
