@@ -182,6 +182,47 @@ export const auditLogs = pgTable("audit_logs", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// User Payments table (for user withdrawal requests and approval)
+export const userPayments = pgTable("user_payments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // "pending", "approved", "rejected", "completed"
+  bankName: varchar("bank_name", { length: 100 }).notNull(),
+  bankAccount: varchar("bank_account", { length: 255 }).notNull(),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  completedAt: timestamp("completed_at"),
+  rejectionReason: text("rejection_reason"),
+  adminNotes: text("admin_notes"),
+});
+
+// Driver Payments table (for driver withdrawal requests and approval)
+export const driverPayments = pgTable("driver_payments", {
+  id: serial("id").primaryKey(),
+  driverId: integer("driver_id").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // "pending", "approved", "rejected", "completed"
+  bankName: varchar("bank_name", { length: 100 }).notNull(),
+  bankAccount: varchar("bank_account", { length: 255 }).notNull(),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  completedAt: timestamp("completed_at"),
+  rejectionReason: text("rejection_reason"),
+  adminNotes: text("admin_notes"),
+});
+
+// TPA Waste Stock table (Tempat Pemrosesan Akhir - final waste disposal site)
+export const tpaWasteStock = pgTable("tpa_waste_stock", {
+  id: serial("id").primaryKey(),
+  tpaName: varchar("tpa_name", { length: 255 }).notNull(),
+  address: text("address").notNull(),
+  wasteType: varchar("waste_type", { length: 100 }).notNull(), // "Plastik", "Kertas", "Logam", "Organik"
+  totalKg: integer("total_kg").notNull().default(0), // total kg in TPA
+  capacity: integer("capacity").notNull(), // max capacity in kg
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
