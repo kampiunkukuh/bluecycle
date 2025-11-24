@@ -27,7 +27,7 @@ export default function WasteCatalog({ userRole, currentUser }: WasteCatalogProp
   });
 
   const handleOrderClick = (item: WasteCatalogItem) => {
-    setLocation(`/checkout/${item.id}`);
+    setLocation(`/order/${item.id}`);
   };
 
   const categories = Array.from(new Set(catalog.map((item) => item.wasteType)));
