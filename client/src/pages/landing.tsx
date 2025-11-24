@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
-import { FaGoogle, FaApple } from "react-icons/fa";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Play } from "lucide-react";
+import { FaApple } from "react-icons/fa";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
@@ -311,8 +311,8 @@ export default function Landing() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-4">
-                <FaGoogle className="h-8 w-8 text-white" />
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 via-blue-400 to-red-400 flex items-center justify-center mx-auto mb-4">
+                <Play className="h-8 w-8 text-white fill-white" />
               </div>
               <h3 className="text-xl font-bold mb-2">Google Play Store</h3>
               <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk Android</p>
