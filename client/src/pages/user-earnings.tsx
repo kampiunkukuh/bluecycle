@@ -90,25 +90,32 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
         setPickups(Array.isArray(pickupsData) ? pickupsData : []);
         
         const paymentsData = await paymentsRes.json();
-        if (Array.isArray(paymentsData)) {
-          setPayments(paymentsData.map((p: any) => ({
-            id: p.id.toString(),
-            amount: p.amount,
-            status: p.status,
-            bankName: p.bankName,
-            bankAccount: p.bankAccount,
-            requestedAt: new Date(p.requestedAt).toLocaleDateString("id-ID"),
-            approvedAt: p.approvedAt ? new Date(p.approvedAt).toLocaleDateString("id-ID") : undefined,
-            adminNotes: p.adminNotes,
-          })));
+        console.log("User payments data:", paymentsData);
+        if (Array.isArray(paymentsData) && paymentsData.length > 0) {
+          const transformedPayments = paymentsData.map((p: any) => {
+            const requestDate = p.requestedAt ? new Date(p.requestedAt).toLocaleDateString("id-ID") : new Date().toLocaleDateString("id-ID");
+            return {
+              id: p.id ? p.id.toString() : Date.now().toString(),
+              amount: p.amount || 0,
+              status: p.status || "pending",
+              bankName: p.bankName || "",
+              bankAccount: p.bankAccount || "",
+              requestedAt: requestDate,
+              approvedAt: p.approvedAt ? new Date(p.approvedAt).toLocaleDateString("id-ID") : undefined,
+              adminNotes: p.adminNotes,
+            };
+          });
+          console.log("Transformed payments:", transformedPayments);
+          setPayments(transformedPayments);
+          
           // Also set withdrawals from payments data
-          setWithdrawals(paymentsData.map((p: any) => ({
-            id: p.id.toString(),
-            date: new Date(p.requestedAt).toLocaleDateString("id-ID"),
-            amount: p.amount,
-            status: p.status as any,
-            bankName: p.bankName,
-            bankAccount: p.bankAccount,
+          setWithdrawals(transformedPayments.map((payment) => ({
+            id: payment.id,
+            date: payment.requestedAt,
+            amount: payment.amount,
+            status: payment.status as any,
+            bankName: payment.bankName,
+            bankAccount: payment.bankAccount,
           })));
         }
       } catch (error) {
