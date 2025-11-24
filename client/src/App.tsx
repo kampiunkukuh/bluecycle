@@ -110,6 +110,7 @@ function Router() {
             userRole={currentUser.role}
             userName={currentUser.name}
             userEmail={currentUser.email}
+            userId={currentUser.id}
             onLogout={handleLogout}
           />
         )}

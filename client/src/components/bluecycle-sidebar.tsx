@@ -36,31 +36,31 @@ interface BlueCycleSidebarProps {
   userRole: UserRole;
   userName: string;
   userEmail: string;
+  userId: number;
   onLogout: () => void;
 }
 
-export function BlueCycleSidebar({ userRole, userName: initialUserName, userEmail: initialUserEmail, onLogout }: BlueCycleSidebarProps) {
+export function BlueCycleSidebar({ userRole, userName: initialUserName, userEmail: initialUserEmail, userId, onLogout }: BlueCycleSidebarProps) {
   const [location, setLocation] = useLocation();
   const [userName, setUserName] = useState(initialUserName);
   const [userEmail, setUserEmail] = useState(initialUserEmail);
 
-  // Sync user data from database
+  // Sync user data dari database berdasarkan userId
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch("/api/users");
-        const users = await res.json();
-        if (Array.isArray(users) && users.length > 0) {
-          const currentUser = users[0]; // Get first user or based on role
-          setUserName(currentUser.name || initialUserName);
-          setUserEmail(currentUser.email || initialUserEmail);
+        const res = await fetch(`/api/users/${userId}`);
+        const user = await res.json();
+        if (user && user.id) {
+          setUserName(user.name || initialUserName);
+          setUserEmail(user.email || initialUserEmail);
         }
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        console.error("Gagal fetch data user:", error);
       }
     };
     fetchUserData();
-  }, [initialUserName, initialUserEmail]);
+  }, [userId, initialUserName, initialUserEmail]);
 
   const menuItems = [
     {
