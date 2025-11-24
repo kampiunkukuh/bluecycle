@@ -417,56 +417,56 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-24 relative overflow-hidden">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/95 -z-10" />
+      <section className="px-6 py-24 relative overflow-hidden bg-gradient-to-br from-primary to-primary/85">
+        {/* Dark Overlay for better contrast */}
+        <div className="absolute inset-0 bg-black/15 -z-10" />
         
         {/* Decorative Elements */}
-        <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
+        <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl -z-10" />
         
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto relative z-10">
           {/* Header */}
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <Leaf className="h-8 w-8 text-white" />
-              <span className="text-sm font-bold text-white/80 uppercase tracking-widest">Bergabunglah Sekarang</span>
-              <Leaf className="h-8 w-8 text-white" />
+              <Leaf className="h-8 w-8 text-white drop-shadow-md" />
+              <span className="text-sm font-bold text-white uppercase tracking-widest drop-shadow-md">Bergabunglah Sekarang</span>
+              <Leaf className="h-8 w-8 text-white drop-shadow-md" />
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
+            <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight drop-shadow-lg">
               Siap Bergabung dengan BlueCycle?
             </h2>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-white max-w-3xl mx-auto leading-relaxed drop-shadow-md font-medium">
               Mulai hari ini dan jadilah bagian dari revolusi manajemen sampah yang berkelanjutan. Bersama kami, setiap pengambilan sampah berkontribusi pada planet yang lebih sehat.
             </p>
           </div>
 
           {/* Stats Row */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">{stats.pickups.toLocaleString()}+</div>
-              <p className="text-white/80">Pengambilan Berhasil</p>
+            <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-6 text-center text-white hover-elevate shadow-xl">
+              <div className="text-4xl font-black mb-2 drop-shadow-md">{stats.pickups.toLocaleString()}+</div>
+              <p className="text-white font-semibold drop-shadow-sm">Pengambilan Berhasil</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">{stats.drivers}</div>
-              <p className="text-white/80">Pengemudi Aktif</p>
+            <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-6 text-center text-white hover-elevate shadow-xl">
+              <div className="text-4xl font-black mb-2 drop-shadow-md">{stats.drivers}</div>
+              <p className="text-white font-semibold drop-shadow-sm">Pengemudi Aktif</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">{stats.waste}+ Ton</div>
-              <p className="text-white/80">Sampah Terkelola</p>
+            <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-6 text-center text-white hover-elevate shadow-xl">
+              <div className="text-4xl font-black mb-2 drop-shadow-md">{stats.waste}+ Ton</div>
+              <p className="text-white font-semibold drop-shadow-sm">Sampah Terkelola</p>
             </div>
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/register" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 bg-white text-primary hover:bg-white/90 font-semibold text-lg shadow-lg hover-elevate" data-testid="button-start-now">
+              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 bg-white text-primary hover:bg-white/95 font-bold text-lg shadow-xl" data-testid="button-start-now">
                 <Sparkles className="h-5 w-5 mr-2" />
                 Daftar Sekarang
               </Button>
             </Link>
             <Link href="/login" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 border-2 border-white text-white hover:bg-white/10 font-semibold text-lg" data-testid="button-signin">
+              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 border-2 border-white bg-white/10 text-white hover:bg-white/20 font-bold text-lg backdrop-blur-sm" data-testid="button-signin">
                 Sudah Punya Akun?
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
