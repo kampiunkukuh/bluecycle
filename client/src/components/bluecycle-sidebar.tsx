@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Trash2,
@@ -38,8 +39,28 @@ interface BlueCycleSidebarProps {
   onLogout: () => void;
 }
 
-export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: BlueCycleSidebarProps) {
+export function BlueCycleSidebar({ userRole, userName: initialUserName, userEmail: initialUserEmail, onLogout }: BlueCycleSidebarProps) {
   const [location, setLocation] = useLocation();
+  const [userName, setUserName] = useState(initialUserName);
+  const [userEmail, setUserEmail] = useState(initialUserEmail);
+
+  // Sync user data from database
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch("/api/users");
+        const users = await res.json();
+        if (Array.isArray(users) && users.length > 0) {
+          const currentUser = users[0]; // Get first user or based on role
+          setUserName(currentUser.name || initialUserName);
+          setUserEmail(currentUser.email || initialUserEmail);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+    fetchUserData();
+  }, [initialUserName, initialUserEmail]);
 
   const menuItems = [
     {

@@ -10,6 +10,7 @@ import { CheckCircle, XCircle, Clock, DollarSign } from "lucide-react";
 interface Payment {
   id: number;
   userId: number;
+  driverId?: number;
   amount: number;
   status: "pending" | "approved" | "rejected" | "completed";
   bankName: string;
@@ -19,10 +20,18 @@ interface Payment {
   rejectionReason?: string;
   adminNotes?: string;
   userType: "user" | "driver";
+  userName?: string;
+}
+
+interface UserInfo {
+  id: number;
+  name: string;
+  email: string;
 }
 
 export default function AdminPaymentManagement() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [users, setUsers] = useState<UserInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("pending");
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -30,20 +39,42 @@ export default function AdminPaymentManagement() {
   const [actionNotes, setActionNotes] = useState("");
 
   useEffect(() => {
-    const fetchPayments = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const [userPaymentsRes, driverPaymentsRes] = await Promise.all([
-          fetch("/api/user-payments/2"),
-          fetch("/api/driver-payments/3"),
+        const [usersRes, allUserPaymentsRes, allDriverPaymentsRes] = await Promise.all([
+          fetch("/api/users"),
+          fetch("/api/user-payments"),
+          fetch("/api/driver-payments"),
         ]);
         
-        const userPayments = await userPaymentsRes.json();
-        const driverPayments = await driverPaymentsRes.json();
+        const usersData = await usersRes.json();
+        setUsers(Array.isArray(usersData) ? usersData : []);
+
+        // Fetch all payments (not just specific user/driver)
+        let allUserPayments: any[] = [];
+        let allDriverPayments: any[] = [];
         
+        // Get unique user IDs and fetch their payments
+        const userPaymentsData = await allUserPaymentsRes.json();
+        if (Array.isArray(userPaymentsData)) {
+          allUserPayments = userPaymentsData;
+        }
+        
+        const driverPaymentsData = await allDriverPaymentsRes.json();
+        if (Array.isArray(driverPaymentsData)) {
+          allDriverPayments = driverPaymentsData;
+        }
+
         const allPayments: Payment[] = [
-          ...(Array.isArray(userPayments) ? userPayments.map((p: any) => ({ ...p, userType: "user" })) : []),
-          ...(Array.isArray(driverPayments) ? driverPayments.map((p: any) => ({ ...p, userType: "driver" })) : []),
+          ...allUserPayments.map((p: any) => {
+            const user = usersData.find((u: any) => u.id === p.userId);
+            return { ...p, userType: "user", userName: user?.name || "Unknown" };
+          }),
+          ...allDriverPayments.map((p: any) => {
+            const user = usersData.find((u: any) => u.id === p.driverId);
+            return { ...p, userType: "driver", userName: user?.name || "Unknown", userId: p.driverId };
+          }),
         ];
         
         setPayments(allPayments);
@@ -53,7 +84,7 @@ export default function AdminPaymentManagement() {
         setLoading(false);
       }
     };
-    fetchPayments();
+    fetchData();
   }, []);
 
   const handleApprove = async () => {
@@ -218,26 +249,22 @@ export default function AdminPaymentManagement() {
             filteredPayments.map((payment) => (
               <Card key={payment.id} className="hover-elevate" data-testid={`card-payment-${payment.id}`}>
                 <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <DollarSign className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <p className="font-semibold">
-                            Rp {payment.amount.toLocaleString("id-ID")} 
-                            {payment.userType === "driver" ? " (Driver - 80% Earnings)" : " (User - Reward)"}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {payment.bankName} - {payment.bankAccount}
-                          </p>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <DollarSign className="h-5 w-5 text-gray-500" />
+                          <div>
+                            <p className="font-semibold text-lg">
+                              Rp {payment.amount.toLocaleString("id-ID")}
+                            </p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {payment.userName}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Diminta: {new Date(payment.requestedAt).toLocaleDateString("id-ID")}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col items-end gap-2">
                         {getStatusIcon(payment.status)}
                         <Badge className={getStatusColor(payment.status)}>
                           {payment.status === "pending" && "Menunggu"}
@@ -246,20 +273,41 @@ export default function AdminPaymentManagement() {
                           {payment.status === "completed" && "Selesai"}
                         </Badge>
                       </div>
-                      {payment.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedPayment(payment);
-                            setShowDialog(true);
-                          }}
-                          data-testid={`button-manage-payment-${payment.id}`}
-                        >
-                          Tindak Lanjuti
-                        </Button>
-                      )}
                     </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Tipe:</span>
+                        <span className="font-medium">{payment.userType === "driver" ? "Driver (80%)" : "User (Reward)"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Bank:</span>
+                        <span className="font-medium">{payment.bankName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Rekening:</span>
+                        <span className="font-mono text-xs">{payment.bankAccount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Diminta:</span>
+                        <span className="text-xs">{new Date(payment.requestedAt).toLocaleDateString("id-ID")}</span>
+                      </div>
+                    </div>
+
+                    {payment.status === "pending" && (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedPayment(payment);
+                          setShowDialog(true);
+                        }}
+                        data-testid={`button-manage-payment-${payment.id}`}
+                      >
+                        Tindak Lanjuti
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
