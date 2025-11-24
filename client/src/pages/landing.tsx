@@ -391,15 +391,15 @@ export default function Landing() {
           {/* Stats Row */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">15,847+</div>
+              <div className="text-3xl font-bold mb-2">{stats.pickups.toLocaleString()}+</div>
               <p className="text-white/80">Pengambilan Berhasil</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">324</div>
+              <div className="text-3xl font-bold mb-2">{stats.drivers}</div>
               <p className="text-white/80">Pengemudi Aktif</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
-              <div className="text-3xl font-bold mb-2">450+ Ton</div>
+              <div className="text-3xl font-bold mb-2">{stats.waste}+ Ton</div>
               <p className="text-white/80">Sampah Terkelola</p>
             </div>
           </div>
