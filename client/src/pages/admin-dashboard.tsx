@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Truck, Users, Package, Leaf, Plus, Route as RouteIcon, Zap } from "lucide-react";
+import { TrendingUp, Truck, Users, Package, Leaf, Plus, Route as RouteIcon, Zap, Download, DollarSign } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface PickupOrder {
@@ -52,6 +52,61 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  // Export functions
+  const exportToCSV = () => {
+    const headers = ["ID", "Status", "Jenis Sampah", "Harga (Rp)", "Driver (80%)", "Admin (20%)", "Tanggal"];
+    const data = pickups.map((p) => [
+      p.id,
+      p.status,
+      p.wasteType,
+      p.price,
+      Math.round(p.price * 0.8),
+      Math.round(p.price * 0.2),
+      new Date(p.createdAt).toLocaleDateString("id-ID"),
+    ]);
+    
+    const csv = [headers, ...data].map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bluecycle-report-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+  };
+
+  const exportToPDF = () => {
+    const totalRevenue = pickups.filter(p => p.status === "completed").reduce((sum, p) => sum + p.price, 0);
+    const adminCommission = Math.round(totalRevenue * 0.2);
+    
+    const pdfContent = `
+LAPORAN PENDAPATAN BLUECYCLE
+============================
+Tanggal: ${new Date().toLocaleDateString("id-ID")}
+
+RINGKASAN KEUANGAN:
+- Total Revenue: Rp ${totalRevenue.toLocaleString("id-ID")}
+- Admin Commission (20%): Rp ${adminCommission.toLocaleString("id-ID")}
+- Driver Earnings (80%): Rp ${Math.round(totalRevenue * 0.8).toLocaleString("id-ID")}
+- Total Transaksi Selesai: ${pickups.filter(p => p.status === "completed").length}
+
+DETAIL TRANSAKSI:
+${pickups.map(p => `
+ID: ${p.id}
+Jenis: ${p.wasteType}
+Harga: Rp ${p.price.toLocaleString("id-ID")}
+Status: ${p.status}
+Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
+---`).join("\n")}
+    `;
+    
+    const blob = new Blob([pdfContent], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bluecycle-report-${new Date().toISOString().split("T")[0]}.txt`;
+    a.click();
+  };
+
   // Calculate statistics
   const totalPickups = pickups.length;
   const pendingPickups = pickups.filter((p) => p.status === "pending").length;
@@ -59,8 +114,13 @@ export default function AdminDashboard() {
   const totalUsers = users.length;
   const totalWaste = pickups.reduce((sum, p) => sum + (parseInt(p.quantity?.split(" ")[0] || "0") || 0), 0);
   
-  // Pickup percentage
+  // Revenue & Admin Balance
   const completedPickups = pickups.filter((p) => p.status === "completed").length;
+  const totalRevenue = pickups.filter((p) => p.status === "completed").reduce((sum, p) => sum + p.price, 0);
+  const adminBalance = Math.round(totalRevenue * 0.2); // 20% admin commission
+  const driverBalance = Math.round(totalRevenue * 0.8); // 80% driver earnings
+  
+  // Pickup percentage
   const completionPercentage = totalPickups > 0 ? Math.round((completedPickups / totalPickups) * 100) : 0;
 
   // Today's scheduled pickups
@@ -84,7 +144,20 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Saldo Bank Admin
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">Rp {(adminBalance / 1000000).toFixed(2)}M</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Komisi 20%</p>
+          </CardContent>
+        </Card>
+
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -147,6 +220,46 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="text-3xl font-bold text-emerald-600">{totalWaste / 1000}K</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">kg bulan ini</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue & Export Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">Rp {(totalRevenue / 1000000).toFixed(2)}M</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              <p>Driver (80%): Rp {(driverBalance / 1000000).toFixed(2)}M</p>
+              <p>Admin (20%): Rp {(adminBalance / 1000000).toFixed(2)}M</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Transaksi Selesai</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">{completedPickups}</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Dari {totalPickups} total permintaan</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Export Laporan</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button className="w-full" onClick={exportToCSV} size="sm" variant="outline">
+              <Download className="h-4 w-4 mr-2" /> CSV
+            </Button>
+            <Button className="w-full" onClick={exportToPDF} size="sm" variant="outline">
+              <Download className="h-4 w-4 mr-2" /> Report
+            </Button>
           </CardContent>
         </Card>
       </div>
