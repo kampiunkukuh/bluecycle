@@ -50,7 +50,7 @@ function Router() {
     email: string;
   } | null>(null);
 
-  // Fetch current user from API on mount, default to user if not found
+  // Fetch current user from API on mount
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -58,14 +58,9 @@ function Router() {
         if (res.ok) {
           const user = await res.json();
           setCurrentUser(user);
-        } else {
-          // Default to user role if API fails
-          setCurrentUser({ id: 2, name: "Budi Santoso", email: "budi@example.com", role: "user" });
         }
       } catch (error) {
         console.error("Failed to fetch current user:", error);
-        // Default to user role on error
-        setCurrentUser({ id: 2, name: "Budi Santoso", email: "budi@example.com", role: "user" });
       }
     };
     if (!currentUser) {
