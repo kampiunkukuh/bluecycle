@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { WasteCatalogItem } from "@shared/schema";
 
-interface WasteCatalogProps {
-  userRole?: string;
+interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "driver";
 }
 
-export default function WasteCatalog({ userRole }: WasteCatalogProps = {}) {
+interface WasteCatalogProps {
+  userRole?: string;
+  currentUser?: CurrentUser | null;
+}
+
+export default function WasteCatalog({ userRole, currentUser }: WasteCatalogProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { data: catalog = [], isLoading } = useQuery<WasteCatalogItem[]>({

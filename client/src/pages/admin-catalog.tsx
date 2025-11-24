@@ -10,7 +10,18 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { WasteCatalogItem, InsertWasteCatalogItem } from "@shared/schema";
 
-export default function AdminCatalog() {
+interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "driver";
+}
+
+interface AdminCatalogProps {
+  currentUser?: CurrentUser | null;
+}
+
+export default function AdminCatalog({ currentUser }: AdminCatalogProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);

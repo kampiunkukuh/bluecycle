@@ -35,7 +35,18 @@ interface CollectionPoint {
   imageUrl?: string;
 }
 
-export default function Landing() {
+interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "driver";
+}
+
+interface LandingProps {
+  currentUser?: CurrentUser | null;
+}
+
+export default function Landing({ currentUser }: LandingProps) {
   const [selectedWasteFilter, setSelectedWasteFilter] = useState<string | null>(null);
 
   // Fetch real-time stats
