@@ -4,7 +4,9 @@ import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircl
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
-import partnershipImage from "@assets/stock_images/business_partnership_3592ba89.jpg";
+import partnershipImage from "@assets/stock_images/professional_busines_501d84a4.jpg";
+import pickupImage from "@assets/stock_images/truck_collecting_was_763e7111.jpg";
+import dropoffImage from "@assets/stock_images/recycling_collection_e7cb9713.jpg";
 
 interface Stats {
   pickups: number;
@@ -62,12 +64,14 @@ export default function Landing() {
       title: "Pengambilan Sampah (Pickup)", 
       desc: "Driver kami akan datang ke lokasi Anda untuk mengambil sampah secara langsung dengan jadwal yang fleksibel dan terjadwal.",
       icon: MapPin,
+      image: pickupImage,
       features: ["GPS Real-Time Tracking", "Verifikasi QR dengan Foto", "Pembayaran Langsung", "Komisi 80% untuk Driver"]
     },
     { 
       title: "Titik Drop-off", 
       desc: "Kunjungi titik pengumpulan sampah terdekat untuk mengirimkan sampah Anda dengan mudah kapan saja.",
       icon: MapPin,
+      image: dropoffImage,
       features: ["Lokasi Tersebar di Batam", "Operasional 24/7", "Pembayaran Digital", "Sistem Terintegrasi"]
     },
   ];
@@ -265,19 +269,32 @@ export default function Landing() {
         </div>
         <div className="grid md:grid-cols-2 gap-8">
           {services.map((service, idx) => (
-            <div key={idx} className="p-8 bg-white dark:bg-slate-950 rounded-3xl border-2 border-primary/30 hover-elevate group">
-              <div className="p-4 bg-primary/10 rounded-2xl w-fit mb-6">
-                <service.icon className="h-8 w-8 text-primary" />
+            <div key={idx} className="overflow-hidden bg-white dark:bg-slate-950 rounded-3xl border-2 border-primary/30 hover-elevate group transition-all duration-300">
+              {/* Image Section */}
+              <div className="relative h-64 overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+                <img 
+                  src={service.image} 
+                  alt={service.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-              <h3 className="text-3xl font-bold mb-4">{service.title}</h3>
-              <p className="text-lg text-muted-foreground mb-8">{service.desc}</p>
-              <div className="space-y-3">
-                {service.features.map((feat, i) => (
-                  <div key={i} className="flex gap-3 items-center">
-                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-medium">{feat}</span>
-                  </div>
-                ))}
+              
+              {/* Content Section */}
+              <div className="p-8">
+                <div className="p-3 bg-primary/10 rounded-xl w-fit mb-4">
+                  <service.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
+                <p className="text-muted-foreground mb-6">{service.desc}</p>
+                <div className="space-y-2">
+                  {service.features.map((feat, i) => (
+                    <div key={i} className="flex gap-3 items-center">
+                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium">{feat}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
