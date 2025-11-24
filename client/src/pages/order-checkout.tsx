@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Truck, MapPin, ArrowLeft, Zap, Loader, Clock, Phone, Navigation } from "lucide-react";
 
 interface OrderItem {
-  id: string;
-  name: string;
+  id: number;
+  wasteType: string;
   price: number;
-  image?: string;
+  description?: string;
+  imageUrl?: string;
 }
 
 interface CollectionPoint {
@@ -28,16 +30,15 @@ interface CollectionPoint {
   phone?: string;
 }
 
-const mockItems: Record<string, OrderItem> = {
-  "1": { id: "1", name: "Plastik", price: 50000, image: "attached_assets/stock_images/plastic_waste_garbag_74fd1d20.jpg" },
-  "2": { id: "2", name: "Kertas", price: 45000, image: "attached_assets/stock_images/plastic_waste_garbag_727aee39.jpg" },
-  "3": { id: "3", name: "Logam", price: 80000, image: "attached_assets/stock_images/plastic_waste_garbag_6029a7f5.jpg" },
-  "4": { id: "4", name: "Organik", price: 30000, image: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg" },
-};
-
 export default function OrderCheckout({ itemId, userId }: { itemId: string; userId?: number }) {
   const [, setLocation] = useLocation();
-  const item = mockItems[itemId];
+  
+  // Fetch catalog from API (single source of truth)
+  const { data: catalog = [] } = useQuery<OrderItem[]>({
+    queryKey: ["/api/waste-catalog"],
+  });
+
+  const item = catalog.find(c => c.id === parseInt(itemId));
   const [orderType, setOrderType] = useState("pickup");
   const [formData, setFormData] = useState({ address: "", quantity: "", notes: "" });
   const [showConfirm, setShowConfirm] = useState(false);

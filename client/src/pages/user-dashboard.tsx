@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,17 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, AlertCircle, Send, Calendar, Zap, Package, BarChart3, Leaf, MapPin, Clock, Phone } from "lucide-react";
 import { useLocation } from "wouter";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import plasticImg from "@assets/generated_images/plastic_waste_product_photo.png";
-import paperImg from "@assets/generated_images/paper_waste_product_photo.png";
-import metalImg from "@assets/generated_images/metal_waste_product_photo.png";
-import organicImg from "@assets/generated_images/organic_waste_product_photo.png";
 
 interface CatalogItem {
-  id: string;
-  name: string;
+  id: number;
+  wasteType: string;
   price: number;
-  description: string;
-  image?: string;
+  description?: string;
+  imageUrl?: string;
 }
 
 interface PickupOrder {
@@ -47,21 +44,18 @@ interface UserDashboardProps {
   userName?: string;
 }
 
-const mockCatalog: CatalogItem[] = [
-  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: plasticImg },
-  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: paperImg },
-  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: metalImg },
-  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: organicImg },
-];
-
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"];
 
 export default function UserDashboard({ userId, userName }: UserDashboardProps) {
   const [, setLocation] = useLocation();
-  const [catalog] = useState<CatalogItem[]>(mockCatalog);
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch catalog from API (single source of truth)
+  const { data: catalog = [] } = useQuery<CatalogItem[]>({
+    queryKey: ["/api/waste-catalog"],
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,13 +101,13 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
 
   // Waste type breakdown
   const wasteTypeBreakdown = catalog.map((type) => ({
-    name: type.name,
-    orders: pickups.filter((p) => p.wasteType === type.name && p.status === "completed").length,
+    name: type.wasteType,
+    orders: pickups.filter((p) => p.wasteType === type.wasteType && p.status === "completed").length,
     kg: pickups
-      .filter((p) => p.wasteType === type.name && p.status === "completed")
+      .filter((p) => p.wasteType === type.wasteType && p.status === "completed")
       .reduce((sum, p) => sum + (parseInt(p.quantity || "0") || 0), 0),
     earnings: pickups
-      .filter((p) => p.wasteType === type.name && p.status === "completed")
+      .filter((p) => p.wasteType === type.wasteType && p.status === "completed")
       .reduce((sum, p) => sum + p.price, 0),
   }));
 
