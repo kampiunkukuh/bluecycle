@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Play } from "lucide-react";
-import { FaApple } from "react-icons/fa";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
@@ -309,29 +308,10 @@ export default function Landing() {
             <Download className="h-8 w-8" />
             Unduh BlueCycle
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <div className="p-8 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-2xl border-2 border-green-400 dark:border-green-600 text-center hover-elevate shadow-lg">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 rounded-full mb-6 border border-green-300 dark:border-green-700">
-                <Play className="h-5 w-5 text-green-600 fill-green-600" />
-                <span className="font-bold text-green-600 text-sm">Google Play</span>
-              </div>
-              <h3 className="text-2xl font-black mb-2 text-green-700 dark:text-green-300">Google Play Store</h3>
-              <p className="text-muted-foreground mb-6">Download BlueCycle untuk Android</p>
-              <Button className="w-full rounded-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700" data-testid="button-download-android">
-                <Play className="h-4 w-4 mr-2 fill-current" />
-                Download APK
-              </Button>
-            </div>
-            <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-gray-700 to-black flex items-center justify-center mx-auto mb-4">
-                <FaApple className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Apple App Store</h3>
-              <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk iOS</p>
-              <Button variant="outline" className="w-full rounded-full" data-testid="button-download-ios">
-                Download iOS
-              </Button>
-            </div>
+          <div className="flex flex-col gap-4 max-w-sm mx-auto">
+            <a href="#" className="inline-block hover-elevate transition-transform" data-testid="button-download-ios">
+              <img src="/assets/app-store-badges.png" alt="Download on the App Store" className="w-full h-auto" />
+            </a>
           </div>
         </div>
       </section>
