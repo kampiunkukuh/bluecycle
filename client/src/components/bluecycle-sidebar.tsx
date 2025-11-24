@@ -82,6 +82,12 @@ export function BlueCycleSidebar({ userRole, userName: initialUserName, userEmai
       roles: ["user"],
     },
     {
+      title: "Manajemen Katalog",
+      url: "/admin/catalog",
+      icon: Recycle,
+      roles: ["admin"],
+    },
+    {
       title: "Pendapatan & Pembayaran",
       url: "/earnings",
       icon: TrendingUp,
