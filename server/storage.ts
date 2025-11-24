@@ -50,11 +50,13 @@ export interface IStorage {
   // User Payments
   createUserPayment(payment: InsertUserPayment): Promise<UserPayment>;
   listUserPayments(userId: number): Promise<UserPayment[]>;
+  listAllUserPayments(): Promise<UserPayment[]>;
   updateUserPayment(id: number, payment: Partial<InsertUserPayment>): Promise<UserPayment | undefined>;
 
   // Driver Payments
   createDriverPayment(payment: InsertDriverPayment): Promise<DriverPayment>;
   listDriverPayments(driverId: number): Promise<DriverPayment[]>;
+  listAllDriverPayments(): Promise<DriverPayment[]>;
   updateDriverPayment(id: number, payment: Partial<InsertDriverPayment>): Promise<DriverPayment | undefined>;
 
   // Collection Points
@@ -309,6 +311,10 @@ export class DrizzleStorage implements IStorage {
       .where(eq(schema.userPayments.userId, userId));
   }
 
+  async listAllUserPayments() {
+    return await this.db.select().from(schema.userPayments);
+  }
+
   async updateUserPayment(id: number, payment: Partial<InsertUserPayment>) {
     const result = await this.db
       .update(schema.userPayments)
@@ -329,6 +335,10 @@ export class DrizzleStorage implements IStorage {
       .select()
       .from(schema.driverPayments)
       .where(eq(schema.driverPayments.driverId, driverId));
+  }
+
+  async listAllDriverPayments() {
+    return await this.db.select().from(schema.driverPayments);
   }
 
   async updateDriverPayment(id: number, payment: Partial<InsertDriverPayment>) {

@@ -232,6 +232,15 @@ api.patch("/api/withdrawals/:id", async (req, res) => {
 });
 
 // User Payments endpoints
+api.get("/api/user-payments", async (req, res) => {
+  try {
+    const payments = await storage.listAllUserPayments();
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user payments" });
+  }
+});
+
 api.get("/api/user-payments/:userId", async (req, res) => {
   const payments = await storage.listUserPayments(parseInt(req.params.userId));
   res.json(payments);
@@ -262,6 +271,15 @@ api.patch("/api/user-payments/:id", async (req, res) => {
 });
 
 // Driver Payments endpoints
+api.get("/api/driver-payments", async (req, res) => {
+  try {
+    const payments = await storage.listAllDriverPayments();
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch driver payments" });
+  }
+});
+
 api.get("/api/driver-payments/:driverId", async (req, res) => {
   const payments = await storage.listDriverPayments(parseInt(req.params.driverId));
   res.json(payments);
