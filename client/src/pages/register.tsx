@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Recycle } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface RegisterProps {
   onRegister?: (role: "admin" | "user" | "driver") => void;
@@ -13,6 +15,8 @@ interface RegisterProps {
 
 export default function Register({ onRegister }: RegisterProps) {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -39,16 +43,40 @@ export default function Register({ onRegister }: RegisterProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Register attempt:", formData);
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    try {
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        role: formData.role,
+      };
+      
+      await apiRequest("POST", "/api/users", userData);
+      
+      toast({
+        title: "Berhasil!",
+        description: "Akun Anda telah dibuat. Silakan login.",
+      });
+      
       if (onRegister) {
         onRegister(formData.role);
       } else {
-        // Default: login after register
         setLocation("/login");
       }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal membuat akun. Email mungkin sudah terdaftar.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,8 +202,8 @@ export default function Register({ onRegister }: RegisterProps) {
                 {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
               </div>
 
-              <Button type="submit" className="w-full h-12 text-base font-semibold" data-testid="button-register-submit">
-                Daftar
+              <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={isLoading} data-testid="button-register-submit">
+                {isLoading ? "Memproses..." : "Daftar"}
               </Button>
             </form>
           </CardContent>
