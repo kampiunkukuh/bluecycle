@@ -77,6 +77,9 @@ function Router() {
     location === "/" || 
     location === "/landing" || 
     location === "/login" || 
+    location === "/login-user" || 
+    location === "/login-driver" || 
+    location === "/login-admin" || 
     location === "/register" || 
     location === "/forgot-password"
   );
