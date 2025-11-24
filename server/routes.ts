@@ -372,6 +372,36 @@ api.patch("/api/waste-disposals/:id", async (req, res) => {
   }
 });
 
+// TPA Waste Stock endpoints
+api.get("/api/tpa-waste", async (req, res) => {
+  try {
+    const data = [
+      { id: 1, tpaName: "TPA Batam Utara", address: "Jl. Batang Hari, Batam", wasteType: "Plastik", totalKg: 5000, capacity: 10000 },
+      { id: 2, tpaName: "TPA Batam Utara", address: "Jl. Batang Hari, Batam", wasteType: "Kertas", totalKg: 3000, capacity: 8000 },
+      { id: 3, tpaName: "TPA Batam Utara", address: "Jl. Batang Hari, Batam", wasteType: "Logam", totalKg: 2000, capacity: 5000 },
+      { id: 4, tpaName: "TPA Batam Utara", address: "Jl. Batang Hari, Batam", wasteType: "Organik", totalKg: 4000, capacity: 12000 },
+      { id: 5, tpaName: "TPA Batam Timur", address: "Jl. Gajah Mada, Batam", wasteType: "Plastik", totalKg: 6000, capacity: 10000 },
+      { id: 6, tpaName: "TPA Batam Timur", address: "Jl. Gajah Mada, Batam", wasteType: "Daur Ulang", totalKg: 7000, capacity: 15000 },
+    ];
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch TPA data" });
+  }
+});
+
+// Vendors/Suppliers endpoints
+api.get("/api/vendors", async (req, res) => {
+  try {
+    const data = [
+      { id: 1, name: "Pengepul Plastik Batam", address: "Jl. Sudirman No. 123, Batam", phone: "08xx-xxxx-xxxx", wasteTypes: ["Plastik"], totalCapacity: 5000, currentStock: 2500 },
+      { id: 2, name: "Koperasi Daur Ulang", address: "Jl. Gatot Subroto No. 456, Batam", phone: "08xx-xxxx-xxxx", wasteTypes: ["Kertas", "Logam"], totalCapacity: 8000, currentStock: 5000 },
+    ];
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch vendors" });
+  }
+});
+
 // Health check
 api.get("/api/health", (req, res) => {
   res.json({ status: "ok" });

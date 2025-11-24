@@ -25,6 +25,18 @@ interface WasteDisposal {
   createdAt: Date;
 }
 
+interface PickupWithUser {
+  id: number;
+  address: string;
+  wasteType: string;
+  quantity: string;
+  status: string;
+  requestedById: number;
+  assignedDriverId?: number;
+  requestedByName?: string;
+  driverName?: string;
+}
+
 interface CollectionPoint {
   id: number;
   name: string;
@@ -33,6 +45,8 @@ interface CollectionPoint {
 export default function WasteDisposal() {
   const [disposals, setDisposals] = useState<WasteDisposal[]>([]);
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([]);
+  const [pickups, setPickups] = useState<PickupWithUser[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -50,14 +64,20 @@ export default function WasteDisposal() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [disposalsRes, pointsRes] = await Promise.all([
+        const [disposalsRes, pointsRes, pickupsRes, usersRes] = await Promise.all([
           fetch("/api/waste-disposals"),
           fetch("/api/collection-points"),
+          fetch("/api/pickups"),
+          fetch("/api/users"),
         ]);
         const disposalsData = await disposalsRes.json();
         setDisposals(Array.isArray(disposalsData) ? disposalsData : []);
         const pointsData = await pointsRes.json();
         setCollectionPoints(Array.isArray(pointsData) ? pointsData : []);
+        const pickupsData = await pickupsRes.json();
+        setPickups(Array.isArray(pickupsData) ? pickupsData : []);
+        const usersData = await usersRes.json();
+        setUsers(Array.isArray(usersData) ? usersData : []);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
