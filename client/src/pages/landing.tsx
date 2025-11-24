@@ -157,23 +157,8 @@ export default function Landing() {
         <div className="relative">
           <div className="grid md:grid-cols-3 gap-6">
             {collectionPoints.map((point: CollectionPoint, idx: number) => (
-              <div key={idx} className="overflow-hidden bg-white dark:bg-slate-950 rounded-2xl border hover-elevate transition-all duration-300">
-                {/* Image Section */}
-                <div className="relative h-48 overflow-hidden bg-gradient-to-br from-muted to-muted/50">
-                  <img 
-                    src={point.imageUrl || `https://images.unsplash.com/photo-1559931265-cd4628902ee4?w=500&h=400&fit=crop`} 
-                    alt={point.name}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://images.unsplash.com/photo-1559931265-cd4628902ee4?w=500&h=400&fit=crop`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                </div>
-                
+              <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate transition-all duration-300">
                 {/* Content Section */}
-                <div className="p-6">
                   <div className="flex items-start gap-3 mb-4">
                     <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
@@ -201,7 +186,6 @@ export default function Landing() {
                       <span className="text-green-600 text-xs font-semibold">Buka Sekarang</span>
                     </div>
                   </div>
-                </div>
               </div>
             ))}
           </div>
