@@ -8,35 +8,35 @@ import { Badge } from "@/components/ui/badge";
 
 const mockStats = [
   {
-    title: "Pending Pickups",
+    title: "Pickup Tertunda",
     value: 42,
     icon: Trash2,
     trend: { value: 8, direction: "up" as const },
-    description: "Awaiting collection",
+    description: "Menunggu pengambilan",
     color: "primary" as const,
   },
   {
-    title: "Active Drivers",
+    title: "Supir Aktif",
     value: 12,
     icon: Truck,
     trend: { value: 2, direction: "up" as const },
-    description: "On route now",
+    description: "Sedang di rute",
     color: "orange" as const,
   },
   {
-    title: "Total Users",
+    title: "Total Pengguna",
     value: "1.2K",
     icon: Users,
     trend: { value: 15, direction: "up" as const },
-    description: "Registered accounts",
+    description: "Akun terdaftar",
     color: "blue" as const,
   },
   {
-    title: "Waste Collected",
+    title: "Sampah Terkumpul",
     value: "3.2T",
     icon: TrendingUp,
     trend: { value: 12, direction: "up" as const },
-    description: "This month",
+    description: "Bulan ini",
     color: "purple" as const,
   },
 ];
@@ -79,23 +79,23 @@ const mockActivities = [
 const upcomingPickups = [
   {
     id: "1",
-    address: "123 Main Street",
-    time: "10:00 AM",
-    type: "Organic",
+    address: "Jl. Sudirman No. 123",
+    time: "10:00",
+    type: "Organik",
     status: "scheduled",
   },
   {
     id: "2",
-    address: "456 Oak Avenue",
-    time: "11:30 AM",
-    type: "Recyclable",
+    address: "Jl. Gatot Subroto No. 456",
+    time: "11:30",
+    type: "Daur Ulang",
     status: "in-progress",
   },
   {
     id: "3",
-    address: "789 Pine Road",
-    time: "2:00 PM",
-    type: "General",
+    address: "Jl. Thamrin No. 789",
+    time: "14:00",
+    type: "Umum",
     status: "scheduled",
   },
 ];
@@ -107,9 +107,9 @@ export default function BlueCycleDashboard() {
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-1">Good morning! 👋</h1>
+          <h1 className="text-3xl font-bold mb-1">Selamat datang! 👋</h1>
           <p className="text-muted-foreground text-base">
-            Here's what's happening with BlueCycle today
+            Ini yang terjadi di BlueCycle hari ini
           </p>
         </div>
         <Button 
@@ -119,7 +119,7 @@ export default function BlueCycleDashboard() {
           data-testid="button-request-pickup"
         >
           <Trash2 className="mr-2 h-5 w-5" />
-          Request Pickup
+          Minta Pickup
         </Button>
       </div>
 
@@ -135,11 +135,11 @@ export default function BlueCycleDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl">Today's Schedule</CardTitle>
-                  <CardDescription className="mt-1">Upcoming waste collections</CardDescription>
+                  <CardTitle className="text-xl">Jadwal Hari Ini</CardTitle>
+                  <CardDescription className="mt-1">Pengambilan sampah yang akan datang</CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setLocation("/pickups")}>
-                  View all
+                  Lihat semua
                 </Button>
               </div>
             </CardHeader>
@@ -168,7 +168,7 @@ export default function BlueCycleDashboard() {
                     variant={pickup.status === "in-progress" ? "default" : "secondary"}
                     className="flex-shrink-0"
                   >
-                    {pickup.status === "in-progress" ? "In Progress" : "Scheduled"}
+                    {pickup.status === "in-progress" ? "Sedang Proses" : "Terjadwal"}
                   </Badge>
                 </div>
               ))}
@@ -177,8 +177,8 @@ export default function BlueCycleDashboard() {
 
           <Card className="shadow-md" data-testid="card-quick-actions">
             <CardHeader>
-              <CardTitle className="text-xl">Quick Actions</CardTitle>
-              <CardDescription className="mt-1">Common tasks and operations</CardDescription>
+              <CardTitle className="text-xl">Aksi Cepat</CardTitle>
+              <CardDescription className="mt-1">Tugas dan operasi umum</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
@@ -189,7 +189,7 @@ export default function BlueCycleDashboard() {
                   data-testid="button-new-pickup"
                 >
                   <Trash2 className="h-6 w-6 text-primary" />
-                  <span className="text-sm font-medium">New Pickup</span>
+                  <span className="text-sm font-medium">Pickup Baru</span>
                 </Button>
                 <Button 
                   variant="outline" 
@@ -198,7 +198,7 @@ export default function BlueCycleDashboard() {
                   data-testid="button-view-routes"
                 >
                   <MapPin className="h-6 w-6 text-orange-600" />
-                  <span className="text-sm font-medium">Routes</span>
+                  <span className="text-sm font-medium">Rute</span>
                 </Button>
                 <Button 
                   variant="outline" 
@@ -207,7 +207,7 @@ export default function BlueCycleDashboard() {
                   data-testid="button-fleet-status"
                 >
                   <Truck className="h-6 w-6 text-blue-600" />
-                  <span className="text-sm font-medium">Fleet</span>
+                  <span className="text-sm font-medium">Armada</span>
                 </Button>
               </div>
             </CardContent>

@@ -37,37 +37,37 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
 
   const menuItems = [
     {
-      title: "Dashboard",
+      title: "Beranda",
       url: "/dashboard",
       icon: LayoutDashboard,
       roles: ["admin", "user", "driver"],
     },
     {
-      title: "Pickup Requests",
+      title: "Permintaan Pickup",
       url: "/pickups",
       icon: Trash2,
       roles: ["admin", "user"],
     },
     {
-      title: "My Routes",
+      title: "Rute Saya",
       url: "/routes",
       icon: MapPin,
       roles: ["driver"],
     },
     {
-      title: "Fleet Management",
+      title: "Manajemen Armada",
       url: "/fleet",
       icon: Truck,
       roles: ["admin"],
     },
     {
-      title: "Users",
+      title: "Pengguna",
       url: "/users",
       icon: Users,
       roles: ["admin"],
     },
     {
-      title: "Settings",
+      title: "Pengaturan",
       url: "/settings",
       icon: Settings,
       roles: ["admin", "user", "driver"],
@@ -94,13 +94,13 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
           </div>
           <div>
             <h2 className="font-semibold text-lg">BlueCycle</h2>
-            <p className="text-xs text-muted-foreground">Waste Management</p>
+            <p className="text-xs text-muted-foreground">Manajemen Sampah</p>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Navigasi</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleItems.map((item) => (

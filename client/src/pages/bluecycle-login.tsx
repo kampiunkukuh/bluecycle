@@ -28,26 +28,26 @@ export default function BlueCycleLogin() {
             <Recycle className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">BlueCycle</h1>
-          <p className="text-white/90 text-lg">Smart Waste Management</p>
+          <p className="text-white/90 text-lg">Manajemen Sampah Pintar</p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold">Selamat datang</CardTitle>
             <CardDescription className="text-base">
-              Sign in to manage your waste collection
+              Masuk untuk mengelola pengumpulan sampah
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="demo" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="demo">Quick Demo</TabsTrigger>
-                <TabsTrigger value="email">Email Login</TabsTrigger>
+                <TabsTrigger value="demo">Demo Cepat</TabsTrigger>
+                <TabsTrigger value="email">Login Email</TabsTrigger>
               </TabsList>
               
               <TabsContent value="demo" className="space-y-3 mt-0">
                 <p className="text-sm text-muted-foreground text-center mb-4">
-                  Choose your role to explore BlueCycle
+                  Pilih role untuk mencoba BlueCycle
                 </p>
                 <Button
                   variant="outline"
@@ -64,7 +64,7 @@ export default function BlueCycleLogin() {
                     </div>
                     <div className="flex flex-col items-start flex-1">
                       <span className="font-semibold text-base">Admin</span>
-                      <span className="text-sm text-muted-foreground">Manage users & analytics</span>
+                      <span className="text-sm text-muted-foreground">Kelola pengguna & analitik</span>
                     </div>
                   </div>
                 </Button>
@@ -82,8 +82,8 @@ export default function BlueCycleLogin() {
                       <User className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="flex flex-col items-start flex-1">
-                      <span className="font-semibold text-base">User</span>
-                      <span className="text-sm text-muted-foreground">Request & track pickups</span>
+                      <span className="font-semibold text-base">Pengguna</span>
+                      <span className="text-sm text-muted-foreground">Minta & lacak pengambilan</span>
                     </div>
                   </div>
                 </Button>
@@ -101,8 +101,8 @@ export default function BlueCycleLogin() {
                       <Truck className="h-6 w-6 text-orange-600" />
                     </div>
                     <div className="flex flex-col items-start flex-1">
-                      <span className="font-semibold text-base">Driver</span>
-                      <span className="text-sm text-muted-foreground">Complete routes & pickups</span>
+                      <span className="font-semibold text-base">Supir</span>
+                      <span className="text-sm text-muted-foreground">Selesaikan rute & pengambilan</span>
                     </div>
                   </div>
                 </Button>
@@ -111,11 +111,11 @@ export default function BlueCycleLogin() {
               <TabsContent value="email" className="space-y-4 mt-0">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-base">Email address</Label>
+                    <Label htmlFor="email" className="text-base">Alamat email</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="anda@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -124,7 +124,7 @@ export default function BlueCycleLogin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-base">Password</Label>
+                    <Label htmlFor="password" className="text-base">Kata sandi</Label>
                     <Input
                       id="password"
                       type="password"
@@ -137,12 +137,12 @@ export default function BlueCycleLogin() {
                     />
                   </div>
                   <Button type="submit" className="w-full h-12 text-base font-semibold" data-testid="button-login">
-                    Sign In
+                    Masuk
                   </Button>
                 </form>
                 <div className="text-center">
                   <a href="#" className="text-sm text-primary hover:underline">
-                    Forgot password?
+                    Lupa kata sandi?
                   </a>
                 </div>
               </TabsContent>
@@ -151,9 +151,9 @@ export default function BlueCycleLogin() {
         </Card>
 
         <p className="text-center text-white/80 text-sm mt-6">
-          New to BlueCycle?{" "}
+          Baru di BlueCycle?{" "}
           <a href="#" className="font-semibold text-white hover:underline">
-            Create an account
+            Buat akun
           </a>
         </p>
       </div>
