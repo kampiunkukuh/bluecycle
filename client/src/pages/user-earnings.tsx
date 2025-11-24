@@ -43,14 +43,23 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
-  // Load bank accounts from localStorage
+  // Load bank accounts and withdrawals from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(`user_bank_accounts_${userId}`);
-    if (saved) {
+    const savedAccounts = localStorage.getItem(`user_bank_accounts_${userId}`);
+    if (savedAccounts) {
       try {
-        setBankAccounts(JSON.parse(saved));
+        setBankAccounts(JSON.parse(savedAccounts));
       } catch (e) {
         console.error("Failed to load bank accounts:", e);
+      }
+    }
+    
+    const savedWithdrawals = localStorage.getItem(`user_withdrawals_${userId}`);
+    if (savedWithdrawals) {
+      try {
+        setWithdrawals(JSON.parse(savedWithdrawals));
+      } catch (e) {
+        console.error("Failed to load withdrawals:", e);
       }
     }
   }, [userId]);
@@ -110,7 +119,9 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
       bankName: withdrawalData.bankName,
       bankAccount: withdrawalData.bankAccount,
     };
-    setWithdrawals([newWithdrawal, ...withdrawals]);
+    const updatedWithdrawals = [newWithdrawal, ...withdrawals];
+    setWithdrawals(updatedWithdrawals);
+    localStorage.setItem(`user_withdrawals_${userId}`, JSON.stringify(updatedWithdrawals));
     setWithdrawalData({ amount: "", bankName: "", bankAccount: "" });
     setShowWithdrawDialog(false);
   };

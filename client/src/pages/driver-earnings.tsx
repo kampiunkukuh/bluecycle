@@ -43,14 +43,23 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
-  // Load bank accounts from localStorage
+  // Load bank accounts and withdrawals from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(`driver_bank_accounts_${driverId}`);
-    if (saved) {
+    const savedAccounts = localStorage.getItem(`driver_bank_accounts_${driverId}`);
+    if (savedAccounts) {
       try {
-        setBankAccounts(JSON.parse(saved));
+        setBankAccounts(JSON.parse(savedAccounts));
       } catch (e) {
         console.error("Failed to load bank accounts:", e);
+      }
+    }
+    
+    const savedWithdrawals = localStorage.getItem(`driver_withdrawals_${driverId}`);
+    if (savedWithdrawals) {
+      try {
+        setWithdrawals(JSON.parse(savedWithdrawals));
+      } catch (e) {
+        console.error("Failed to load withdrawals:", e);
       }
     }
   }, [driverId]);
@@ -113,7 +122,9 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
       bankName: withdrawalData.bankName,
       bankAccount: withdrawalData.bankAccount,
     };
-    setWithdrawals([newWithdrawal, ...withdrawals]);
+    const updatedWithdrawals = [newWithdrawal, ...withdrawals];
+    setWithdrawals(updatedWithdrawals);
+    localStorage.setItem(`driver_withdrawals_${driverId}`, JSON.stringify(updatedWithdrawals));
     setWithdrawalData({ amount: "", bankName: "", bankAccount: "" });
     setShowWithdrawDialog(false);
   };
