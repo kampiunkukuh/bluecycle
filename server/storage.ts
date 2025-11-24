@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QRTracking, InsertQRTracking } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QrTracking, InsertQrTracking } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -77,9 +77,9 @@ export interface IStorage {
   updateComplianceReport(id: number, report: Partial<InsertComplianceReport>): Promise<ComplianceReport | undefined>;
 
   // QR Tracking
-  createQRTracking(tracking: InsertQRTracking): Promise<QRTracking>;
-  listQRTracking(filters?: { pickupId?: number }): Promise<QRTracking[]>;
-  updateQRTracking(id: number, tracking: Partial<InsertQRTracking>): Promise<QRTracking | undefined>;
+  createQrTracking(tracking: InsertQrTracking): Promise<QrTracking>;
+  listQrTracking(filters?: { pickupId?: number }): Promise<QrTracking[]>;
+  updateQrTracking(id: number, tracking: Partial<InsertQrTracking>): Promise<QrTracking | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -449,19 +449,19 @@ export class DrizzleStorage implements IStorage {
   }
 
   // QR Tracking
-  async createQRTracking(tracking: InsertQRTracking) {
+  async createQrTracking(tracking: InsertQrTracking) {
     const result = await this.db.insert(schema.qrTracking).values(tracking).returning();
     return result[0];
   }
 
-  async listQRTracking(filters?: { pickupId?: number }) {
+  async listQrTracking(filters?: { pickupId?: number }) {
     if (filters?.pickupId) {
       return await this.db.select().from(schema.qrTracking).where(eq(schema.qrTracking.pickupId, filters.pickupId));
     }
     return await this.db.select().from(schema.qrTracking);
   }
 
-  async updateQRTracking(id: number, tracking: Partial<InsertQRTracking>) {
+  async updateQrTracking(id: number, tracking: Partial<InsertQrTracking>) {
     const result = await this.db.update(schema.qrTracking).set(tracking).where(eq(schema.qrTracking.id, id)).returning();
     return result[0];
   }

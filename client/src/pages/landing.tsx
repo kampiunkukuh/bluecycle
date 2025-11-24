@@ -1,35 +1,60 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
 
+interface Stats {
+  pickups: number;
+  drivers: number;
+  users: number;
+  waste: number;
+}
+
+interface WasteCatalog {
+  id: number;
+  wasteType: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+interface CollectionPoint {
+  id: number;
+  name: string;
+  address: string;
+  latitude: string;
+  longitude: string;
+  status: string;
+  capacity: number;
+  currentKg: number;
+}
+
 export default function Landing() {
   const [selectedWasteFilter, setSelectedWasteFilter] = useState<string | null>(null);
-  const [locationIndex, setLocationIndex] = useState(0);
 
   // Fetch real-time stats
-  const { data: stats = { pickups: 15847, drivers: 324, users: 8923, waste: 450 } } = useQuery({
+  const { data: stats = { pickups: 15847, drivers: 324, users: 8923, waste: 450 } as Stats } = useQuery<Stats>({
     queryKey: ['/api/stats'],
     refetchInterval: 5000,
   });
 
   // Fetch waste catalog
-  const { data: wasteCatalog = [] } = useQuery({
+  const { data: wasteCatalog = [] as WasteCatalog[] } = useQuery<WasteCatalog[]>({
     queryKey: ['/api/waste-catalog'],
   });
 
   // Fetch collection points
-  const { data: collectionPoints = [] } = useQuery({
+  const { data: collectionPoints = [] as CollectionPoint[] } = useQuery<CollectionPoint[]>({
     queryKey: ['/api/collection-points'],
   });
 
   const filteredWaste = selectedWasteFilter 
-    ? wasteCatalog.filter(w => w.wasteType === selectedWasteFilter)
+    ? wasteCatalog.filter((w: WasteCatalog) => w.wasteType === selectedWasteFilter)
     : wasteCatalog;
 
-  const wasteTypes = [...new Set(wasteCatalog.map(w => w.wasteType))];
+  const wasteTypes = Array.from(new Set(wasteCatalog.map((w: WasteCatalog) => w.wasteType)));
 
   const features = [
     { title: "Pelacakan GPS Real-Time", desc: "Pantau pengambilan sampah secara real-time dengan akurasi tinggi", icon: MapPin },
@@ -116,7 +141,7 @@ export default function Landing() {
         
         <div className="relative">
           <div className="grid md:grid-cols-3 gap-6">
-            {collectionPoints.map((point, idx) => (
+            {collectionPoints.map((point: CollectionPoint, idx: number) => (
               <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
                 <div className="flex items-start gap-3 mb-4">
                   <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
@@ -183,7 +208,7 @@ export default function Landing() {
 
           {/* Waste Grid */}
           <div className="grid md:grid-cols-4 gap-6">
-            {filteredWaste.map((waste, idx) => (
+            {filteredWaste.map((waste: WasteCatalog, idx: number) => (
               <div key={idx} className="bg-white dark:bg-slate-950 rounded-2xl border overflow-hidden hover-elevate">
                 <div className="aspect-square overflow-hidden bg-muted">
                   <img 
