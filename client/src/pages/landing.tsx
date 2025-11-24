@@ -310,13 +310,15 @@ export default function Landing() {
             Unduh BlueCycle
           </h2>
           <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 via-blue-400 to-red-400 flex items-center justify-center mx-auto mb-4">
-                <Play className="h-8 w-8 text-white fill-white" />
+            <div className="p-8 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-2xl border-2 border-green-400 dark:border-green-600 text-center hover-elevate shadow-lg">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 rounded-full mb-6 border border-green-300 dark:border-green-700">
+                <Play className="h-5 w-5 text-green-600 fill-green-600" />
+                <span className="font-bold text-green-600 text-sm">Google Play</span>
               </div>
-              <h3 className="text-xl font-bold mb-2">Google Play Store</h3>
-              <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk Android</p>
-              <Button className="w-full rounded-full" data-testid="button-download-android">
+              <h3 className="text-2xl font-black mb-2 text-green-700 dark:text-green-300">Google Play Store</h3>
+              <p className="text-muted-foreground mb-6">Download BlueCycle untuk Android</p>
+              <Button className="w-full rounded-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700" data-testid="button-download-android">
+                <Play className="h-4 w-4 mr-2 fill-current" />
                 Download APK
               </Button>
             </div>
