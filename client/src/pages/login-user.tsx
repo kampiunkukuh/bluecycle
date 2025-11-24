@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Recycle, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginUserProps {
   onLogin: (role: "user") => void;
@@ -13,11 +14,39 @@ interface LoginUserProps {
 export default function LoginUser({ onLogin }: LoginUserProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("User login:", { email, password });
-    onLogin("user");
+    setLoading(true);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role: "user" }),
+      });
+
+      if (!response.ok) {
+        toast({
+          title: "Login Gagal",
+          description: "Email atau password salah",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const user = await response.json();
+      onLogin("user");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat login",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,8 +111,13 @@ export default function LoginUser({ onLogin }: LoginUserProps) {
                   data-testid="input-password"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-base font-semibold" data-testid="button-login-submit">
-                Masuk
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-semibold" 
+                data-testid="button-login-submit"
+                disabled={loading}
+              >
+                {loading ? "Sedang masuk..." : "Masuk"}
               </Button>
             </form>
             <div className="text-center mt-4">

@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Recycle, Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginAdminProps {
   onLogin: (role: "admin") => void;
@@ -13,11 +15,39 @@ interface LoginAdminProps {
 export default function LoginAdmin({ onLogin }: LoginAdminProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Admin login:", { email, password });
-    onLogin("admin");
+    setLoading(true);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role: "admin" }),
+      });
+
+      if (!response.ok) {
+        toast({
+          title: "Login Gagal",
+          description: "Email atau password salah",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const user = await response.json();
+      onLogin("admin");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat login",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,8 +112,13 @@ export default function LoginAdmin({ onLogin }: LoginAdminProps) {
                   data-testid="input-password"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-base font-semibold" data-testid="button-login-submit">
-                Masuk Dashboard
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-semibold" 
+                data-testid="button-login-submit"
+                disabled={loading}
+              >
+                {loading ? "Sedang masuk..." : "Masuk Dashboard"}
               </Button>
             </form>
             <div className="text-center mt-4">
