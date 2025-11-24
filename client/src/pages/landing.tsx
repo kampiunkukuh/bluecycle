@@ -1,15 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import LandingNavbar from "@/components/landing-navbar";
 
 export default function Landing() {
-  const [stats] = useState({
-    pickups: 15847,
-    drivers: 324,
-    users: 8923,
-    waste: 450,
+  const [selectedWasteFilter, setSelectedWasteFilter] = useState<string | null>(null);
+  const [locationIndex, setLocationIndex] = useState(0);
+
+  // Fetch real-time stats
+  const { data: stats = { pickups: 15847, drivers: 324, users: 8923, waste: 450 } } = useQuery({
+    queryKey: ['/api/stats'],
+    refetchInterval: 5000,
   });
+
+  // Fetch waste catalog
+  const { data: wasteCatalog = [] } = useQuery({
+    queryKey: ['/api/waste-catalog'],
+  });
+
+  // Fetch collection points
+  const { data: collectionPoints = [] } = useQuery({
+    queryKey: ['/api/collection-points'],
+  });
+
+  const filteredWaste = selectedWasteFilter 
+    ? wasteCatalog.filter(w => w.wasteType === selectedWasteFilter)
+    : wasteCatalog;
+
+  const wasteTypes = [...new Set(wasteCatalog.map(w => w.wasteType))];
 
   const features = [
     { title: "Pelacakan GPS Real-Time", desc: "Pantau pengambilan sampah secara real-time dengan akurasi tinggi", icon: MapPin },
@@ -31,23 +51,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      {/* Header */}
-      <header className="flex items-center justify-between p-6 border-b sticky top-0 bg-white dark:bg-black z-50">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-            <Recycle className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold">BlueCycle</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="ghost" data-testid="button-login-nav">Masuk</Button>
-          </Link>
-          <Link href="/register">
-            <Button className="rounded-full" data-testid="button-register-nav">Daftar</Button>
-          </Link>
-        </div>
-      </header>
+      <LandingNavbar />
 
       {/* Hero Section */}
       <section className="px-6 py-20 max-w-6xl mx-auto">
@@ -78,7 +82,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Live Stats/Traffic */}
+      {/* Live Stats Section */}
       <section className="px-6 py-16 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Statistik Real-Time BlueCycle</h2>
@@ -103,6 +107,108 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Collection Points Carousel */}
+      <section className="px-6 py-20 max-w-6xl mx-auto">
+        <h2 className="text-4xl font-bold text-center mb-6">Titik Pengumpulan Sampah Batam</h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          Lokasi drop-off terdekat untuk pengumpulan sampah Anda
+        </p>
+        
+        <div className="relative">
+          <div className="grid md:grid-cols-3 gap-6">
+            {collectionPoints.map((point, idx) => (
+              <div key={idx} className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
+                <div className="flex items-start gap-3 mb-4">
+                  <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-bold text-lg">{point.name}</h3>
+                    <p className="text-sm text-muted-foreground">{point.address}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Kapasitas:</span>
+                    <span className="font-semibold">{point.capacity} kg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Terisi:</span>
+                    <span className="font-semibold">{point.currentKg} kg</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full"
+                      style={{ width: `${(point.currentKg / point.capacity) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-green-600 text-xs font-semibold">Buka Sekarang</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Waste Catalog with Filter */}
+      <section className="px-6 py-20 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-4">Daftar Jenis Sampah</h2>
+          <p className="text-center text-muted-foreground mb-12">Filter sampah berdasarkan jenisnya dan lihat harga</p>
+          
+          {/* Filter Buttons */}
+          <div className="flex gap-3 justify-center mb-12 flex-wrap">
+            <Button 
+              variant={selectedWasteFilter === null ? "default" : "outline"}
+              onClick={() => setSelectedWasteFilter(null)}
+              data-testid="filter-all-waste"
+            >
+              Semua Jenis ({wasteCatalog.length})
+            </Button>
+            {wasteTypes.map(type => {
+              const count = wasteCatalog.filter(w => w.wasteType === type).length;
+              return (
+                <Button 
+                  key={type}
+                  variant={selectedWasteFilter === type ? "default" : "outline"}
+                  onClick={() => setSelectedWasteFilter(type)}
+                  data-testid={`filter-${type.toLowerCase()}`}
+                >
+                  {type} ({count})
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Waste Grid */}
+          <div className="grid md:grid-cols-4 gap-6">
+            {filteredWaste.map((waste, idx) => (
+              <div key={idx} className="bg-white dark:bg-slate-950 rounded-2xl border overflow-hidden hover-elevate">
+                <div className="aspect-square overflow-hidden bg-muted">
+                  <img 
+                    src={waste.imageUrl} 
+                    alt={waste.wasteType}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=300&fit=crop`;
+                    }}
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-1">{waste.wasteType}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{waste.description}</p>
+                  <div className="text-2xl font-bold text-primary">
+                    Rp {(waste.price / 1000).toLocaleString()}K
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="px-6 py-20 max-w-6xl mx-auto" id="features">
         <h2 className="text-4xl font-bold text-center mb-16">Fitur Unggulan</h2>
@@ -118,7 +224,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="px-6 py-20 bg-muted/30">
+      <section className="px-6 py-20 bg-muted/30" id="faq">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16 flex items-center justify-center gap-3">
             <HelpCircle className="h-8 w-8" />
@@ -139,7 +245,7 @@ export default function Landing() {
       </section>
 
       {/* Partnership Section */}
-      <section className="px-6 py-20 max-w-6xl mx-auto">
+      <section className="px-6 py-20 max-w-6xl mx-auto" id="partnership">
         <div className="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-r from-primary/10 to-primary/5 p-12 rounded-3xl border-2 border-primary/30">
           <div>
             <h2 className="text-4xl font-bold mb-6 flex items-center gap-3">
@@ -147,25 +253,15 @@ export default function Landing() {
               Bergabung Sebagai Mitra
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular dan keberlanjutan lingkungan.
+              Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular.
             </p>
             <div className="space-y-3 mb-8">
-              <div className="flex gap-3">
-                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <span>Komisi menarik untuk setiap transaksi</span>
-              </div>
-              <div className="flex gap-3">
-                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <span>Akses ke dashboard analytics lengkap</span>
-              </div>
-              <div className="flex gap-3">
-                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <span>Dukungan teknis dan operasional 24/7</span>
-              </div>
-              <div className="flex gap-3">
-                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <span>Peningkatan brand awareness melalui BlueCycle</span>
-              </div>
+              {["Komisi menarik untuk setiap transaksi", "Akses ke dashboard analytics lengkap", "Dukungan teknis 24/7", "Peningkatan brand awareness"].map((item, i) => (
+                <div key={i} className="flex gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
             <Button size="lg" className="rounded-full h-12 px-8" data-testid="button-partnership">
               Hubungi Tim Partnership
@@ -187,7 +283,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">⊙</span>
+                <img src="https://www.gstatic.com/images/branding/product/1x/google_play_2x.png" alt="Google Play" className="h-8 w-8" />
               </div>
               <h3 className="text-xl font-bold mb-2">Google Play Store</h3>
               <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk Android</p>
@@ -196,8 +292,8 @@ export default function Landing() {
               </Button>
             </div>
             <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">🍎</span>
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-gray-700 to-black flex items-center justify-center mx-auto mb-4">
+                <svg viewBox="0 0 24 24" fill="white" className="h-8 w-8"><path d="M17.05 13.5c-.91 0-1.64.88-1.64 1.98s.73 1.98 1.64 1.98 1.64-.88 1.64-1.98-.73-1.98-1.64-1.98zm-11.08 9.5h1.97V2.5H5.97v20zm6.41-20H19V22h-1.97V9.5zM9.75 13.45a1.65 1.65 0 11-3.3 0 1.65 1.65 0 013.3 0z"/></svg>
               </div>
               <h3 className="text-xl font-bold mb-2">Apple App Store</h3>
               <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk iOS</p>
