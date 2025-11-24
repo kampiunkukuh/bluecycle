@@ -16,6 +16,7 @@ export interface IStorage {
   getWasteCatalogItem(id: number): Promise<WasteCatalogItem | undefined>;
   createWasteCatalogItem(item: InsertWasteCatalogItem): Promise<WasteCatalogItem>;
   listWasteCatalog(userId: number): Promise<WasteCatalogItem[]>;
+  updateWasteCatalogItem(id: number, item: Partial<InsertWasteCatalogItem>): Promise<WasteCatalogItem | undefined>;
   deleteWasteCatalogItem(id: number): Promise<boolean>;
 
   // Pickups
@@ -140,6 +141,11 @@ export class DrizzleStorage implements IStorage {
 
   async listWasteCatalog(userId: number) {
     return await this.db.select().from(schema.wasteCatalog).where(eq(schema.wasteCatalog.userId, userId));
+  }
+
+  async updateWasteCatalogItem(id: number, item: Partial<InsertWasteCatalogItem>) {
+    const result = await this.db.update(schema.wasteCatalog).set(item).where(eq(schema.wasteCatalog.id, id)).returning();
+    return result[0];
   }
 
   async deleteWasteCatalogItem(id: number) {
