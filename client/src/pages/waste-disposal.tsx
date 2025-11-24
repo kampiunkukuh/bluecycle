@@ -237,7 +237,7 @@ export default function WasteDisposal() {
           <TabsTrigger value="in-transit">In Transit</TabsTrigger>
           <TabsTrigger value="disposed">Selesai</TabsTrigger>
         </TabsList>
-        <TabsContent className="space-y-4">
+        <TabsContent value={filterStatus} className="space-y-4">
           {loading ? (
             <div>Memuat...</div>
           ) : filteredDisposals.length === 0 ? (

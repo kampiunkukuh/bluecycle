@@ -10,6 +10,8 @@ import {
   TrendingUp,
   Gift,
   Leaf,
+  Archive,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -73,6 +75,18 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       title: "Titik Pengumpulan",
       url: "/collection-points",
       icon: MapPin,
+      roles: ["admin"],
+    },
+    {
+      title: "Pelacakan Pembuangan",
+      url: "/waste-disposal",
+      icon: Archive,
+      roles: ["admin"],
+    },
+    {
+      title: "Laporan Kepatuhan",
+      url: "/compliance",
+      icon: FileText,
       roles: ["admin"],
     },
     {
