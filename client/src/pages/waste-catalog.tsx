@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 import { WasteCatalogItem } from "@shared/schema";
 
 interface CurrentUser {
@@ -18,11 +19,16 @@ interface WasteCatalogProps {
 }
 
 export default function WasteCatalog({ userRole, currentUser }: WasteCatalogProps = {}) {
+  const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { data: catalog = [], isLoading } = useQuery<WasteCatalogItem[]>({
     queryKey: ["/api/waste-catalog"],
   });
+
+  const handleOrderClick = (item: WasteCatalogItem) => {
+    setLocation(`/checkout/${item.id}`);
+  };
 
   const categories = Array.from(new Set(catalog.map((item) => item.wasteType)));
   const filteredItems = selectedCategory
@@ -90,10 +96,19 @@ export default function WasteCatalog({ userRole, currentUser }: WasteCatalogProp
                 <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
               )}
               <div className="mt-auto pt-4 border-t">
-                <p className="text-xs text-muted-foreground mb-1">Harga per kilogram</p>
-                <p className="text-2xl font-bold text-primary" data-testid={`price-${item.id}`}>
+                <p className="text-xs text-muted-foreground mb-1">Harga</p>
+                <p className="text-2xl font-bold text-primary mb-4" data-testid={`price-${item.id}`}>
                   Rp {item.price.toLocaleString("id-ID")}
                 </p>
+                <Button 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={() => handleOrderClick(item)}
+                  data-testid={`button-order-${item.id}`}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Pesan Sekarang
+                </Button>
               </div>
             </CardContent>
           </Card>
