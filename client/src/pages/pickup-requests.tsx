@@ -1,307 +1,217 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Plus, Calendar, MapPin, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Search, MapPin, Package, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 interface PickupRequest {
-  id: string;
+  id: number;
   address: string;
   wasteType: string;
-  status: "pending" | "scheduled" | "completed" | "cancelled";
-  requestedBy: string;
-  scheduledDate?: string;
-  assignedDriver?: string;
+  quantity?: string | null;
+  deliveryMethod: "pickup" | "dropoff";
+  status: "pending" | "accepted" | "in-progress" | "completed" | "cancelled";
+  price: number;
+  notes?: string | null;
+  createdAt: Date;
 }
 
-const mockPickups: PickupRequest[] = [
-  {
-    id: "1",
-    address: "Jl. Sudirman No. 123, Jakarta Pusat",
-    wasteType: "Organik",
-    status: "pending",
-    requestedBy: "Sarah Johnson",
-    scheduledDate: "25 Nov 2024",
-  },
-  {
-    id: "2",
-    address: "Jl. Gatot Subroto No. 456, Jakarta Selatan",
-    wasteType: "Daur Ulang",
-    status: "scheduled",
-    requestedBy: "Mike Davis",
-    scheduledDate: "24 Nov 2024",
-    assignedDriver: "Supir #3",
-  },
-  {
-    id: "3",
-    address: "Jl. Thamrin No. 789, Jakarta Pusat",
-    wasteType: "Umum",
-    status: "completed",
-    requestedBy: "Alex Chen",
-    scheduledDate: "23 Nov 2024",
-    assignedDriver: "Supir #2",
-  },
-  {
-    id: "4",
-    address: "Jl. Rasuna Said No. 321, Jakarta Selatan",
-    wasteType: "Berbahaya",
-    status: "scheduled",
-    requestedBy: "Emma Wilson",
-    scheduledDate: "26 Nov 2024",
-    assignedDriver: "Supir #1",
-  },
-];
-
-export default function PickupRequests() {
-  const [pickups, setPickups] = useState<PickupRequest[]>(mockPickups);
+export default function PickupRequests({ userId, userName }: { userId?: number; userName?: string }) {
+  const [pickups, setPickups] = useState<PickupRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [newPickup, setNewPickup] = useState({
-    address: "",
-    wasteType: "General",
-    notes: "",
-    scheduledDate: "",
-  });
 
-  const filteredPickups = pickups.filter((p) =>
-    p.address.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    const fetchPickups = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/pickups?requestedById=${userId}&status=pending,accepted,in-progress`);
+        const data = await response.json();
+        setPickups(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch pickups:", error);
+        setPickups([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPickups();
+  }, [userId]);
+
+  const outstandingPickups = pickups.filter((p) =>
+    ["pending", "accepted", "in-progress"].includes(p.status) &&
+    (p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.wasteType.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const handleCreatePickup = () => {
-    const pickup: PickupRequest = {
-      id: String(Date.now()),
-      address: newPickup.address,
-      wasteType: newPickup.wasteType,
-      status: "pending",
-      requestedBy: "Current User",
-      scheduledDate: newPickup.scheduledDate,
-    };
-    setPickups([pickup, ...pickups]);
-    setShowDialog(false);
-    setNewPickup({ address: "", wasteType: "General", notes: "", scheduledDate: "" });
-  };
-
-  const getStatusConfig = (status: string) => {
-    const configs = {
-      pending: { 
-        color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-200 dark:border-yellow-900", 
-        label: "Tertunda" 
+  const getStatusBadge = (status: string) => {
+    const configs: Record<string, { icon: any; label: string; color: string }> = {
+      pending: {
+        icon: Clock,
+        label: "Menunggu",
+        color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-200 dark:border-yellow-900",
       },
-      scheduled: { 
-        color: "bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-200 dark:border-blue-900", 
-        label: "Terjadwal" 
+      accepted: {
+        icon: AlertCircle,
+        label: "Diterima",
+        color: "bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-200 dark:border-blue-900",
       },
-      completed: { 
-        color: "bg-green-500/10 text-green-600 dark:text-green-500 border-green-200 dark:border-green-900", 
-        label: "Selesai" 
+      "in-progress": {
+        icon: Package,
+        label: "Sedang Diproses",
+        color: "bg-purple-500/10 text-purple-600 dark:text-purple-500 border-purple-200 dark:border-purple-900",
       },
-      cancelled: { 
-        color: "bg-red-500/10 text-red-600 dark:text-red-500 border-red-200 dark:border-red-900", 
-        label: "Dibatalkan" 
+      completed: {
+        icon: CheckCircle,
+        label: "Selesai",
+        color: "bg-green-500/10 text-green-600 dark:text-green-500 border-green-200 dark:border-green-900",
       },
     };
-    return configs[status as keyof typeof configs] || configs.pending;
+    const config = configs[status] || configs.pending;
+    const Icon = config.icon;
+    return (
+      <Badge variant="outline" className={`${config.color} flex items-center gap-1`}>
+        <Icon className="h-3 w-3" />
+        {config.label}
+      </Badge>
+    );
   };
 
-  const getWasteTypeIcon = (type: string) => {
-    return <Trash2 className="h-5 w-5" />;
-  };
-
-  const getWasteTypeColor = (type: string) => {
-    const colors = {
-      Organik: "bg-green-500/10 text-green-600",
-      "Daur Ulang": "bg-blue-500/10 text-blue-600",
-      Umum: "bg-gray-500/10 text-gray-600",
-      Berbahaya: "bg-red-500/10 text-red-600",
-    };
-    return colors[type as keyof typeof colors] || colors.Umum;
+  const getDeliveryBadge = (method: string) => {
+    if (method === "dropoff") {
+      return <Badge variant="secondary">Drop Off</Badge>;
+    }
+    return <Badge variant="outline">Pickup</Badge>;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">Permintaan Pickup</h1>
-          <p className="text-muted-foreground text-base">
-            Kelola dan lacak semua permintaan pengambilan sampah
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowDialog(true)} 
-          size="lg"
-          className="h-12 px-6 text-base font-semibold shadow-md"
-          data-testid="button-new-pickup"
-        >
-          <Plus className="mr-2 h-5 w-5" />
-          Permintaan Baru
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Riwayat Pesanan</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Pesanan sampah yang masih outstanding dari {userName || "Anda"}
+        </p>
       </div>
 
-      <Card className="shadow-md p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Cari berdasarkan alamat atau lokasi..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 text-base"
-            data-testid="input-search-pickups"
-          />
-        </div>
-      </Card>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Input
+          placeholder="Cari berdasarkan alamat atau jenis sampah..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+          data-testid="input-pickup-search"
+        />
+      </div>
 
-      <div className="grid gap-4">
-        {filteredPickups.map((pickup) => {
-          const statusConfig = getStatusConfig(pickup.status);
-          return (
-            <Card 
-              key={pickup.id} 
-              className="shadow-md hover-elevate"
-              data-testid={`row-pickup-${pickup.id}`}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className={`h-14 w-14 rounded-xl ${getWasteTypeColor(pickup.wasteType)} flex items-center justify-center flex-shrink-0`}>
-                    {getWasteTypeIcon(pickup.wasteType)}
+      {/* Pickups List */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      ) : outstandingPickups.length === 0 ? (
+        <Card>
+          <CardContent className="pt-12 pb-12 text-center">
+            <Package className="h-12 w-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">
+              {searchQuery ? "Tidak ada pesanan yang sesuai dengan pencarian" : "Tidak ada pesanan yang outstanding"}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {outstandingPickups.map((pickup) => (
+            <Card key={pickup.id} className="hover-elevate" data-testid={`pickup-card-${pickup.id}`}>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Waste Type */}
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Jenis Sampah</p>
+                    <p className="font-semibold text-lg">{pickup.wasteType}</p>
+                    <p className="text-xs text-gray-500 mt-1">{pickup.quantity || "-"}</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-1">{pickup.address}</h3>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Trash2 className="h-3 w-3" />
-                            {pickup.wasteType}
-                          </span>
-                          <span>•</span>
-                          <span>{pickup.requestedBy}</span>
-                        </div>
-                      </div>
-                      <Badge 
-                        className={statusConfig.color}
-                        variant="secondary"
-                      >
-                        {statusConfig.label}
-                      </Badge>
+
+                  {/* Address */}
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Alamat</p>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm font-medium">{pickup.address}</p>
                     </div>
-                    <div className="flex items-center gap-4 mt-3 text-sm">
-                      {pickup.scheduledDate && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>{pickup.scheduledDate}</span>
-                        </div>
-                      )}
-                      {pickup.assignedDriver && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{pickup.assignedDriver}</span>
-                        </div>
-                      )}
+                  </div>
+
+                  {/* Status & Method */}
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Status</p>
+                    <div className="flex flex-col gap-2">
+                      {getStatusBadge(pickup.status)}
+                      {getDeliveryBadge(pickup.deliveryMethod)}
                     </div>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      Rp {pickup.price.toLocaleString("id-ID")}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Diminta {new Date(pickup.createdAt).toLocaleDateString("id-ID")}
+                    </p>
                   </div>
                 </div>
+
+                {/* Notes */}
+                {pickup.notes && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Catatan</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{pickup.notes}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Permintaan Pickup Baru</DialogTitle>
-            <DialogDescription className="text-base">
-              Jadwalkan pengambilan sampah
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="address" className="text-base font-medium">Alamat Pickup</Label>
-              <Input
-                id="address"
-                value={newPickup.address}
-                onChange={(e) =>
-                  setNewPickup({ ...newPickup, address: e.target.value })
-                }
-                placeholder="Masukkan alamat lengkap"
-                className="h-12"
-                data-testid="input-pickup-address"
-              />
+      {/* Stats */}
+      {outstandingPickups.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ringkasan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Pesanan</p>
+                <p className="text-2xl font-bold">{outstandingPickups.length}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Nilai</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  Rp {outstandingPickups.reduce((sum, p) => sum + p.price, 0).toLocaleString("id-ID")}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Delivery Methods</p>
+                <div className="flex gap-2 mt-2">
+                  {outstandingPickups.some((p) => p.deliveryMethod === "pickup") && (
+                    <span className="text-xs font-semibold">Pickup: {outstandingPickups.filter((p) => p.deliveryMethod === "pickup").length}</span>
+                  )}
+                  {outstandingPickups.some((p) => p.deliveryMethod === "dropoff") && (
+                    <span className="text-xs font-semibold">Drop Off: {outstandingPickups.filter((p) => p.deliveryMethod === "dropoff").length}</span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="wasteType" className="text-base font-medium">Jenis Sampah</Label>
-              <Select
-                value={newPickup.wasteType}
-                onValueChange={(value) =>
-                  setNewPickup({ ...newPickup, wasteType: value })
-                }
-              >
-                <SelectTrigger id="wasteType" className="h-12" data-testid="select-waste-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Umum">Sampah Umum</SelectItem>
-                  <SelectItem value="Organik">Organik</SelectItem>
-                  <SelectItem value="Daur Ulang">Daur Ulang</SelectItem>
-                  <SelectItem value="Berbahaya">Berbahaya</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="scheduledDate" className="text-base font-medium">Tanggal Preferensi</Label>
-              <Input
-                id="scheduledDate"
-                type="date"
-                value={newPickup.scheduledDate}
-                onChange={(e) =>
-                  setNewPickup({ ...newPickup, scheduledDate: e.target.value })
-                }
-                className="h-12"
-                data-testid="input-scheduled-date"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-base font-medium">Catatan Tambahan</Label>
-              <Textarea
-                id="notes"
-                value={newPickup.notes}
-                onChange={(e) =>
-                  setNewPickup({ ...newPickup, notes: e.target.value })
-                }
-                placeholder="Instruksi khusus jika ada..."
-                className="min-h-24"
-                data-testid="input-pickup-notes"
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowDialog(false)} size="lg" data-testid="button-cancel">
-              Batal
-            </Button>
-            <Button onClick={handleCreatePickup} size="lg" data-testid="button-submit-pickup">
-              Kirim Permintaan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

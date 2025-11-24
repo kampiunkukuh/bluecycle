@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Truck, MapPin, ArrowLeft, Zap } from "lucide-react";
+import { Truck, MapPin, ArrowLeft, Zap, Loader } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -22,12 +22,13 @@ const mockItems: Record<string, OrderItem> = {
   "4": { id: "4", name: "Organik", price: 30000, image: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg" },
 };
 
-export default function OrderCheckout({ itemId }: { itemId: string }) {
+export default function OrderCheckout({ itemId, userId }: { itemId: string; userId?: number }) {
   const [, setLocation] = useLocation();
   const item = mockItems[itemId];
   const [orderType, setOrderType] = useState("pickup");
   const [formData, setFormData] = useState({ address: "", quantity: "", notes: "" });
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!item) {
     return (
@@ -53,10 +54,40 @@ export default function OrderCheckout({ itemId }: { itemId: string }) {
     setShowConfirm(true);
   };
 
-  const handleConfirmOrder = () => {
-    console.log("Order confirmed:", { item, orderType, ...formData });
-    alert(`Pesanan ${item.name} untuk ${orderType} berhasil dibuat!`);
-    setLocation("/dashboard");
+  const handleConfirmOrder = async () => {
+    if (!userId) {
+      alert("User ID tidak ditemukan");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/pickups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: formData.address,
+          wasteType: item.name,
+          quantity: formData.quantity,
+          deliveryMethod: orderType,
+          status: "pending",
+          requestedById: userId,
+          notes: formData.notes,
+          price: item.price,
+          catalogItemId: parseInt(item.id),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Gagal membuat pesanan");
+
+      alert(`Pesanan ${item.name} untuk ${orderType} berhasil dibuat!`);
+      setLocation("/pickups");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Gagal membuat pesanan. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -225,11 +256,18 @@ export default function OrderCheckout({ itemId }: { itemId: string }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+            <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button onClick={handleConfirmOrder} data-testid="button-confirm-order">
-              Pesan Sekarang
+            <Button onClick={handleConfirmOrder} disabled={isSubmitting} data-testid="button-confirm-order">
+              {isSubmitting ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Membuat Pesanan...
+                </>
+              ) : (
+                "Pesan Sekarang"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

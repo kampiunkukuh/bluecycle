@@ -145,6 +145,8 @@ export class MemStorage implements IStorage {
       id,
       address: pickup.address,
       wasteType: pickup.wasteType,
+      quantity: pickup.quantity || null,
+      deliveryMethod: pickup.deliveryMethod || "pickup",
       status: pickup.status || "pending",
       requestedById: pickup.requestedById,
       assignedDriverId: pickup.assignedDriverId || null,

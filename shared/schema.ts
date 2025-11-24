@@ -31,6 +31,8 @@ export const pickups = pgTable("pickups", {
   id: serial("id").primaryKey(),
   address: text("address").notNull(),
   wasteType: varchar("waste_type", { length: 100 }).notNull(),
+  quantity: varchar("quantity", { length: 50 }), // e.g., "5 kg", "10 dus"
+  deliveryMethod: varchar("delivery_method", { length: 20 }).notNull().default("pickup"), // "pickup" or "dropoff"
   status: varchar("status", { length: 50 }).notNull().default("pending"), // "pending", "accepted", "in-progress", "completed", "cancelled"
   requestedById: integer("requested_by_id").notNull(),
   assignedDriverId: integer("assigned_driver_id"),

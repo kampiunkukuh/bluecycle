@@ -125,11 +125,11 @@ function Router() {
                 if (currentUser?.role === "user") return <UserDashboard userId={currentUser?.id} userName={currentUser?.name} />;
                 return <BlueCycleDashboard />;
               }} />
-              <Route path="/pickups" component={PickupRequests} />
+              <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
               <Route path="/catalog" component={WasteCatalog} />
               <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings /> : <UserEarnings />} />
               <Route path="/payment-settings" component={DriverPaymentSettings} />
-              <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} />} />
+              <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} userId={currentUser?.id} />} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={BlueCycleDashboard} />
               <Route path="/users" component={UserManagement} />
