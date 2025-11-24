@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
+import { FaGoogle, FaApple } from "react-icons/fa";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
@@ -102,7 +103,10 @@ export default function Landing() {
             </div>
           </div>
           <div className="relative h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl flex items-center justify-center">
-            <Recycle className="h-40 w-40 text-primary opacity-20" />
+            <div className="text-center">
+              <div className="text-6xl font-black text-primary mb-4">BlueCycle</div>
+              <Recycle className="h-32 w-32 text-primary/40 mx-auto" />
+            </div>
           </div>
         </div>
       </section>
@@ -308,7 +312,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-4">
-                <img src="https://www.gstatic.com/images/branding/product/1x/google_play_2x.png" alt="Google Play" className="h-8 w-8" />
+                <FaGoogle className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-xl font-bold mb-2">Google Play Store</h3>
               <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk Android</p>
@@ -318,7 +322,7 @@ export default function Landing() {
             </div>
             <div className="p-8 bg-white dark:bg-slate-950 rounded-2xl border text-center hover-elevate">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-gray-700 to-black flex items-center justify-center mx-auto mb-4">
-                <svg viewBox="0 0 24 24" fill="white" className="h-8 w-8"><path d="M17.05 13.5c-.91 0-1.64.88-1.64 1.98s.73 1.98 1.64 1.98 1.64-.88 1.64-1.98-.73-1.98-1.64-1.98zm-11.08 9.5h1.97V2.5H5.97v20zm6.41-20H19V22h-1.97V9.5zM9.75 13.45a1.65 1.65 0 11-3.3 0 1.65 1.65 0 013.3 0z"/></svg>
+                <FaApple className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-xl font-bold mb-2">Apple App Store</h3>
               <p className="text-muted-foreground mb-6">Aplikasi BlueCycle untuk iOS</p>

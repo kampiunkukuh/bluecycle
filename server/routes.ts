@@ -723,17 +723,17 @@ api.get("/api/waste-catalog", async (req, res) => {
     const allWaste = await storage.listWasteCatalog(1);
     if (allWaste.length === 0) {
       return res.json([
-        { id: 1, wasteType: 'Plastik', description: 'Sampah plastik kemasan, botol', price: 100000, imageUrl: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400' },
-        { id: 2, wasteType: 'Kertas', description: 'Kertas bekas, kardus', price: 50000, imageUrl: 'https://images.unsplash.com/photo-1596208175030-f88a1fe6fdd3?w=400' },
-        { id: 3, wasteType: 'Logam', description: 'Kaleng, besi', price: 200000, imageUrl: 'https://images.unsplash.com/photo-1589939705066-5a101c786d13?w=400' },
-        { id: 4, wasteType: 'Kaca', description: 'Botol kaca', price: 150000, imageUrl: 'https://images.unsplash.com/photo-1595433707802-6b2626ef1c91?w=400' },
-        { id: 5, wasteType: 'Organik', description: 'Sisa makanan', price: 30000, imageUrl: 'https://images.unsplash.com/photo-1584628688496-19a1a4e8dd3e?w=400' },
-        { id: 6, wasteType: 'Elektronik', description: 'Barang elektronik', price: 300000, imageUrl: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400' },
+        { id: 1, wasteType: 'Plastik', description: 'Sampah plastik kemasan, botol', price: 100000, imageUrl: '/assets/plastic_waste_product_photo.png' },
+        { id: 2, wasteType: 'Kertas', description: 'Kertas bekas, kardus', price: 50000, imageUrl: '/assets/paper_waste_product_photo.png' },
+        { id: 3, wasteType: 'Logam', description: 'Kaleng, besi', price: 200000, imageUrl: '/assets/metal_waste_product_photo.png' },
+        { id: 4, wasteType: 'Kaca', description: 'Botol kaca', price: 150000, imageUrl: '/assets/plastic_waste_product_photo.png' },
+        { id: 5, wasteType: 'Organik', description: 'Sisa makanan', price: 30000, imageUrl: '/assets/organic_waste_product_photo.png' },
+        { id: 6, wasteType: 'Elektronik', description: 'Barang elektronik', price: 300000, imageUrl: '/assets/metal_waste_product_photo.png' },
       ]);
     }
     res.json(allWaste);
   } catch (error) {
-    res.json([{ id: 1, wasteType: 'Plastik', description: 'Sampah plastik', price: 100000, imageUrl: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400' }]);
+    res.json([{ id: 1, wasteType: 'Plastik', description: 'Sampah plastik', price: 100000, imageUrl: '/assets/plastic_waste_product_photo.png' }]);
   }
 });
 
