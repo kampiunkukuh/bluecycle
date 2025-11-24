@@ -753,23 +753,13 @@ api.get("/api/stats", async (req, res) => {
   }
 });
 
-// Waste catalog with images endpoint
+// Waste catalog endpoint - SINGLE SOURCE OF TRUTH
 api.get("/api/waste-catalog", async (req, res) => {
   try {
     const allWaste = await storage.listWasteCatalog(1);
-    if (allWaste.length === 0) {
-      return res.json([
-        { id: 1, wasteType: 'Plastik', description: 'Sampah plastik kemasan, botol', price: 100000, imageUrl: '/assets/plastic_waste_product_photo.png' },
-        { id: 2, wasteType: 'Kertas', description: 'Kertas bekas, kardus', price: 50000, imageUrl: '/assets/paper_waste_product_photo.png' },
-        { id: 3, wasteType: 'Logam', description: 'Kaleng, besi', price: 200000, imageUrl: '/assets/metal_waste_product_photo.png' },
-        { id: 4, wasteType: 'Kaca', description: 'Botol kaca', price: 150000, imageUrl: '/assets/plastic_waste_product_photo.png' },
-        { id: 5, wasteType: 'Organik', description: 'Sisa makanan', price: 30000, imageUrl: '/assets/organic_waste_product_photo.png' },
-        { id: 6, wasteType: 'Elektronik', description: 'Barang elektronik', price: 300000, imageUrl: '/assets/metal_waste_product_photo.png' },
-      ]);
-    }
     res.json(allWaste);
   } catch (error) {
-    res.json([{ id: 1, wasteType: 'Plastik', description: 'Sampah plastik', price: 100000, imageUrl: '/assets/plastic_waste_product_photo.png' }]);
+    res.status(500).json({ error: "Failed to fetch waste catalog" });
   }
 });
 
