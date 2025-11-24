@@ -622,10 +622,10 @@ api.get("/api/bulk-export/payments", async (req, res) => {
     const driverPayments = await storage.listAllDriverPayments();
     const csv = ["id,user_id,driver_id,amount,type,status,requested_date,approved_date"];
     userPayments.forEach((p) => {
-      csv.push([p.id, p.userId, "", p.amount, "user_withdrawal", p.status, p.requestedDate, p.approvedDate || ""].join(","));
+      csv.push([p.id, p.userId, "", p.amount, "user_withdrawal", p.status, p.requestedAt || "", p.approvedAt || ""].join(","));
     });
     driverPayments.forEach((p) => {
-      csv.push([p.id, "", p.driverId, p.amount, "driver_withdrawal", p.status, p.requestedDate, p.approvedDate || ""].join(","));
+      csv.push([p.id, "", p.driverId, p.amount, "driver_withdrawal", p.status, p.requestedAt || "", p.approvedAt || ""].join(","));
     });
     res.type("text/csv").send(csv.join("\n"));
   } catch (error) {
@@ -650,7 +650,7 @@ api.get("/api/bulk-export/collection-points", async (req, res) => {
     const points = await storage.listCollectionPoints();
     const csv = ["id,name,address,latitude,longitude,capacity_kg,current_load_kg,operational_hours,created_at"].concat(
       points.map((p) =>
-        [p.id, `"${p.name}"`, `"${p.address}"`, p.latitude || "", p.longitude || "", p.capacityKg || "0", p.currentLoadKg || "0", p.operationalHours || "", p.createdAt].join(",")
+        [p.id, `"${p.name}"`, `"${p.address}"`, p.latitude || "", p.longitude || "", p.capacity || "0", p.currentKg || "0", p.operatingHours || "", p.createdAt].join(",")
       )
     );
     res.type("text/csv").send(csv.join("\n"));

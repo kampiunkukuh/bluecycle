@@ -143,7 +143,7 @@ function Router() {
                 if (currentUser?.role === "driver") return <DriverEarnings driverId={currentUser?.id} />;
                 return <UserEarnings />;
               }} />
-              <Route path="/payment-settings" component={DriverPaymentSettings} />
+              <Route path="/payment-settings" component={() => <DriverPaymentSettings driverId={currentUser?.id} />} />
               <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} userId={currentUser?.id} />} />
               <Route path="/payment-management" component={AdminPaymentManagement} />
               <Route path="/collection-points" component={CollectionPoints} />
