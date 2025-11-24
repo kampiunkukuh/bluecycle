@@ -1,250 +1,386 @@
-import { useState } from "react";
-import { UserTable, User } from "@/components/user-table";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Search, Edit2, Lock, User, Mail, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// TODO: Remove mock data when implementing real backend
-const initialUsers: User[] = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah@example.com",
-    role: "admin",
-    status: "online",
-    lastActive: "Active now",
-  },
-  {
-    id: "2",
-    name: "Mike Davis",
-    email: "mike@example.com",
-    role: "editor",
-    status: "away",
-    lastActive: "5 minutes ago",
-  },
-  {
-    id: "3",
-    name: "Alex Chen",
-    email: "alex@example.com",
-    role: "viewer",
-    status: "offline",
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "4",
-    name: "Emma Wilson",
-    email: "emma@example.com",
-    role: "editor",
-    status: "online",
-    lastActive: "Active now",
-  },
-];
+interface DBUser {
+  id: number;
+  email: string;
+  name: string;
+  role: "admin" | "user" | "driver";
+  phone?: string;
+  bankName?: string;
+  bankAccount?: string;
+  password?: string;
+}
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<DBUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<DBUser[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [dialogType, setDialogType] = useState<"edit" | "role" | "add">("add");
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "viewer" as User["role"],
-  });
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [editData, setEditData] = useState({ name: "", email: "", phone: "" });
+  const [passwordData, setPasswordData] = useState({ newPassword: "", confirmPassword: "" });
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Fetch users dari database
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/users");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setUsers(data);
+          setFilteredUsers(data);
+        }
+      } catch (error) {
+        console.error("Gagal fetch users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
-  const handleEdit = (id: string) => {
-    const user = users.find((u) => u.id === id);
-    if (user) {
-      setSelectedUser(user);
-      setFormData({ name: user.name, email: user.email, role: user.role });
-      setDialogType("edit");
-      setShowDialog(true);
+  // Filter users berdasarkan search
+  useEffect(() => {
+    const filtered = users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, [searchQuery, users]);
+
+  const handleSelectUser = (user: DBUser) => {
+    setSelectedUser(user);
+    setEditData({ name: user.name, email: user.email, phone: user.phone || "" });
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedUser) return;
+    try {
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editData.name,
+          email: editData.email,
+          phone: editData.phone,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
+        setSelectedUser(updated);
+        setShowEditDialog(false);
+      }
+    } catch (error) {
+      console.error("Gagal update user:", error);
     }
   };
 
-  const handleDelete = (id: string) => {
-    console.log("Delete user:", id);
-    setUsers(users.filter((u) => u.id !== id));
-  };
-
-  const handleChangeRole = (id: string) => {
-    const user = users.find((u) => u.id === id);
-    if (user) {
-      setSelectedUser(user);
-      setFormData({ name: user.name, email: user.email, role: user.role });
-      setDialogType("role");
-      setShowDialog(true);
+  const handlePasswordChange = async () => {
+    if (!selectedUser || passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("Password tidak cocok!");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: passwordData.newPassword }),
+      });
+      if (res.ok) {
+        alert("Password berhasil diubah!");
+        setShowPasswordDialog(false);
+        setPasswordData({ newPassword: "", confirmPassword: "" });
+      }
+    } catch (error) {
+      console.error("Gagal ubah password:", error);
     }
   };
 
-  const handleSave = () => {
-    if (dialogType === "add") {
-      const newUser: User = {
-        id: String(Date.now()),
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        status: "offline",
-        lastActive: "Just added",
-      };
-      setUsers([...users, newUser]);
-    } else if (selectedUser) {
-      setUsers(
-        users.map((u) =>
-          u.id === selectedUser.id
-            ? { ...u, name: formData.name, email: formData.email, role: formData.role }
-            : u
-        )
-      );
-    }
-    setShowDialog(false);
-    setSelectedUser(null);
-    setFormData({ name: "", email: "", role: "viewer" });
+  const getRoleColor = (role: string) => {
+    if (role === "admin") return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    if (role === "driver") return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
   };
 
-  const openAddDialog = () => {
-    setSelectedUser(null);
-    setFormData({ name: "", email: "", role: "viewer" });
-    setDialogType("add");
-    setShowDialog(true);
-  };
+  if (loading) {
+    return <div className="flex items-center justify-center h-96">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage users and their roles
-          </p>
+      {/* Navbar dengan user yang dipilih */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 dark:from-green-900 dark:to-green-950 text-white p-4 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <User className="h-6 w-6" />
+            <div>
+              <h2 className="text-lg font-semibold">
+                {selectedUser ? `Kelola: ${selectedUser.name}` : "Kelola Pengguna & Driver"}
+              </h2>
+              {selectedUser && (
+                <p className="text-sm text-green-100">
+                  {selectedUser.role === "admin" && "Admin"}
+                  {selectedUser.role === "driver" && "Driver - Earnings: 80%"}
+                  {selectedUser.role === "user" && "User - Reward: Reward Points"}
+                </p>
+              )}
+            </div>
+          </div>
+          {selectedUser && (
+            <Button 
+              variant="outline" 
+              className="bg-white text-green-700 hover:bg-gray-100"
+              onClick={() => setSelectedUser(null)}
+              data-testid="button-back-users"
+            >
+              ← Kembali ke Daftar
+            </Button>
+          )}
         </div>
-        <Button onClick={openAddDialog} data-testid="button-add-user">
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-            data-testid="input-search-users"
-          />
+      {!selectedUser ? (
+        // Daftar Users
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Pengguna & Driver</h1>
+            <p className="text-gray-600 dark:text-gray-400">Kelola data pengguna, driver, dan akun mereka</p>
+          </div>
+
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari nama atau email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+              data-testid="input-search-users"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredUsers.map((user) => (
+              <Card
+                key={user.id}
+                className="hover-elevate cursor-pointer"
+                onClick={() => handleSelectUser(user)}
+                data-testid={`card-user-${user.id}`}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{user.name}</h3>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                    <Badge className={getRoleColor(user.role)}>
+                      {user.role === "admin" && "Admin"}
+                      {user.role === "driver" && "Driver"}
+                      {user.role === "user" && "User"}
+                    </Badge>
+                  </div>
+                  {user.phone && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <Phone className="h-3 w-3" /> {user.phone}
+                    </p>
+                  )}
+                  {user.role === "driver" && user.bankName && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      Bank: {user.bankName} - {user.bankAccount}
+                    </p>
+                  )}
+                  <Button 
+                    size="sm" 
+                    className="mt-4 w-full" 
+                    variant="default"
+                    data-testid={`button-manage-user-${user.id}`}
+                  >
+                    Kelola Akun
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Detail & Edit User
+        <div className="space-y-6">
+          <Tabs defaultValue="info" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="info">Data Diri</TabsTrigger>
+              <TabsTrigger value="security">Keamanan</TabsTrigger>
+            </TabsList>
 
-      <UserTable
-        users={filteredUsers}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onChangeRole={handleChangeRole}
-      />
+            <TabsContent value="info">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Informasi Pengguna</CardTitle>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setShowEditDialog(true)}
+                    data-testid="button-edit-user-info"
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-gray-600 dark:text-gray-400">Nama</Label>
+                    <p className="text-lg font-semibold">{selectedUser.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 dark:text-gray-400">Email</Label>
+                    <p className="text-lg flex items-center gap-2">
+                      <Mail className="h-4 w-4" /> {selectedUser.email}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 dark:text-gray-400">Nomor Telepon</Label>
+                    <p className="text-lg">{selectedUser.phone || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 dark:text-gray-400">Role / Status</Label>
+                    <Badge className={`mt-2 ${getRoleColor(selectedUser.role)}`}>
+                      {selectedUser.role === "admin" && "Administrator"}
+                      {selectedUser.role === "driver" && "Driver (80% Earnings)"}
+                      {selectedUser.role === "user" && "User (Reward Points)"}
+                    </Badge>
+                  </div>
+                  {selectedUser.role === "driver" && (
+                    <>
+                      <div>
+                        <Label className="text-gray-600 dark:text-gray-400">Bank</Label>
+                        <p className="text-lg">{selectedUser.bankName || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-600 dark:text-gray-400">Nomor Rekening</Label>
+                        <p className="text-lg">{selectedUser.bankAccount || "-"}</p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <TabsContent value="security">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="h-5 w-5" /> Keamanan Akun
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <p className="text-sm text-blue-900 dark:text-blue-100">
+                      Ubah password pengguna untuk menjaga keamanan akun mereka.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowPasswordDialog(true)}
+                    className="w-full"
+                    data-testid="button-change-password"
+                  >
+                    <Lock className="h-4 w-4 mr-2" /> Ubah Password
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {dialogType === "add"
-                ? "Add User"
-                : dialogType === "edit"
-                ? "Edit User"
-                : "Change User Role"}
-            </DialogTitle>
-            <DialogDescription>
-              {dialogType === "add"
-                ? "Add a new user to the system"
-                : dialogType === "edit"
-                ? "Update user information"
-                : "Change the user's role and permissions"}
-            </DialogDescription>
+            <DialogTitle>Edit Data Diri</DialogTitle>
+            <DialogDescription>Perbarui informasi pengguna</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            {dialogType !== "role" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Enter user name"
-                    data-testid="input-user-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    placeholder="user@example.com"
-                    data-testid="input-user-email-form"
-                  />
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value: User["role"]) =>
-                  setFormData({ ...formData, role: value })
-                }
-              >
-                <SelectTrigger id="role" data-testid="select-user-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {formData.role === "admin" && "Full access to all features"}
-                {formData.role === "editor" && "Can create and edit content"}
-                {formData.role === "viewer" && "Read-only access"}
-              </p>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Nama</Label>
+              <Input
+                id="name"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                placeholder="Nama lengkap"
+                data-testid="input-edit-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={editData.email}
+                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                placeholder="user@example.com"
+                data-testid="input-edit-email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Nomor Telepon</Label>
+              <Input
+                id="phone"
+                value={editData.phone}
+                onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                placeholder="08xx xxxx xxxx"
+                data-testid="input-edit-phone"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)} data-testid="button-cancel-user">
-              Cancel
-            </Button>
-            <Button onClick={handleSave} data-testid="button-save-user">
-              {dialogType === "add" ? "Add User" : "Save Changes"}
-            </Button>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Batal</Button>
+            <Button onClick={handleEditSave} data-testid="button-save-edit">Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ubah Password</DialogTitle>
+            <DialogDescription>Masukkan password baru untuk {selectedUser?.name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="newPassword">Password Baru</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                placeholder="Masukkan password baru"
+                data-testid="input-new-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                placeholder="Konfirmasi password"
+                data-testid="input-confirm-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>Batal</Button>
+            <Button onClick={handlePasswordChange} data-testid="button-save-password">Ubah Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
