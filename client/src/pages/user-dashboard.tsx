@@ -66,7 +66,10 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   const outstandingSaldo = pickups
     .filter((p) => ["pending", "accepted", "in-progress"].includes(p.status))
     .reduce((sum, p) => sum + p.price, 0);
-  const totalSaldo = 250000;
+  const completedEarnings = pickups
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + p.price, 0);
+  const totalSaldo = completedEarnings;
   const availableSaldo = totalSaldo - outstandingSaldo;
 
   const getGreeting = () => {
@@ -79,14 +82,6 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
 
   const handleOrderClick = (item: CatalogItem) => {
     setLocation(`/order/${item.id}?type=pickup`);
-  };
-
-  const handleRequestPickup = () => {
-    if (requestData.wasteType && requestData.address) {
-      console.log("Pickup request:", requestData);
-      setRequestData({ wasteType: "", quantity: "", address: "" });
-      setShowRequestDialog(false);
-    }
   };
 
   return (

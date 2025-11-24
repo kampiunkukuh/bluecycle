@@ -24,8 +24,10 @@ interface MyPickup {
 export default function DriverDashboard({ driverId = 3 }: { driverId?: number }) {
   const [outstanding, setOutstanding] = useState<OutstandingPickup[]>([]);
   const [myPickups, setMyPickups] = useState<MyPickup[]>([]);
+  const [history, setHistory] = useState<MyPickup[]>([]);
   const [loadingOutstanding, setLoadingOutstanding] = useState(true);
   const [loadingMy, setLoadingMy] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [takingOrder, setTakingOrder] = useState<number | null>(null);
 
   useEffect(() => {
@@ -58,6 +60,22 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
       }
     };
     fetchMyPickups();
+  }, [driverId]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const response = await fetch(`/api/pickups?status=completed&assignedDriverId=${driverId}`);
+        const data = await response.json();
+        setHistory(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch history:", error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+    fetchHistory();
   }, [driverId]);
 
   const handleTakePickup = async (id: number) => {
@@ -94,7 +112,11 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
       });
 
       if (response.ok) {
+        const completed = myPickups.find((p) => p.id === id);
         setMyPickups(myPickups.filter((p) => p.id !== id));
+        if (completed) {
+          setHistory([...history, completed]);
+        }
       }
     } catch (error) {
       console.error("Failed to complete pickup:", error);
@@ -235,6 +257,46 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
                     <Check className="h-4 w-4 mr-1" />
                     Selesaikan
                   </Button>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* History Section */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Riwayat Order</h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Order Selesai</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {loadingHistory ? (
+              <p className="text-sm text-gray-500">Memuat riwayat...</p>
+            ) : history.length === 0 ? (
+              <p className="text-sm text-gray-500">Belum ada order yang diselesaikan</p>
+            ) : (
+              history.map((pickup) => (
+                <div key={pickup.id} className="border rounded-lg p-3 space-y-2 border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="h-4 w-4 text-green-600" />
+                        <p className="font-medium text-sm">{pickup.address}</p>
+                      </div>
+                      <Badge variant="secondary" className="mb-2">
+                        {pickup.wasteType}
+                      </Badge>
+                      <div className="text-xs text-gray-600 mb-2 space-y-1">
+                        <p>Earning: Rp {Math.floor(pickup.price * 0.8).toLocaleString("id-ID")}</p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-0">
+                        <Check className="h-3 w-3 mr-1" />
+                        Selesai
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               ))
             )}
