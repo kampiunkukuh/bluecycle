@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -161,6 +161,68 @@ api.delete("/api/waste-catalog/:id", async (req, res) => {
     return;
   }
   res.json({ success: true });
+});
+
+// Driver Earnings endpoints
+api.get("/api/driver-earnings/:driverId", async (req, res) => {
+  const earnings = await storage.listDriverEarnings(parseInt(req.params.driverId));
+  res.json(earnings);
+});
+
+api.post("/api/driver-earnings", async (req, res) => {
+  try {
+    const data = insertDriverEarningsSchema.parse(req.body);
+    const earning = await storage.createDriverEarning(data);
+    res.status(201).json(earning);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid earnings data" });
+  }
+});
+
+// User Rewards endpoints
+api.get("/api/user-rewards/:userId", async (req, res) => {
+  const rewards = await storage.listUserRewards(parseInt(req.params.userId));
+  res.json(rewards);
+});
+
+api.post("/api/user-rewards", async (req, res) => {
+  try {
+    const data = insertUserRewardsSchema.parse(req.body);
+    const reward = await storage.createUserReward(data);
+    res.status(201).json(reward);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid rewards data" });
+  }
+});
+
+// Withdrawal Requests endpoints
+api.get("/api/withdrawals/:userId", async (req, res) => {
+  const withdrawals = await storage.listWithdrawalRequests(parseInt(req.params.userId));
+  res.json(withdrawals);
+});
+
+api.post("/api/withdrawals", async (req, res) => {
+  try {
+    const data = insertWithdrawalRequestSchema.parse(req.body);
+    const withdrawal = await storage.createWithdrawalRequest(data);
+    res.status(201).json(withdrawal);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid withdrawal data" });
+  }
+});
+
+api.patch("/api/withdrawals/:id", async (req, res) => {
+  try {
+    const partial = insertWithdrawalRequestSchema.partial().parse(req.body);
+    const withdrawal = await storage.updateWithdrawalRequest(parseInt(req.params.id), partial);
+    if (!withdrawal) {
+      res.status(404).json({ error: "Withdrawal not found" });
+      return;
+    }
+    res.json(withdrawal);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid withdrawal data" });
+  }
 });
 
 // Health check

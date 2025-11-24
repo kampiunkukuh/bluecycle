@@ -1,4 +1,4 @@
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -28,6 +28,21 @@ export interface IStorage {
   listRoutes(driverId?: number): Promise<Route[]>;
   updateRoute(id: number, route: Partial<InsertRoute>): Promise<Route | undefined>;
   deleteRoute(id: number): Promise<boolean>;
+
+  // Driver Earnings
+  createDriverEarning(earning: InsertDriverEarning): Promise<DriverEarning>;
+  listDriverEarnings(driverId: number, days?: number): Promise<DriverEarning[]>;
+  getDriverTotalEarnings(driverId: number): Promise<number>;
+
+  // User Rewards
+  createUserReward(reward: InsertUserReward): Promise<UserReward>;
+  listUserRewards(userId: number, days?: number): Promise<UserReward[]>;
+  getUserTotalRewards(userId: number): Promise<number>;
+
+  // Withdrawal Requests
+  createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
+  listWithdrawalRequests(userId: number): Promise<WithdrawalRequest[]>;
+  updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -35,10 +50,16 @@ export class MemStorage implements IStorage {
   private wasteCatalog: Map<number, WasteCatalogItem> = new Map();
   private pickups: Map<number, Pickup> = new Map();
   private routes: Map<number, Route> = new Map();
+  private driverEarnings: Map<number, DriverEarning> = new Map();
+  private userRewards: Map<number, UserReward> = new Map();
+  private withdrawalRequests: Map<number, WithdrawalRequest> = new Map();
   private userCounter = 1;
   private catalogCounter = 1;
   private pickupCounter = 1;
   private routeCounter = 1;
+  private earningCounter = 1;
+  private rewardCounter = 1;
+  private withdrawalCounter = 1;
 
   // Users
   async getUser(id: number) {
@@ -196,6 +217,96 @@ export class MemStorage implements IStorage {
 
   async deleteRoute(id: number) {
     return this.routes.delete(id);
+  }
+
+  // Driver Earnings
+  async createDriverEarning(earning: InsertDriverEarning) {
+    const id = this.earningCounter++;
+    const newEarning: DriverEarning = {
+      id,
+      driverId: earning.driverId,
+      amount: earning.amount,
+      pickupId: earning.pickupId || null,
+      description: earning.description || null,
+      date: new Date(),
+    };
+    this.driverEarnings.set(id, newEarning);
+    return newEarning;
+  }
+
+  async listDriverEarnings(driverId: number, days = 30) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    return Array.from(this.driverEarnings.values()).filter(
+      (e) => e.driverId === driverId && e.date >= cutoffDate
+    );
+  }
+
+  async getDriverTotalEarnings(driverId: number) {
+    return Array.from(this.driverEarnings.values())
+      .filter((e) => e.driverId === driverId)
+      .reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  // User Rewards
+  async createUserReward(reward: InsertUserReward) {
+    const id = this.rewardCounter++;
+    const newReward: UserReward = {
+      id,
+      userId: reward.userId,
+      amount: reward.amount,
+      pickupId: reward.pickupId || null,
+      description: reward.description || null,
+      date: new Date(),
+    };
+    this.userRewards.set(id, newReward);
+    return newReward;
+  }
+
+  async listUserRewards(userId: number, days = 30) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    return Array.from(this.userRewards.values()).filter(
+      (r) => r.userId === userId && r.date >= cutoffDate
+    );
+  }
+
+  async getUserTotalRewards(userId: number) {
+    return Array.from(this.userRewards.values())
+      .filter((r) => r.userId === userId)
+      .reduce((sum, r) => sum + r.amount, 0);
+  }
+
+  // Withdrawal Requests
+  async createWithdrawalRequest(request: InsertWithdrawalRequest) {
+    const id = this.withdrawalCounter++;
+    const newRequest: WithdrawalRequest = {
+      id,
+      userId: request.userId,
+      userRole: request.userRole,
+      amount: request.amount,
+      status: "pending",
+      bankAccount: request.bankAccount || null,
+      bankName: request.bankName || null,
+      reason: request.reason || null,
+      requestedAt: new Date(),
+      approvedAt: null,
+      completedAt: null,
+    };
+    this.withdrawalRequests.set(id, newRequest);
+    return newRequest;
+  }
+
+  async listWithdrawalRequests(userId: number) {
+    return Array.from(this.withdrawalRequests.values()).filter((r) => r.userId === userId);
+  }
+
+  async updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>) {
+    const existing = this.withdrawalRequests.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...request };
+    this.withdrawalRequests.set(id, updated);
+    return updated;
   }
 }
 

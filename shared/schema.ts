@@ -50,11 +50,49 @@ export const routes = pgTable("routes", {
   completedAt: timestamp("completed_at"),
 });
 
+// Driver Earnings table
+export const driverEarnings = pgTable("driver_earnings", {
+  id: serial("id").primaryKey(),
+  driverId: integer("driver_id").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  date: timestamp("date").defaultNow(),
+  pickupId: integer("pickup_id"),
+  description: varchar("description", { length: 255 }),
+});
+
+// User Rewards table
+export const userRewards = pgTable("user_rewards", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  date: timestamp("date").defaultNow(),
+  pickupId: integer("pickup_id"),
+  description: varchar("description", { length: 255 }),
+});
+
+// Withdrawal Requests table
+export const withdrawalRequests = pgTable("withdrawal_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  userRole: varchar("user_role", { length: 20 }).notNull(), // "driver" or "user"
+  amount: integer("amount").notNull(), // in cents
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // "pending", "approved", "rejected", "completed"
+  bankAccount: varchar("bank_account", { length: 255 }),
+  bankName: varchar("bank_name", { length: 100 }),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  completedAt: timestamp("completed_at"),
+  reason: text("reason"),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
 export const insertPickupSchema = createInsertSchema(pickups).omit({ id: true, createdAt: true, completedAt: true, cancelledAt: true, cancellationReason: true });
 export const insertRouteSchema = createInsertSchema(routes).omit({ id: true, createdAt: true, startedAt: true, completedAt: true });
+export const insertDriverEarningsSchema = createInsertSchema(driverEarnings).omit({ id: true, date: true });
+export const insertUserRewardsSchema = createInsertSchema(userRewards).omit({ id: true, date: true });
+export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).omit({ id: true, requestedAt: true, approvedAt: true, completedAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -68,3 +106,12 @@ export type InsertPickup = z.infer<typeof insertPickupSchema>;
 
 export type Route = typeof routes.$inferSelect;
 export type InsertRoute = z.infer<typeof insertRouteSchema>;
+
+export type DriverEarning = typeof driverEarnings.$inferSelect;
+export type InsertDriverEarning = z.infer<typeof insertDriverEarningsSchema>;
+
+export type UserReward = typeof userRewards.$inferSelect;
+export type InsertUserReward = z.infer<typeof insertUserRewardsSchema>;
+
+export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSchema>;

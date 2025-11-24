@@ -7,6 +7,8 @@ import {
   Settings,
   LogOut,
   Recycle,
+  TrendingUp,
+  Gift,
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,6 +54,18 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       title: "Katalog Sampah",
       url: "/catalog",
       icon: Recycle,
+      roles: ["user"],
+    },
+    {
+      title: "Pendapatan",
+      url: "/earnings",
+      icon: TrendingUp,
+      roles: ["driver"],
+    },
+    {
+      title: "Reward",
+      url: "/earnings",
+      icon: Gift,
       roles: ["user"],
     },
     {
