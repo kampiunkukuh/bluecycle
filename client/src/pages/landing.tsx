@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Leaf, Sparkles } from "lucide-react";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Leaf, Sparkles, Coins, BarChart2, Headphones, Eye } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
+import partnershipImage from "@assets/stock_images/business_partnership_3592ba89.jpg";
 
 interface Stats {
   pickups: number;
@@ -305,39 +306,74 @@ export default function Landing() {
       </section>
 
       {/* Partnership Section */}
-      <section className="px-6 py-20 max-w-6xl mx-auto" id="partnership">
-        <div className="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-12 rounded-3xl border-2 border-primary/50 shadow-xl">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-primary/20 rounded-full">
-                <Briefcase className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-sm font-bold text-primary uppercase tracking-widest">Partnership</span>
-            </div>
-            <h2 className="text-5xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">
-              Bergabung Sebagai Mitra
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular. Raih kesempatan emas untuk berkembang bersama BlueCycle.
-            </p>
-            <div className="space-y-4 mb-8">
-              {["✨ Komisi menarik untuk setiap transaksi", "📊 Akses ke dashboard analytics lengkap", "🎯 Dukungan teknis 24/7", "🚀 Peningkatan brand awareness"].map((item, i) => (
-                <div key={i} className="flex gap-3 items-center">
-                  <div className="flex-shrink-0 w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="font-medium">{item}</span>
+      <section className="px-6 py-24 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900" id="partnership">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Content */}
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/20 rounded-full">
+                  <Briefcase className="h-6 w-6 text-primary" />
                 </div>
-              ))}
+                <span className="text-sm font-bold text-primary uppercase tracking-widest">Partnership</span>
+              </div>
+              <h2 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
+                Bergabung Sebagai <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">Mitra</span>
+              </h2>
+              <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
+                Kami membuka peluang kerjasama dengan vendor, supplier, dan mitra bisnis yang ingin berkontribusi pada ekonomi sirkular. Raih kesempatan emas untuk berkembang bersama BlueCycle.
+              </p>
+              
+              {/* Benefits Grid */}
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                    <Coins className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">Komisi Menarik</h4>
+                  <p className="text-sm text-muted-foreground">Dapatkan komisi kompetitif untuk setiap transaksi</p>
+                </div>
+                <div className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                    <BarChart2 className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">Dashboard Analytics</h4>
+                  <p className="text-sm text-muted-foreground">Akses penuh ke laporan dan analitik real-time</p>
+                </div>
+                <div className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                    <Headphones className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">Dukungan 24/7</h4>
+                  <p className="text-sm text-muted-foreground">Tim teknis siap membantu setiap saat</p>
+                </div>
+                <div className="p-6 bg-white dark:bg-slate-950 rounded-2xl border hover-elevate">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                    <Eye className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">Brand Awareness</h4>
+                  <p className="text-sm text-muted-foreground">Tingkatkan visibility bisnis Anda bersama kami</p>
+                </div>
+              </div>
+
+              <Button size="lg" className="rounded-full h-12 px-10 bg-primary hover:bg-primary/90 font-semibold shadow-lg text-lg" data-testid="button-partnership">
+                <Briefcase className="h-5 w-5 mr-2" />
+                Hubungi Tim Partnership
+              </Button>
             </div>
-            <Button size="lg" className="rounded-full h-12 px-8 bg-primary hover:bg-primary/90 font-semibold shadow-lg" data-testid="button-partnership">
-              Hubungi Tim Partnership
-            </Button>
-          </div>
-          <div className="relative h-80 bg-gradient-to-br from-primary/30 to-primary/10 rounded-2xl flex items-center justify-center border-2 border-primary/30 shadow-lg">
-            <div className="text-center">
-              <Briefcase className="h-32 w-32 text-primary/40 mx-auto mb-4" />
-              <p className="text-primary/60 font-semibold">Peluang Tak Terbatas</p>
+
+            {/* Right Side - Image */}
+            <div className="relative h-96 rounded-3xl overflow-hidden shadow-2xl border-2 border-primary/20 group">
+              <img 
+                src={partnershipImage} 
+                alt="Partnership opportunities"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                <h3 className="text-2xl font-black mb-2">Peluang Tak Terbatas</h3>
+                <p className="text-sm text-white/90">Berkembang bersama ekosistem BlueCycle</p>
+              </div>
             </div>
           </div>
         </div>
