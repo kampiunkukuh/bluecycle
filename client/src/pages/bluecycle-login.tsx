@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,15 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recycle, Shield, Truck, User } from "lucide-react";
 
-export default function BlueCycleLogin() {
-  const [, setLocation] = useLocation();
+interface BlueCycleLoginProps {
+  onLogin: (role: "admin" | "user" | "driver") => void;
+}
+
+export default function BlueCycleLogin({ onLogin }: BlueCycleLoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login attempt:", { email, password });
-    setLocation("/dashboard");
+    onLogin("user");
   };
 
   return (
@@ -54,7 +56,7 @@ export default function BlueCycleLogin() {
                   className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as Admin");
-                    setLocation("/dashboard");
+                    onLogin("admin");
                   }}
                   data-testid="button-demo-admin"
                 >
@@ -73,7 +75,7 @@ export default function BlueCycleLogin() {
                   className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as User");
-                    setLocation("/dashboard");
+                    onLogin("user");
                   }}
                   data-testid="button-demo-user"
                 >
@@ -92,7 +94,7 @@ export default function BlueCycleLogin() {
                   className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as Driver");
-                    setLocation("/dashboard");
+                    onLogin("driver");
                   }}
                   data-testid="button-demo-driver"
                 >

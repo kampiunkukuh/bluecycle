@@ -18,31 +18,37 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   const [location, setLocation] = useLocation();
+  const [currentUser, setCurrentUser] = useState<{
+    role: "admin" | "user" | "driver";
+    name: string;
+    email: string;
+  } | null>(null);
+
   const [notifications, setNotifications] = useState([
     {
       id: "1",
-      title: "New pickup request",
-      message: "Sarah Johnson requested pickup at 123 Main Street",
-      timestamp: "2 minutes ago",
+      title: "Permintaan pickup baru",
+      message: "Sarah Johnson minta pickup di Jl. Sudirman No. 123",
+      timestamp: "2 menit lalu",
       read: false,
     },
     {
       id: "2",
-      title: "Route completed",
-      message: "Driver #3 completed North District route",
-      timestamp: "1 hour ago",
+      title: "Rute selesai",
+      message: "Supir #3 menyelesaikan rute Distrik Utara",
+      timestamp: "1 jam lalu",
       read: false,
     },
     {
       id: "3",
-      title: "New driver assigned",
-      message: "Mike Davis assigned to Fleet #05",
-      timestamp: "3 hours ago",
+      title: "Supir baru ditugaskan",
+      message: "Mike Davis ditugaskan ke Armada #05",
+      timestamp: "3 jam lalu",
       read: true,
     },
   ]);
 
-  const isLoginPage = location === "/" || location === "/login";
+  const isLoginPage = location === "/" || location === "/login" || !currentUser;
 
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
@@ -52,21 +58,26 @@ function Router() {
 
   const handleLogout = () => {
     console.log("Logging out...");
+    setCurrentUser(null);
     setLocation("/");
   };
 
-  // TODO: Replace with real user data from authentication
-  const currentUser = {
-    role: "admin" as const,
-    name: "John Smith",
-    email: "john@bluecycle.com",
+  const handleLogin = (role: "admin" | "user" | "driver") => {
+    const userData = {
+      admin: { name: "Admin BlueCycle", email: "admin@bluecycle.com", role: "admin" as const },
+      user: { name: "Budi Santoso", email: "budi@example.com", role: "user" as const },
+      driver: { name: "Joko Wijaya", email: "joko@bluecycle.com", role: "driver" as const },
+    };
+    setCurrentUser(userData[role]);
+    setLocation("/dashboard");
   };
 
   if (isLoginPage) {
+    const LoginPage = () => <BlueCycleLogin onLogin={handleLogin} />;
     return (
       <Switch>
-        <Route path="/" component={BlueCycleLogin} />
-        <Route path="/login" component={BlueCycleLogin} />
+        <Route path="/" component={LoginPage} />
+        <Route path="/login" component={LoginPage} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -80,12 +91,14 @@ function Router() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <BlueCycleSidebar
-          userRole={currentUser.role}
-          userName={currentUser.name}
-          userEmail={currentUser.email}
-          onLogout={handleLogout}
-        />
+        {currentUser && (
+          <BlueCycleSidebar
+            userRole={currentUser.role}
+            userName={currentUser.name}
+            userEmail={currentUser.email}
+            onLogout={handleLogout}
+          />
+        )}
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
