@@ -9,7 +9,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BlueCycleSidebar } from "@/components/bluecycle-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState } from "react";
-import BlueCycleLogin from "@/pages/bluecycle-login";
+import Login from "@/pages/login";
+import Landing from "@/pages/landing";
+import Register from "@/pages/register";
+import ForgotPassword from "@/pages/forgot-password";
 import BlueCycleDashboard from "@/pages/bluecycle-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import DriverDashboard from "@/pages/driver-dashboard";
@@ -66,7 +69,13 @@ function Router() {
     },
   ]);
 
-  const isLoginPage = location === "/" || location === "/login" || !currentUser;
+  const isAuthPage = !currentUser && (
+    location === "/" || 
+    location === "/landing" || 
+    location === "/login" || 
+    location === "/register" || 
+    location === "/forgot-password"
+  );
 
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
@@ -90,12 +99,22 @@ function Router() {
     setLocation("/dashboard");
   };
 
-  if (isLoginPage) {
-    const LoginPage = () => <BlueCycleLogin onLogin={handleLogin} />;
+  const handleRegister = (role: "admin" | "user" | "driver") => {
+    handleLogin(role);
+  };
+
+  if (isAuthPage) {
     return (
       <Switch>
-        <Route path="/" component={LoginPage} />
-        <Route path="/login" component={LoginPage} />
+        <Route path="/" component={Landing} />
+        <Route path="/landing" component={Landing} />
+        <Route path="/login">
+          {() => <Login onLogin={handleLogin} />}
+        </Route>
+        <Route path="/register">
+          {() => <Register onRegister={handleRegister} />}
+        </Route>
+        <Route path="/forgot-password" component={ForgotPassword} />
         <Route component={NotFound} />
       </Switch>
     );
