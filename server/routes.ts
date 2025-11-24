@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -288,6 +288,87 @@ api.patch("/api/driver-payments/:id", async (req, res) => {
     res.json(payment);
   } catch (error) {
     res.status(400).json({ error: "Invalid driver payment data" });
+  }
+});
+
+// Collection Points endpoints
+api.get("/api/collection-points", async (req, res) => {
+  const points = await storage.listCollectionPoints();
+  res.json(points);
+});
+
+api.get("/api/collection-points/:id", async (req, res) => {
+  const point = await storage.getCollectionPoint(parseInt(req.params.id));
+  if (!point) {
+    res.status(404).json({ error: "Collection point not found" });
+    return;
+  }
+  res.json(point);
+});
+
+api.post("/api/collection-points", async (req, res) => {
+  try {
+    const data = insertCollectionPointSchema.parse(req.body);
+    const point = await storage.createCollectionPoint(data);
+    res.status(201).json(point);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid collection point data" });
+  }
+});
+
+api.patch("/api/collection-points/:id", async (req, res) => {
+  try {
+    const partial = insertCollectionPointSchema.partial().parse(req.body);
+    const point = await storage.updateCollectionPoint(parseInt(req.params.id), partial);
+    if (!point) {
+      res.status(404).json({ error: "Collection point not found" });
+      return;
+    }
+    res.json(point);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid collection point data" });
+  }
+});
+
+api.delete("/api/collection-points/:id", async (req, res) => {
+  const success = await storage.deleteCollectionPoint(parseInt(req.params.id));
+  if (!success) {
+    res.status(404).json({ error: "Collection point not found" });
+    return;
+  }
+  res.json({ success: true });
+});
+
+// Waste Disposals endpoints
+api.get("/api/waste-disposals", async (req, res) => {
+  const { collectionPointId } = req.query;
+  const disposals = await storage.listWasteDisposals({
+    collectionPointId: collectionPointId ? parseInt(collectionPointId as string) : undefined,
+  });
+  res.json(disposals);
+});
+
+api.post("/api/waste-disposals", async (req, res) => {
+  try {
+    const data = insertWasteDisposalSchema.parse(req.body);
+    const disposal = await storage.createWasteDisposal(data);
+    res.status(201).json(disposal);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid waste disposal data" });
+  }
+});
+
+api.patch("/api/waste-disposals/:id", async (req, res) => {
+  try {
+    const partial = insertWasteDisposalSchema.partial().parse(req.body);
+    const disposal = await storage.updateWasteDisposal(parseInt(req.params.id), partial);
+    if (!disposal) {
+      res.status(404).json({ error: "Waste disposal not found" });
+      return;
+    }
+    res.json(disposal);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid waste disposal data" });
   }
 });
 

@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -56,6 +56,18 @@ export interface IStorage {
   createDriverPayment(payment: InsertDriverPayment): Promise<DriverPayment>;
   listDriverPayments(driverId: number): Promise<DriverPayment[]>;
   updateDriverPayment(id: number, payment: Partial<InsertDriverPayment>): Promise<DriverPayment | undefined>;
+
+  // Collection Points
+  getCollectionPoint(id: number): Promise<CollectionPoint | undefined>;
+  createCollectionPoint(point: InsertCollectionPoint): Promise<CollectionPoint>;
+  listCollectionPoints(): Promise<CollectionPoint[]>;
+  updateCollectionPoint(id: number, point: Partial<InsertCollectionPoint>): Promise<CollectionPoint | undefined>;
+  deleteCollectionPoint(id: number): Promise<boolean>;
+
+  // Waste Disposals
+  createWasteDisposal(disposal: InsertWasteDisposal): Promise<WasteDisposal>;
+  listWasteDisposals(filters?: { collectionPointId?: number; wasteType?: string }): Promise<WasteDisposal[]>;
+  updateWasteDisposal(id: number, disposal: Partial<InsertWasteDisposal>): Promise<WasteDisposal | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -324,6 +336,64 @@ export class DrizzleStorage implements IStorage {
       .update(schema.driverPayments)
       .set(payment)
       .where(eq(schema.driverPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Collection Points
+  async getCollectionPoint(id: number) {
+    const result = await this.db
+      .select()
+      .from(schema.collectionPoints)
+      .where(eq(schema.collectionPoints.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async createCollectionPoint(point: InsertCollectionPoint) {
+    const result = await this.db.insert(schema.collectionPoints).values(point).returning();
+    return result[0];
+  }
+
+  async listCollectionPoints() {
+    return await this.db.select().from(schema.collectionPoints);
+  }
+
+  async updateCollectionPoint(id: number, point: Partial<InsertCollectionPoint>) {
+    const result = await this.db
+      .update(schema.collectionPoints)
+      .set(point)
+      .where(eq(schema.collectionPoints.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCollectionPoint(id: number) {
+    const result = await this.db
+      .delete(schema.collectionPoints)
+      .where(eq(schema.collectionPoints.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Waste Disposals
+  async createWasteDisposal(disposal: InsertWasteDisposal) {
+    const result = await this.db.insert(schema.wasteDisposals).values(disposal).returning();
+    return result[0];
+  }
+
+  async listWasteDisposals(filters?: { collectionPointId?: number; wasteType?: string }) {
+    let query = this.db.select().from(schema.wasteDisposals);
+    if (filters?.collectionPointId) {
+      query = query.where(eq(schema.wasteDisposals.collectionPointId, filters.collectionPointId));
+    }
+    return await query;
+  }
+
+  async updateWasteDisposal(id: number, disposal: Partial<InsertWasteDisposal>) {
+    const result = await this.db
+      .update(schema.wasteDisposals)
+      .set(disposal)
+      .where(eq(schema.wasteDisposals.id, id))
       .returning();
     return result[0];
   }

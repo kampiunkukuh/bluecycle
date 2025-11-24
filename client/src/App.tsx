@@ -23,6 +23,7 @@ import DriverPaymentSettings from "@/pages/driver-payment-settings";
 import UserDashboard from "@/pages/user-dashboard";
 import EnvironmentalImpact from "@/pages/environmental-impact";
 import OrderCheckout from "@/pages/order-checkout";
+import CollectionPoints from "@/pages/collection-points";
 import NotFound from "@/pages/not-found";
 
 function Router() {
