@@ -23,13 +23,24 @@ interface WithdrawalRequest {
   amount: number;
   status: "pending" | "approved" | "completed";
   bankName: string;
+  bankAccount: string;
+}
+
+interface BankAccount {
+  id: string;
+  bankName: string;
+  bankAccount: string;
+  isDefault: boolean;
 }
 
 export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+  const [showAddBankDialog, setShowAddBankDialog] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({ amount: "", bankName: "", bankAccount: "" });
+  const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,22 +61,44 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
 
   const completedPickups = pickups.filter((p) => p.status === "completed");
   const totalRewards = completedPickups.reduce((sum, p) => sum + p.price, 0);
-  const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((sum, w) => sum + w.amount, 0);
+  const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalRewards - totalWithdrawn;
 
-  const handleWithdrawal = () => {
-    if (withdrawalData.amount && withdrawalData.bankName) {
-      const newWithdrawal: WithdrawalRequest = {
+  const handleAddBankAccount = () => {
+    if (newBankData.bankName && newBankData.bankAccount) {
+      const newAccount: BankAccount = {
         id: Date.now().toString(),
-        date: new Date().toLocaleDateString("id-ID"),
-        amount: parseInt(withdrawalData.amount),
-        status: "pending",
-        bankName: withdrawalData.bankName,
+        bankName: newBankData.bankName,
+        bankAccount: newBankData.bankAccount,
+        isDefault: bankAccounts.length === 0,
       };
-      setWithdrawals([newWithdrawal, ...withdrawals]);
-      setWithdrawalData({ amount: "", bankName: "", bankAccount: "" });
-      setShowWithdrawDialog(false);
+      setBankAccounts([newAccount, ...bankAccounts]);
+      setNewBankData({ bankName: "", bankAccount: "" });
+      setShowAddBankDialog(false);
     }
+  };
+
+  const handleWithdrawal = () => {
+    if (!withdrawalData.amount || !withdrawalData.bankName || !withdrawalData.bankAccount) {
+      alert("Semua field harus diisi");
+      return;
+    }
+    const amount = parseInt(withdrawalData.amount);
+    if (amount > availableBalance) {
+      alert("Jumlah penarikan melebihi saldo tersedia");
+      return;
+    }
+    const newWithdrawal: WithdrawalRequest = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleDateString("id-ID"),
+      amount: amount,
+      status: "pending",
+      bankName: withdrawalData.bankName,
+      bankAccount: withdrawalData.bankAccount,
+    };
+    setWithdrawals([newWithdrawal, ...withdrawals]);
+    setWithdrawalData({ amount: "", bankName: "", bankAccount: "" });
+    setShowWithdrawDialog(false);
   };
 
   const getStatusBadge = (status: string) => {
@@ -124,6 +157,38 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Bank Accounts Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Akun Pembayaran</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {bankAccounts.length === 0 ? (
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada akun pembayaran terdaftar</p>
+              <Button variant="outline" size="sm" onClick={() => setShowAddBankDialog(true)} className="w-full" data-testid="button-add-bank">
+                + Tambah Akun Pembayaran
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bankAccounts.map((account) => (
+                <div key={account.id} className="p-3 border rounded-lg flex items-center justify-between hover-elevate">
+                  <div>
+                    <p className="font-medium text-sm">{account.bankName}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{account.bankAccount}</p>
+                  </div>
+                  {account.isDefault && <Badge variant="secondary">Utama</Badge>}
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={() => setShowAddBankDialog(true)} className="w-full mt-2" data-testid="button-add-bank-more">
+                + Tambah Akun Lainnya
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
@@ -223,16 +288,39 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="account">Nomor Rekening *</Label>
-              <Input
-                id="account"
-                placeholder="Masukkan nomor rekening"
-                value={withdrawalData.bankAccount}
-                onChange={(e) => setWithdrawalData({ ...withdrawalData, bankAccount: e.target.value })}
-                data-testid="input-bank-account"
-              />
-            </div>
+            {bankAccounts.length > 0 ? (
+              <div>
+                <Label htmlFor="account-select">Akun Pembayaran *</Label>
+                <Select value={withdrawalData.bankAccount} onValueChange={(val) => {
+                  const account = bankAccounts.find(a => a.id === val);
+                  if (account) {
+                    setWithdrawalData({ ...withdrawalData, bankAccount: account.bankAccount, bankName: account.bankName });
+                  }
+                }}>
+                  <SelectTrigger data-testid="select-bank-account">
+                    <SelectValue placeholder="Pilih akun pembayaran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bankAccounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.bankName} - {account.bankAccount}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="account">Nomor Rekening *</Label>
+                <Input
+                  id="account"
+                  placeholder="Masukkan nomor rekening"
+                  value={withdrawalData.bankAccount}
+                  onChange={(e) => setWithdrawalData({ ...withdrawalData, bankAccount: e.target.value })}
+                  data-testid="input-bank-account"
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowWithdrawDialog(false)}>
@@ -240,6 +328,52 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
             </Button>
             <Button onClick={handleWithdrawal} data-testid="button-submit-withdrawal">
               Ajukan Penarikan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Bank Account Dialog */}
+      <Dialog open={showAddBankDialog} onOpenChange={setShowAddBankDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Akun Pembayaran</DialogTitle>
+            <DialogDescription>Tambahkan rekening bank untuk penarikan dana</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-bank">Bank *</Label>
+              <Select value={newBankData.bankName} onValueChange={(val) => setNewBankData({ ...newBankData, bankName: val })}>
+                <SelectTrigger data-testid="select-new-bank">
+                  <SelectValue placeholder="Pilih bank" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BCA">BCA</SelectItem>
+                  <SelectItem value="Mandiri">Mandiri</SelectItem>
+                  <SelectItem value="BNI">BNI</SelectItem>
+                  <SelectItem value="CIMB">CIMB Niaga</SelectItem>
+                  <SelectItem value="Permata">Permata Bank</SelectItem>
+                  <SelectItem value="Danamon">Danamon</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="new-account">Nomor Rekening *</Label>
+              <Input
+                id="new-account"
+                placeholder="Masukkan nomor rekening"
+                value={newBankData.bankAccount}
+                onChange={(e) => setNewBankData({ ...newBankData, bankAccount: e.target.value })}
+                data-testid="input-new-bank-account"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddBankDialog(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleAddBankAccount} data-testid="button-save-bank">
+              Simpan Akun
             </Button>
           </DialogFooter>
         </DialogContent>
