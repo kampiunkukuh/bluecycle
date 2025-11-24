@@ -48,3 +48,8 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_log_in_with_replit:1.0.0", "javascript_websocket:1.0.0", "javascript_database:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+VITE_API_BASE_URL = "https://8de31127-cd50-4fa5-9dc9-e8bab9b2746b-00-2o2mqgcqlrtmk.riker.replit.dev"
