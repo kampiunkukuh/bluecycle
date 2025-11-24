@@ -104,6 +104,84 @@ export const adminCommissions = pgTable("admin_commissions", {
   description: varchar("description", { length: 255 }),
 });
 
+// Collection Points table (for DLH)
+export const collectionPoints = pgTable("collection_points", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: text("address").notNull(),
+  latitude: varchar("latitude", { length: 50 }),
+  longitude: varchar("longitude", { length: 50 }),
+  capacity: integer("capacity"), // in kg
+  currentKg: integer("current_kg").default(0), // kg sampah sekarang
+  status: varchar("status", { length: 50 }).default("available"), // "available", "full", "maintenance"
+  operatingHours: varchar("operating_hours", { length: 100 }), // e.g., "08:00-17:00"
+  contactPerson: varchar("contact_person", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Waste Disposal Tracking table
+export const wasteDisposals = pgTable("waste_disposals", {
+  id: serial("id").primaryKey(),
+  pickupId: integer("pickup_id").notNull(),
+  collectionPointId: integer("collection_point_id"),
+  disposalType: varchar("disposal_type", { length: 100 }), // "recycling", "landfill", "composting"
+  disposalFacility: varchar("disposal_facility", { length: 255 }),
+  disposalDate: timestamp("disposal_date"),
+  quantity: integer("quantity"), // kg
+  certificateUrl: varchar("certificate_url", { length: 500 }), // proof document
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Environmental Metrics table
+export const environmentalMetrics = pgTable("environmental_metrics", {
+  id: serial("id").primaryKey(),
+  pickupId: integer("pickup_id").notNull(),
+  wasteType: varchar("waste_type", { length: 100 }).notNull(),
+  quantityKg: integer("quantity_kg").notNull(),
+  co2Saved: integer("co2_saved"), // grams
+  treesEquivalent: integer("trees_equivalent"), // equivalent trees planted
+  energySaved: integer("energy_saved"), // kWh
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// QR Code Tracking table
+export const qrTracking = pgTable("qr_tracking", {
+  id: serial("id").primaryKey(),
+  pickupId: integer("pickup_id").notNull(),
+  qrCode: varchar("qr_code", { length: 255 }).unique(),
+  pickupPhotoUrl: varchar("pickup_photo_url", { length: 500 }),
+  deliveryPhotoUrl: varchar("delivery_photo_url", { length: 500 }),
+  pickupVerifiedAt: timestamp("pickup_verified_at"),
+  deliveryVerifiedAt: timestamp("delivery_verified_at"),
+  certificateUrl: varchar("certificate_url", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Compliance Reports table
+export const complianceReports = pgTable("compliance_reports", {
+  id: serial("id").primaryKey(),
+  reportMonth: varchar("report_month", { length: 20 }), // "2025-01"
+  reportType: varchar("report_type", { length: 50 }), // "monthly", "yearly"
+  totalOrders: integer("total_orders"),
+  totalKgCollected: integer("total_kg_collected"),
+  totalRevenue: integer("total_revenue"),
+  recyclablePercentage: integer("recyclable_percentage"),
+  reportUrl: varchar("report_url", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Audit Log table
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  action: varchar("action", { length: 255 }).notNull(),
+  entity: varchar("entity", { length: 100 }),
+  entityId: integer("entity_id"),
+  changes: text("changes"), // JSON
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
@@ -113,6 +191,12 @@ export const insertDriverEarningsSchema = createInsertSchema(driverEarnings).omi
 export const insertUserRewardsSchema = createInsertSchema(userRewards).omit({ id: true, date: true });
 export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).omit({ id: true, requestedAt: true, approvedAt: true, completedAt: true });
 export const insertAdminCommissionSchema = createInsertSchema(adminCommissions).omit({ id: true, date: true });
+export const insertCollectionPointSchema = createInsertSchema(collectionPoints).omit({ id: true, createdAt: true });
+export const insertWasteDisposalSchema = createInsertSchema(wasteDisposals).omit({ id: true, createdAt: true });
+export const insertEnvironmentalMetricSchema = createInsertSchema(environmentalMetrics).omit({ id: true, createdAt: true });
+export const insertQrTrackingSchema = createInsertSchema(qrTracking).omit({ id: true, createdAt: true });
+export const insertComplianceReportSchema = createInsertSchema(complianceReports).omit({ id: true, createdAt: true });
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true, timestamp: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -138,3 +222,21 @@ export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSche
 
 export type AdminCommission = typeof adminCommissions.$inferSelect;
 export type InsertAdminCommission = z.infer<typeof insertAdminCommissionSchema>;
+
+export type CollectionPoint = typeof collectionPoints.$inferSelect;
+export type InsertCollectionPoint = z.infer<typeof insertCollectionPointSchema>;
+
+export type WasteDisposal = typeof wasteDisposals.$inferSelect;
+export type InsertWasteDisposal = z.infer<typeof insertWasteDisposalSchema>;
+
+export type EnvironmentalMetric = typeof environmentalMetrics.$inferSelect;
+export type InsertEnvironmentalMetric = z.infer<typeof insertEnvironmentalMetricSchema>;
+
+export type QrTracking = typeof qrTracking.$inferSelect;
+export type InsertQrTracking = z.infer<typeof insertQrTrackingSchema>;
+
+export type ComplianceReport = typeof complianceReports.$inferSelect;
+export type InsertComplianceReport = z.infer<typeof insertComplianceReportSchema>;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
