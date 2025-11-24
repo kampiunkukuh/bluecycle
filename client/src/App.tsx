@@ -11,6 +11,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useState } from "react";
 import BlueCycleLogin from "@/pages/bluecycle-login";
 import BlueCycleDashboard from "@/pages/bluecycle-dashboard";
+import AdminDashboard from "@/pages/admin-dashboard";
 import DriverDashboard from "@/pages/driver-dashboard";
 import PickupRequests from "@/pages/pickup-requests";
 import UserManagement from "@/pages/user-management";
@@ -123,6 +124,7 @@ function Router() {
               <Route path="/dashboard" component={() => {
                 if (currentUser?.role === "driver") return <DriverDashboard />;
                 if (currentUser?.role === "user") return <UserDashboard userId={currentUser?.id} userName={currentUser?.name} />;
+                if (currentUser?.role === "admin") return <AdminDashboard />;
                 return <BlueCycleDashboard />;
               }} />
               <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
