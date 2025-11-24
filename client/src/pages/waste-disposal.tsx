@@ -12,17 +12,14 @@ import { TrendingUp, Truck, MapPin, Calendar, Plus, Archive } from "lucide-react
 interface WasteDisposal {
   id: number;
   pickupId: number;
-  collectionPointId: number;
-  wasteType: string;
-  quantityKg: number;
-  disposalMethod: "landfill" | "recycle" | "incinerate" | "compost";
-  status: "pending" | "in-transit" | "received" | "processed" | "disposed";
-  dispatchDate: Date;
-  arrivedDate?: Date;
+  collectionPointId?: number;
+  wasteType?: string;
+  quantity?: number;
+  disposalType?: string; // "recycling", "landfill", "composting"
+  disposalFacility?: string;
   disposalDate?: Date;
-  chainOfCustodyNotes?: string;
-  finalConfirmation?: boolean;
-  createdAt: Date;
+  certificateUrl?: string;
+  createdAt?: Date;
 }
 
 interface PickupWithUser {
@@ -88,7 +85,7 @@ export default function WasteDisposal() {
   }, []);
 
   const handleSave = async () => {
-    if (!formData.pickupId || !formData.collectionPointId || !formData.wasteType || !formData.quantityKg) {
+    if (!formData.pickupId || !formData.collectionPointId || !formData.quantityKg) {
       alert("Semua field harus diisi");
       return;
     }
@@ -96,11 +93,9 @@ export default function WasteDisposal() {
     const payload = {
       pickupId: parseInt(formData.pickupId),
       collectionPointId: parseInt(formData.collectionPointId),
-      wasteType: formData.wasteType,
-      quantityKg: parseInt(formData.quantityKg),
-      disposalMethod: formData.disposalMethod,
-      status: "pending",
-      chainOfCustodyNotes: formData.chainOfCustodyNotes || null,
+      quantity: parseInt(formData.quantityKg),
+      disposalType: formData.disposalMethod,
+      disposalFacility: formData.wasteType || null,
     };
 
     try {
@@ -133,24 +128,23 @@ export default function WasteDisposal() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (type: string) => {
     const colors: Record<string, string> = {
-      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      "in-transit": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      received: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      processed: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-      disposed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      recycling: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      landfill: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      composting: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      incinerate: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[type] || "bg-gray-100 text-gray-800";
   };
 
-  const filteredDisposals = filterStatus === "all" ? disposals : disposals.filter((d) => d.status === filterStatus);
+  const filteredDisposals = filterStatus === "all" ? disposals : disposals.filter((d) => d.disposalType === filterStatus);
   const stats = {
     total: disposals.length,
-    pending: disposals.filter((d) => d.status === "pending").length,
-    inTransit: disposals.filter((d) => d.status === "in-transit").length,
-    disposed: disposals.filter((d) => d.status === "disposed").length,
-    totalKg: disposals.reduce((sum, d) => sum + d.quantityKg, 0),
+    recycling: disposals.filter((d) => d.disposalType === "recycling").length,
+    landfill: disposals.filter((d) => d.disposalType === "landfill").length,
+    disposed: disposals.filter((d) => d.disposalType === "composting").length,
+    totalKg: disposals.reduce((sum, d) => sum + (d.quantity || 0), 0),
   };
 
   return (
@@ -216,20 +210,20 @@ export default function WasteDisposal() {
             <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Pending</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-          </CardContent>
-        </Card>
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">In Transit</CardTitle>
+            <CardTitle className="text-sm">Daur Ulang</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.inTransit}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.recycling}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">TPA/Landfill</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{stats.landfill}</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
@@ -253,9 +247,9 @@ export default function WasteDisposal() {
       <Tabs value={filterStatus} onValueChange={setFilterStatus}>
         <TabsList>
           <TabsTrigger value="all">Semua</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="in-transit">In Transit</TabsTrigger>
-          <TabsTrigger value="disposed">Selesai</TabsTrigger>
+          <TabsTrigger value="recycling">Daur Ulang</TabsTrigger>
+          <TabsTrigger value="landfill">TPA</TabsTrigger>
+          <TabsTrigger value="composting">Kompos</TabsTrigger>
         </TabsList>
         <TabsContent value={filterStatus} className="space-y-4">
           {loading ? (
@@ -273,18 +267,18 @@ export default function WasteDisposal() {
                       <div className="flex items-center gap-3 mb-2">
                         <Archive className="h-5 w-5 text-gray-500" />
                         <div>
-                          <p className="font-semibold">{disposal.wasteType}</p>
-                          <p className="text-sm text-gray-500">{disposal.quantityKg} kg • {disposal.disposalMethod}</p>
+                          <p className="font-semibold">Order #{disposal.pickupId}</p>
+                          <p className="text-sm text-gray-500">{disposal.quantity} kg • {disposal.disposalFacility || "Belum ditentukan"}</p>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400 mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {new Date(disposal.dispatchDate).toLocaleDateString("id-ID")}
+                          {disposal.disposalDate ? new Date(disposal.disposalDate).toLocaleDateString("id-ID") : "Belum diproses"}
                         </div>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(disposal.status)}>{disposal.status.replace("-", " ")}</Badge>
+                    <Badge className={getStatusColor(disposal.disposalType || "recycling")}>{(disposal.disposalType || "recycling").charAt(0).toUpperCase() + (disposal.disposalType || "recycling").slice(1)}</Badge>
                   </div>
                 </CardContent>
               </Card>
