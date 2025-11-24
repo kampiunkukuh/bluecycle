@@ -1,9 +1,11 @@
 import {
   LayoutDashboard,
-  FileText,
-  Users,
+  History,
+  Package,
+  TrendingUp,
   Settings,
   LogOut,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,7 +21,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
 
-type UserRole = "admin" | "editor" | "viewer";
+type UserRole = "admin" | "user" | "driver";
 
 interface AppSidebarProps {
   userRole: UserRole;
@@ -36,13 +38,25 @@ export function AppSidebar({ userRole, userName, userEmail, onLogout }: AppSideb
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      roles: ["admin", "editor", "viewer"],
+      roles: ["admin", "user", "driver"],
     },
     {
-      title: "Content",
-      url: "/content",
-      icon: FileText,
-      roles: ["admin", "editor"],
+      title: "Riwayat Pesanan",
+      url: "/pickups",
+      icon: History,
+      roles: ["user", "driver"],
+    },
+    {
+      title: "Katalog Sampah",
+      url: "/catalog",
+      icon: Package,
+      roles: ["admin"],
+    },
+    {
+      title: "Earning",
+      url: "/earnings",
+      icon: TrendingUp,
+      roles: ["user", "driver"],
     },
     {
       title: "Users",
@@ -54,7 +68,7 @@ export function AppSidebar({ userRole, userName, userEmail, onLogout }: AppSideb
       title: "Settings",
       url: "/settings",
       icon: Settings,
-      roles: ["admin", "editor", "viewer"],
+      roles: ["admin"],
     },
   ];
 

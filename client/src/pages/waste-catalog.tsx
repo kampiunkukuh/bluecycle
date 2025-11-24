@@ -46,7 +46,18 @@ const mockCatalog: CatalogItem[] = [
   },
 ];
 
-export default function WasteCatalog() {
+interface WasteCatalogProps {
+  userRole?: string;
+}
+
+export default function WasteCatalog({ userRole }: WasteCatalogProps = {}) {
+  if (userRole !== "admin") {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600 dark:text-gray-400">Hanya admin yang dapat mengakses halaman ini</p>
+      </div>
+    );
+  }
   const [catalog, setCatalog] = useState<CatalogItem[]>(mockCatalog);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
