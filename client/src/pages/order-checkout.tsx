@@ -150,20 +150,20 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address: orderAddress,
-          wasteType: item.name,
+          wasteType: item.wasteType,
           quantity: formData.quantity,
           deliveryMethod: orderType,
           status: "pending",
           requestedById: userId,
           notes: formData.notes,
           price: totalPrice,
-          catalogItemId: parseInt(item.id),
+          catalogItemId: item.id,
         }),
       });
 
       if (!response.ok) throw new Error("Gagal membuat pesanan");
 
-      alert(`Pesanan ${item.name} untuk ${orderType} berhasil dibuat!`);
+      alert(`Pesanan ${item.wasteType} untuk ${orderType} berhasil dibuat!`);
       setLocation("/pickups");
     } catch (error) {
       console.error("Error creating order:", error);
@@ -190,14 +190,14 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
             <CardTitle>Ringkasan Pesanan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {item.image && (
+            {item.imageUrl && (
               <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                <img src={item.imageUrl} alt={item.wasteType} className="w-full h-full object-cover" />
               </div>
             )}
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Jenis Sampah</p>
-              <h2 className="text-2xl font-bold">{item.name}</h2>
+              <h2 className="text-2xl font-bold">{item.wasteType}</h2>
             </div>
             <div className="pt-3 border-t">
               <p className="text-sm text-gray-600 dark:text-gray-400">Harga per Unit</p>
@@ -377,7 +377,7 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Jenis Sampah:</span>
-                <span className="font-semibold">{item.name}</span>
+                <span className="font-semibold">{item.wasteType}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Layanan:</span>
