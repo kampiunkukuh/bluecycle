@@ -467,14 +467,14 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {catalog.map((item) => (
                   <div key={item.id} className="border rounded-lg hover-elevate overflow-hidden flex flex-col cursor-pointer" data-testid={`catalog-card-${item.id}`}>
-                    {item.image && (
+                    {item.imageUrl && (
                       <div className="h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                        <img src={item.imageUrl} alt={item.wasteType} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                       </div>
                     )}
                     <div className="p-4 flex flex-col flex-1">
                       <div className="flex-1">
-                        <h3 className="font-semibold">{item.name}</h3>
+                        <h3 className="font-semibold">{item.wasteType}</h3>
                         <p className="text-xs text-gray-500 mt-1">{item.description}</p>
                       </div>
                       <div className="pt-3 border-t mt-3">
