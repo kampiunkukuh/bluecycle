@@ -28,7 +28,7 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
         return;
       }
       try {
-        const response = await fetch(`/api/pickups?requestedById=${userId}&status=pending,accepted,in-progress`);
+        const response = await fetch(`/api/pickups?requestedById=${userId}`);
         const data = await response.json();
         setPickups(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -42,11 +42,10 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
     fetchPickups();
   }, [userId]);
 
-  const outstandingPickups = pickups.filter((p) =>
-    ["pending", "accepted", "in-progress"].includes(p.status) &&
-    (p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.wasteType.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const orderHistory = pickups.filter((p) =>
+    p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.wasteType.toLowerCase().includes(searchQuery.toLowerCase())
+  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { icon: any; label: string; color: string }> = {
@@ -69,6 +68,11 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
         icon: CheckCircle,
         label: "Selesai",
         color: "bg-green-500/10 text-green-600 dark:text-green-500 border-green-200 dark:border-green-900",
+      },
+      cancelled: {
+        icon: AlertCircle,
+        label: "Dibatalkan",
+        color: "bg-red-500/10 text-red-600 dark:text-red-500 border-red-200 dark:border-red-900",
       },
     };
     const config = configs[status] || configs.pending;
@@ -93,7 +97,7 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Riwayat Pesanan</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Pesanan sampah yang masih outstanding dari {userName || "Anda"}
+          Semua pesanan sampah dari {userName || "Anda"} - lengkap dengan status dan tanggal
         </p>
       </div>
 
@@ -109,23 +113,23 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
         />
       </div>
 
-      {/* Pickups List */}
+      {/* Order History List */}
       {loading ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
         </div>
-      ) : outstandingPickups.length === 0 ? (
+      ) : orderHistory.length === 0 ? (
         <Card>
           <CardContent className="pt-12 pb-12 text-center">
             <Package className="h-12 w-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
             <p className="text-gray-600 dark:text-gray-400">
-              {searchQuery ? "Tidak ada pesanan yang sesuai dengan pencarian" : "Tidak ada pesanan yang outstanding"}
+              {searchQuery ? "Tidak ada pesanan yang sesuai dengan pencarian" : "Belum ada riwayat pesanan"}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {outstandingPickups.map((pickup) => (
+          {orderHistory.map((pickup) => (
             <Card key={pickup.id} className="hover-elevate" data-testid={`pickup-card-${pickup.id}`}>
               <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
