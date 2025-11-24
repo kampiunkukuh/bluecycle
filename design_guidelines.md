@@ -1,12 +1,12 @@
-# Design Guidelines: Dynamic Dashboard & CMS Application
+# Design Guidelines: BlueCycle - Waste Management Platform
 
 ## Design Approach
-**System-Based with Modern Productivity Influences**
+**Clean, Eco-Focused, and Mission-Driven**
 
-Primary: Material Design principles for component structure and data density
-Secondary influences: Linear (clean hierarchy), Notion (content-focused layouts), Asana (dashboard organization)
+Primary: Material Design principles with environmental color scheme
+Secondary influences: Modern logistics platforms, sustainability apps
 
-Rationale: Dashboard and CMS applications prioritize clarity, efficiency, and information density over visual spectacle. Users need quick access to data and clear workflows.
+Rationale: Waste management platform prioritizes clarity, real-time tracking, and operational efficiency. The design should inspire trust and environmental consciousness while maintaining professional utility.
 
 ## Core Design Elements
 
@@ -61,9 +61,9 @@ Rationale: Dashboard and CMS applications prioritize clarity, efficiency, and in
 - Submit buttons: Primary action (bg-blue-600), secondary (outlined)
 
 **Role-Based Elements:**
-- Admin: Full sidebar access, red accent for destructive actions
-- Editor: Limited sidebar, content-focused tools prominent
-- Viewer: Minimal sidebar, read-only states clearly indicated
+- Admin: Full platform access, analytics and user management
+- User: Waste pickup requests, tracking, and history
+- Driver: Route management, pickup completion, real-time updates
 
 **Modals & Overlays:**
 - Confirmation dialogs: Centered, max-w-md, backdrop blur

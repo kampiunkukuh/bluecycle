@@ -6,12 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AppSidebar } from "@/components/app-sidebar";
+import { BlueCycleSidebar } from "@/components/bluecycle-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState } from "react";
-import Login from "@/pages/login";
-import Dashboard from "@/pages/dashboard";
-import ContentManagement from "@/pages/content-management";
+import BlueCycleLogin from "@/pages/bluecycle-login";
+import BlueCycleDashboard from "@/pages/bluecycle-dashboard";
+import PickupRequests from "@/pages/pickup-requests";
 import UserManagement from "@/pages/user-management";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -21,22 +21,22 @@ function Router() {
   const [notifications, setNotifications] = useState([
     {
       id: "1",
-      title: "New content published",
-      message: "Sarah Johnson published 'Getting Started Guide'",
+      title: "New pickup request",
+      message: "Sarah Johnson requested pickup at 123 Main Street",
       timestamp: "2 minutes ago",
       read: false,
     },
     {
       id: "2",
-      title: "User role changed",
-      message: "Mike Davis was promoted to Editor",
+      title: "Route completed",
+      message: "Driver #3 completed North District route",
       timestamp: "1 hour ago",
       read: false,
     },
     {
       id: "3",
-      title: "Content updated",
-      message: "Alex Chen edited 'API Documentation'",
+      title: "New driver assigned",
+      message: "Mike Davis assigned to Fleet #05",
       timestamp: "3 hours ago",
       read: true,
     },
@@ -59,14 +59,14 @@ function Router() {
   const currentUser = {
     role: "admin" as const,
     name: "John Smith",
-    email: "john@example.com",
+    email: "john@bluecycle.com",
   };
 
   if (isLoginPage) {
     return (
       <Switch>
-        <Route path="/" component={Login} />
-        <Route path="/login" component={Login} />
+        <Route path="/" component={BlueCycleLogin} />
+        <Route path="/login" component={BlueCycleLogin} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -80,7 +80,7 @@ function Router() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <AppSidebar
+        <BlueCycleSidebar
           userRole={currentUser.role}
           userName={currentUser.name}
           userEmail={currentUser.email}
@@ -99,8 +99,10 @@ function Router() {
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Switch>
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/content" component={ContentManagement} />
+              <Route path="/dashboard" component={BlueCycleDashboard} />
+              <Route path="/pickups" component={PickupRequests} />
+              <Route path="/routes" component={BlueCycleDashboard} />
+              <Route path="/fleet" component={BlueCycleDashboard} />
               <Route path="/users" component={UserManagement} />
               <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
