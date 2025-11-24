@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BlueCycleSidebar } from "@/components/bluecycle-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { useState, useEffect } from "react";
 import Login from "@/pages/login";
 import LoginUser from "@/pages/login-user";
@@ -162,7 +163,7 @@ function Router() {
           />
         )}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between p-4 border-b">
+          <header className="flex items-center justify-between p-4 border-b sticky top-0 z-40 bg-background">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-2">
               <NotificationBell
@@ -173,6 +174,7 @@ function Router() {
             </div>
           </header>
           <main className="flex-1 overflow-auto p-6">
+            <ScrollToTop />
             <Switch>
               <Route path="/dashboard" component={() => {
                 if (currentUser?.role === "driver") return <DriverDashboard />;
