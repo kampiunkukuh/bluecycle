@@ -104,11 +104,17 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
 
     setIsSubmitting(true);
     try {
+      let orderAddress = formData.address;
+      if (orderType === "dropoff" && selectedPoint) {
+        const selectedPointData = collectionPoints.find(p => p.id === selectedPoint);
+        orderAddress = selectedPointData ? `${selectedPointData.name} - ${selectedPointData.address}` : "Lokasi Pengumpulan";
+      }
+
       const response = await fetch("/api/pickups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          address: orderType === "pickup" ? formData.address : selectedPoint,
+          address: orderAddress,
           wasteType: item.name,
           quantity: formData.quantity,
           deliveryMethod: orderType,
