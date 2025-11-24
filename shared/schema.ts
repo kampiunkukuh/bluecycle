@@ -239,6 +239,19 @@ export const vendors = pgTable("vendors", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  recipientId: integer("recipient_id").notNull(),
+  senderId: integer("sender_id"),
+  pickupId: integer("pickup_id"),
+  notificationType: varchar("notification_type", { length: 50 }).notNull(), // "order_created", "order_accepted", "order_completed"
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
@@ -258,6 +271,7 @@ export const insertUserPaymentSchema = createInsertSchema(userPayments).omit({ i
 export const insertDriverPaymentSchema = createInsertSchema(driverPayments).omit({ id: true, requestedAt: true, approvedAt: true, completedAt: true });
 export const insertTpaWasteStockSchema = createInsertSchema(tpaWasteStock).omit({ id: true, lastUpdated: true });
 export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true, isRead: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -313,3 +327,6 @@ export type InsertTpaWasteStock = z.infer<typeof insertTpaWasteStockSchema>;
 
 export type Vendor = typeof vendors.$inferSelect;
 export type InsertVendor = z.infer<typeof insertVendorSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;

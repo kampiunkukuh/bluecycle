@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QrTracking, InsertQrTracking } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QrTracking, InsertQrTracking, Notification, InsertNotification } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -81,6 +81,11 @@ export interface IStorage {
   createQrTracking(tracking: InsertQrTracking): Promise<QrTracking>;
   listQrTracking(filters?: { pickupId?: number }): Promise<QrTracking[]>;
   updateQrTracking(id: number, tracking: Partial<InsertQrTracking>): Promise<QrTracking | undefined>;
+
+  // Notifications
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  listNotifications(recipientId: number): Promise<Notification[]>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -469,6 +474,21 @@ export class DrizzleStorage implements IStorage {
 
   async updateQrTracking(id: number, tracking: Partial<InsertQrTracking>) {
     const result = await this.db.update(schema.qrTracking).set(tracking).where(eq(schema.qrTracking.id, id)).returning();
+    return result[0];
+  }
+
+  // Notifications
+  async createNotification(notification: InsertNotification) {
+    const result = await this.db.insert(schema.notifications).values(notification).returning();
+    return result[0];
+  }
+
+  async listNotifications(recipientId: number) {
+    return await this.db.select().from(schema.notifications).where(eq(schema.notifications.recipientId, recipientId));
+  }
+
+  async markNotificationAsRead(id: number) {
+    const result = await this.db.update(schema.notifications).set({ isRead: true }).where(eq(schema.notifications.id, id)).returning();
     return result[0];
   }
 }
