@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -136,6 +136,31 @@ api.patch("/api/routes/:id", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: "Invalid route data" });
   }
+});
+
+// Waste Catalog endpoints
+api.get("/api/waste-catalog/:userId", async (req, res) => {
+  const catalog = await storage.listWasteCatalog(parseInt(req.params.userId));
+  res.json(catalog);
+});
+
+api.post("/api/waste-catalog", async (req, res) => {
+  try {
+    const data = insertWasteCatalogSchema.parse(req.body);
+    const item = await storage.createWasteCatalogItem(data);
+    res.status(201).json(item);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid waste catalog data" });
+  }
+});
+
+api.delete("/api/waste-catalog/:id", async (req, res) => {
+  const success = await storage.deleteWasteCatalogItem(parseInt(req.params.id));
+  if (!success) {
+    res.status(404).json({ error: "Catalog item not found" });
+    return;
+  }
+  res.json({ success: true });
 });
 
 // Health check

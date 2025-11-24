@@ -1,4 +1,4 @@
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -9,10 +9,16 @@ export interface IStorage {
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
 
+  // Waste Catalog
+  getWasteCatalogItem(id: number): Promise<WasteCatalogItem | undefined>;
+  createWasteCatalogItem(item: InsertWasteCatalogItem): Promise<WasteCatalogItem>;
+  listWasteCatalog(userId: number): Promise<WasteCatalogItem[]>;
+  deleteWasteCatalogItem(id: number): Promise<boolean>;
+
   // Pickups
   getPickup(id: number): Promise<Pickup | undefined>;
   createPickup(pickup: InsertPickup): Promise<Pickup>;
-  listPickups(filters?: { status?: string; requestedById?: number }): Promise<Pickup[]>;
+  listPickups(filters?: { status?: string; requestedById?: number; assignedDriverId?: number }): Promise<Pickup[]>;
   updatePickup(id: number, pickup: Partial<InsertPickup>): Promise<Pickup | undefined>;
   deletePickup(id: number): Promise<boolean>;
 
@@ -26,9 +32,11 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User> = new Map();
+  private wasteCatalog: Map<number, WasteCatalogItem> = new Map();
   private pickups: Map<number, Pickup> = new Map();
   private routes: Map<number, Route> = new Map();
   private userCounter = 1;
+  private catalogCounter = 1;
   private pickupCounter = 1;
   private routeCounter = 1;
 
@@ -72,6 +80,32 @@ export class MemStorage implements IStorage {
     return this.users.delete(id);
   }
 
+  // Waste Catalog
+  async getWasteCatalogItem(id: number) {
+    return this.wasteCatalog.get(id);
+  }
+
+  async createWasteCatalogItem(item: InsertWasteCatalogItem) {
+    const id = this.catalogCounter++;
+    const newItem: WasteCatalogItem = {
+      id,
+      userId: item.userId,
+      wasteType: item.wasteType,
+      description: item.description || null,
+      createdAt: new Date(),
+    };
+    this.wasteCatalog.set(id, newItem);
+    return newItem;
+  }
+
+  async listWasteCatalog(userId: number) {
+    return Array.from(this.wasteCatalog.values()).filter((item) => item.userId === userId);
+  }
+
+  async deleteWasteCatalogItem(id: number) {
+    return this.wasteCatalog.delete(id);
+  }
+
   // Pickups
   async getPickup(id: number) {
     return this.pickups.get(id);
@@ -90,18 +124,23 @@ export class MemStorage implements IStorage {
       notes: pickup.notes || null,
       createdAt: new Date(),
       completedAt: null,
+      cancelledAt: null,
+      cancellationReason: null,
     };
     this.pickups.set(id, newPickup);
     return newPickup;
   }
 
-  async listPickups(filters?: { status?: string; requestedById?: number }) {
+  async listPickups(filters?: { status?: string; requestedById?: number; assignedDriverId?: number }) {
     let result = Array.from(this.pickups.values());
     if (filters?.status) {
       result = result.filter((p) => p.status === filters.status);
     }
     if (filters?.requestedById) {
       result = result.filter((p) => p.requestedById === filters.requestedById);
+    }
+    if (filters?.assignedDriverId) {
+      result = result.filter((p) => p.assignedDriverId === filters.assignedDriverId);
     }
     return result;
   }
