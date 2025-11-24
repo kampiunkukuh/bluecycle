@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Gift, DollarSign, Calendar, Wallet, Send } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Gift, DollarSign, Calendar, Wallet, Send, CreditCard, CheckCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface PickupOrder {
@@ -26,6 +27,17 @@ interface WithdrawalRequest {
   bankAccount: string;
 }
 
+interface Payment {
+  id: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected" | "completed";
+  bankName: string;
+  bankAccount: string;
+  requestedAt: string;
+  approvedAt?: string;
+  adminNotes?: string;
+}
+
 interface BankAccount {
   id: string;
   bankName: string;
@@ -36,6 +48,26 @@ interface BankAccount {
 export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([
+    {
+      id: "1",
+      amount: 250000,
+      status: "pending",
+      bankName: "BNI",
+      bankAccount: "1234567890",
+      requestedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
+    },
+    {
+      id: "2",
+      amount: 150000,
+      status: "approved",
+      bankName: "BCA",
+      bankAccount: "0987654321",
+      requestedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
+      approvedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID"),
+      adminNotes: "Disetujui - proses 1-2 hari kerja",
+    },
+  ]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showAddBankDialog, setShowAddBankDialog] = useState(false);
@@ -128,9 +160,20 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
 
   const getStatusBadge = (status: string) => {
     if (status === "completed") return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    if (status === "approved") return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
     if (status === "pending") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-    return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    if (status === "rejected") return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
+
+  const getStatusIcon = (status: string) => {
+    if (status === "completed" || status === "approved") return <CheckCircle className="h-4 w-4 text-green-600" />;
+    if (status === "pending") return <Clock className="h-4 w-4 text-yellow-600" />;
+    return null;
+  };
+
+  const pendingPayments = payments.filter(p => p.status === "pending");
+  const outstandingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -139,6 +182,14 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
         <p className="text-gray-600 dark:text-gray-400">Dapatkan bonus dengan menjadi mitra aktif BlueCycle</p>
       </div>
 
+      <Tabs defaultValue="overview" className="w-full" data-testid="tabs-earnings">
+        <TabsList className="grid w-full grid-cols-3" data-testid="tabs-list-earnings">
+          <TabsTrigger value="overview" data-testid="tab-overview">Ringkasan</TabsTrigger>
+          <TabsTrigger value="payments" data-testid="tab-payments">Pembayaran</TabsTrigger>
+          <TabsTrigger value="history" data-testid="tab-history">Riwayat</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-3">
@@ -279,6 +330,99 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+
+        <TabsContent value="payments" className="space-y-4" data-testid="tab-content-payments">
+          <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-200 dark:border-yellow-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Pembayaran Tertunda
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                Rp {outstandingAmount.toLocaleString("id-ID")}
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{pendingPayments.length} pembayaran menunggu persetujuan admin</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Status Pembayaran Anda</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {payments.length === 0 ? (
+                <p className="text-sm text-gray-500">Belum ada pembayaran yang diajukan</p>
+              ) : (
+                payments.map((payment) => (
+                  <div key={payment.id} className="p-4 border rounded-lg hover-elevate space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(payment.status)}
+                        <div>
+                          <p className="font-medium">{payment.bankName} - {payment.bankAccount}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Diajukan: {payment.requestedAt}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-lg">Rp {payment.amount.toLocaleString("id-ID")}</p>
+                        <Badge className={getStatusBadge(payment.status)} data-testid={`badge-payment-status-${payment.id}`}>
+                          {payment.status === "pending" && "Menunggu Persetujuan"}
+                          {payment.status === "approved" && "Disetujui"}
+                          {payment.status === "completed" && "Selesai"}
+                          {payment.status === "rejected" && "Ditolak"}
+                        </Badge>
+                      </div>
+                    </div>
+                    {payment.adminNotes && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 border-l-2 border-blue-300 pl-2 italic">
+                        💬 {payment.adminNotes}
+                      </p>
+                    )}
+                    {payment.approvedAt && payment.status !== "pending" && (
+                      <p className="text-xs text-gray-500">Disetujui: {payment.approvedAt}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4" data-testid="tab-content-history">
+          <Card>
+            <CardHeader>
+              <CardTitle>Riwayat Lengkap Pembayaran</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {payments.length === 0 ? (
+                <p className="text-sm text-gray-500">Belum ada riwayat pembayaran</p>
+              ) : (
+                payments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
+                    <div className="flex-1">
+                      <p className="font-medium">{payment.bankName}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{payment.bankAccount}</p>
+                      <p className="text-xs text-gray-500">{payment.requestedAt}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">Rp {payment.amount.toLocaleString("id-ID")}</p>
+                      <Badge className={getStatusBadge(payment.status)}>
+                        {payment.status === "pending" && "Tertunda"}
+                        {payment.status === "approved" && "Disetujui"}
+                        {payment.status === "completed" && "Selesai"}
+                        {payment.status === "rejected" && "Ditolak"}
+                      </Badge>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
         <DialogContent>
