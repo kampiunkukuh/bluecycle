@@ -173,6 +173,8 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
 
   const pendingPayments = payments.filter(p => p.status === "pending");
   const outstandingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+  const approvedPayments = payments.filter(p => p.status === "approved");
+  const totalApproved = approvedPayments.reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -222,13 +224,14 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Sudah Ditarik
+              Menunggu Persetujuan
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              Rp {totalWithdrawn.toLocaleString("id-ID")}
+              Rp {outstandingAmount.toLocaleString("id-ID")}
             </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{pendingPayments.length} permintaan</p>
           </CardContent>
         </Card>
       </div>

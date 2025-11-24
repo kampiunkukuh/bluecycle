@@ -210,3 +210,65 @@ async function seedData() {
 }
 
 seedData().catch(console.error);
+
+// Add sample payments for users and drivers
+const userPayments = await db
+  .insert(schema.userPayments)
+  .values([
+    {
+      userId: users[1].id, // Budi
+      amount: 150000,
+      status: "pending",
+      bankName: "BCA",
+      bankAccount: "1111111111",
+      requestedAt: new Date(),
+    },
+    {
+      userId: users[2].id, // Rina
+      amount: 200000,
+      status: "approved",
+      bankName: "Mandiri",
+      bankAccount: "2222222222",
+      requestedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      approvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      adminNotes: "Disetujui",
+    },
+    {
+      userId: users[3].id, // Hendra
+      amount: 100000,
+      status: "completed",
+      bankName: "BRI",
+      bankAccount: "3333333333",
+      requestedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      approvedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      adminNotes: "Sudah ditransfer",
+    },
+  ])
+  .returning();
+
+const driverPayments = await db
+  .insert(schema.driverPayments)
+  .values([
+    {
+      driverId: users[4].id, // Driver Ahmad
+      amount: 320000, // 80% of completed orders
+      status: "pending",
+      bankName: "BCA",
+      bankAccount: "4444444444",
+      requestedAt: new Date(),
+    },
+    {
+      driverId: users[5].id, // Driver Budi
+      amount: 480000,
+      status: "approved",
+      bankName: "Mandiri",
+      bankAccount: "5555555555",
+      requestedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      approvedAt: new Date(),
+      adminNotes: "Disetujui untuk transfer",
+    },
+  ])
+  .returning();
+
+console.log("✅ Created user payments:", userPayments.length);
+console.log("✅ Created driver payments:", driverPayments.length);
