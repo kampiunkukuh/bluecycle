@@ -20,6 +20,7 @@ import DriverEarnings from "@/pages/driver-earnings";
 import UserEarnings from "@/pages/user-earnings";
 import DriverPaymentSettings from "@/pages/driver-payment-settings";
 import UserDashboard from "@/pages/user-dashboard";
+import OrderCheckout from "@/pages/order-checkout";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -128,6 +129,7 @@ function Router() {
               <Route path="/catalog" component={WasteCatalog} />
               <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings /> : <UserEarnings />} />
               <Route path="/payment-settings" component={DriverPaymentSettings} />
+              <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} />} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={BlueCycleDashboard} />
               <Route path="/users" component={UserManagement} />

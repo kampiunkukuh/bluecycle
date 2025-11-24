@@ -12,6 +12,7 @@ interface CatalogItem {
   price: number;
   description: string;
   image?: string;
+  imageUrl?: string;
 }
 
 const mockCatalog: CatalogItem[] = [
@@ -20,28 +21,28 @@ const mockCatalog: CatalogItem[] = [
     name: "Plastik", 
     price: 50000, 
     description: "Sampah plastik umum seperti botol, tas, dan wadah",
-    image: "🏺"
+    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_74fd1d20.jpg"
   },
   { 
     id: "2", 
     name: "Kertas", 
     price: 45000, 
     description: "Kertas bekas, kardus, dan kemasan kertas lainnya",
-    image: "📄"
+    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_727aee39.jpg"
   },
   { 
     id: "3", 
     name: "Logam", 
     price: 80000, 
     description: "Kaleng aluminium, besi bekas, dan logam lainnya",
-    image: "⚙️"
+    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_6029a7f5.jpg"
   },
   { 
     id: "4", 
     name: "Organik", 
     price: 30000, 
     description: "Sisa makanan, daun, dan limbah organik",
-    image: "🌿"
+    imageUrl: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg"
   },
 ];
 
@@ -123,49 +124,49 @@ export default function WasteCatalog() {
             {catalog.map((item) => (
               <div
                 key={item.id}
-                className="p-4 border rounded-lg hover-elevate space-y-3 flex flex-col"
+                className="border rounded-lg hover-elevate overflow-hidden flex flex-col"
                 data-testid={`catalog-item-${item.id}`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="text-4xl">{item.image}</div>
-                      <div>
-                        <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                      </div>
-                    </div>
+                {item.imageUrl && (
+                  <div className="h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                   </div>
-                </div>
+                )}
+                <div className="p-4 flex flex-col flex-1">
+                  <div>
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{item.description}</p>
+                  </div>
 
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Harga Standar</p>
-                  <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                    Rp {item.price.toLocaleString("id-ID")}
-                  </p>
-                </div>
+                  <div className="pt-2 border-t mt-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Harga Standar</p>
+                    <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                      Rp {item.price.toLocaleString("id-ID")}
+                    </p>
+                  </div>
 
-                <div className="flex gap-2 mt-auto">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => openEditDialog(item)}
-                    data-testid={`button-edit-${item.id}`}
-                  >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleDeleteItem(item.id)}
-                    data-testid={`button-delete-${item.id}`}
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Hapus
-                  </Button>
+                  <div className="flex gap-2 mt-auto">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => openEditDialog(item)}
+                      data-testid={`button-edit-${item.id}`}
+                    >
+                      <Edit2 className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleDeleteItem(item.id)}
+                      data-testid={`button-delete-${item.id}`}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Hapus
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wallet, TrendingUp, Recycle, Send, MapPin, Calendar, Plus } from "lucide-react";
+import { Wallet, TrendingUp, Recycle, Send, MapPin, Calendar, Plus, Zap } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface Transaction {
   id: string;
@@ -22,17 +23,20 @@ interface CatalogItem {
   name: string;
   price: number;
   description: string;
+  image?: string;
 }
 
 interface UserDashboardProps {
   userId?: number;
   userName?: string;
+  onOrderClick?: (item: CatalogItem) => void;
 }
 
 const mockCatalog: CatalogItem[] = [
-  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum" },
-  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus" },
-  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas" },
+  { id: "1", name: "Plastik", price: 50000, description: "Sampah plastik umum", image: "attached_assets/stock_images/plastic_waste_garbag_74fd1d20.jpg" },
+  { id: "2", name: "Kertas", price: 45000, description: "Kertas bekas/kardus", image: "attached_assets/stock_images/plastic_waste_garbag_727aee39.jpg" },
+  { id: "3", name: "Logam", price: 80000, description: "Kaleng, besi bekas", image: "attached_assets/stock_images/plastic_waste_garbag_6029a7f5.jpg" },
+  { id: "4", name: "Organik", price: 30000, description: "Sisa makanan, daun", image: "attached_assets/stock_images/plastic_waste_garbag_2773def9.jpg" },
 ];
 
 const mockTransactions: Transaction[] = [
@@ -42,6 +46,7 @@ const mockTransactions: Transaction[] = [
 ];
 
 export default function UserDashboard({ userId, userName }: UserDashboardProps) {
+  const [, setLocation] = useLocation();
   const [catalog] = useState<CatalogItem[]>(mockCatalog);
   const [transactions] = useState<Transaction[]>(mockTransactions);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
@@ -50,6 +55,18 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   const totalSaldo = 250000;
   const availableSaldo = 150000;
   const pendingRequests = 3;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Selamat Pagi";
+    if (hour < 17) return "Selamat Siang";
+    if (hour < 19) return "Selamat Sore";
+    return "Selamat Malam";
+  };
+
+  const handleOrderClick = (item: CatalogItem) => {
+    setLocation(`/order/${item.id}?type=pickup`);
+  };
 
   const handleRequestPickup = () => {
     if (requestData.wasteType && requestData.address) {
@@ -62,7 +79,7 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard Pelanggan</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{getGreeting()} {userName || "Pelanggan"} 👋</h1>
         <p className="text-gray-600 dark:text-gray-400">Kelola pemesanan dan reward Anda bersama BlueCycle</p>
       </div>
 
@@ -169,23 +186,33 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {catalog.map((item) => (
-                  <div key={item.id} className="p-4 border rounded-lg hover-elevate space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
+                  <div key={item.id} className="border rounded-lg hover-elevate overflow-hidden flex flex-col cursor-pointer" data-testid={`catalog-card-${item.id}`}>
+                    {item.image && (
+                      <div className="h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                      </div>
+                    )}
+                    <div className="p-4 flex flex-col flex-1">
+                      <div className="flex-1">
                         <h3 className="font-semibold">{item.name}</h3>
                         <p className="text-xs text-gray-500 mt-1">{item.description}</p>
                       </div>
-                      <Recycle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <div className="pt-3 border-t mt-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Harga</p>
+                        <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                          Rp {item.price.toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        className="w-full mt-3" 
+                        onClick={() => handleOrderClick(item)}
+                        data-testid={`button-order-${item.id}`}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Pesan Sekarang
+                      </Button>
                     </div>
-                    <div className="pt-2 border-t">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Harga per unit</p>
-                      <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {item.price.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                    <Button size="sm" className="w-full mt-2" data-testid={`button-request-${item.id}`}>
-                      Pesan Sekarang
-                    </Button>
                   </div>
                 ))}
               </div>
