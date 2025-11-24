@@ -111,7 +111,7 @@ export default function Landing() {
       </section>
 
       {/* Live Stats Section */}
-      <section className="px-6 py-16 bg-muted/30">
+      <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Statistik Real-Time BlueCycle</h2>
           <div className="grid md:grid-cols-4 gap-6">
@@ -180,7 +180,7 @@ export default function Landing() {
       </section>
 
       {/* Waste Catalog with Filter */}
-      <section className="px-6 py-20 bg-muted/30">
+      <section className="px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-4">Daftar Jenis Sampah</h2>
           <p className="text-center text-muted-foreground mb-12">Filter sampah berdasarkan jenisnya dan lihat harga</p>
@@ -252,7 +252,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="px-6 py-20 bg-muted/30" id="faq">
+      <section className="px-6 py-20" id="faq">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16 flex items-center justify-center gap-3">
             <HelpCircle className="h-8 w-8" />
@@ -302,19 +302,22 @@ export default function Landing() {
       </section>
 
       {/* Mobile Download Section */}
-      <section className="px-6 py-20 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            Unduh BlueCycle
+      <section className="px-6 py-24 max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Unduh Aplikasi BlueCycle
           </h2>
-          <div className="flex flex-col gap-6 max-w-lg mx-auto items-center">
-            <a href="#" className="block w-full max-w-xs transition-opacity hover:opacity-80" data-testid="button-download-android">
-              <img src="/assets/google-play-badge.png" alt="Get it on Google Play" className="w-full h-auto" />
-            </a>
-            <a href="#" className="block w-full max-w-xs transition-opacity hover:opacity-80" data-testid="button-download-ios">
-              <img src="/assets/app-store-badge.png" alt="Download on the App Store" className="w-full h-auto" />
-            </a>
-          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Tersedia di Google Play Store dan Apple App Store. Download sekarang dan mulai berkontribusi pada ekonomi sirkular.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <a href="#" className="block transition-opacity hover:opacity-80 w-full sm:w-auto" data-testid="button-download-android">
+            <img src="/assets/google-play-badge.png" alt="Get it on Google Play" className="h-auto max-w-xs w-full" />
+          </a>
+          <a href="#" className="block transition-opacity hover:opacity-80 w-full sm:w-auto" data-testid="button-download-ios">
+            <img src="/assets/app-store-badge.png" alt="Download on the App Store" className="h-auto max-w-xs w-full" />
+          </a>
         </div>
       </section>
 
