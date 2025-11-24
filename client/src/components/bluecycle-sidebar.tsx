@@ -72,6 +72,12 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       roles: ["user"],
     },
     {
+      title: "Pembayaran",
+      url: "/payment-management",
+      icon: DollarSign,
+      roles: ["admin"],
+    },
+    {
       title: "Titik Pengumpulan",
       url: "/collection-points",
       icon: MapPin,
