@@ -136,7 +136,7 @@ function Router() {
               }} />
               <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
               <Route path="/catalog" component={() => <WasteCatalog userRole={currentUser?.role} />} />
-              <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings /> : <UserEarnings />} />
+              <Route path="/earnings" component={() => currentUser?.role === "driver" ? <DriverEarnings driverId={currentUser?.id} /> : <UserEarnings />} />
               <Route path="/payment-settings" component={DriverPaymentSettings} />
               <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} userId={currentUser?.id} />} />
               <Route path="/payment-management" component={AdminPaymentManagement} />
