@@ -50,23 +50,6 @@ function Router() {
     email: string;
   } | null>(null);
 
-  // Fetch current user from API on mount
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const user = await res.json();
-          setCurrentUser(user);
-        }
-      } catch (error) {
-        console.error("Failed to fetch current user:", error);
-      }
-    };
-    if (!currentUser) {
-      fetchCurrentUser();
-    }
-  }, []);
 
   const [notifications, setNotifications] = useState([
     {
