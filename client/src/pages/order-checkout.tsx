@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Truck, MapPin, ArrowLeft, Zap, Loader, Clock, Phone } from "lucide-react";
+import { Truck, MapPin, ArrowLeft, Zap, Loader, Clock, Phone, Navigation } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -45,6 +45,7 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([]);
   const [selectedPoint, setSelectedPoint] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   useEffect(() => {
     if (orderType === "dropoff") {
@@ -63,6 +64,39 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
       fetchPoints();
     }
   }, [orderType]);
+
+  const handleGetGpsLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation tidak didukung oleh browser Anda");
+      return;
+    }
+
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Use Nominatim (OpenStreetMap) for reverse geocoding
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.address?.road || data.address?.city_district || data.display_name || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+          setFormData({ ...formData, address });
+        } catch (error) {
+          console.error("Error reverse geocoding:", error);
+          setFormData({ ...formData, address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+        } finally {
+          setGpsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Tidak dapat mengakses lokasi. Pastikan Anda telah memberikan izin akses GPS.");
+        setGpsLoading(false);
+      }
+    );
+  };
 
   if (!item) {
     return (
@@ -219,11 +253,25 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
 
             {/* Location */}
             {orderType === "pickup" ? (
-              <div>
-                <Label htmlFor="address">Alamat Pengambilan *</Label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="address">Alamat Pengambilan *</Label>
+                  <Button 
+                    type="button"
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleGetGpsLocation}
+                    disabled={gpsLoading}
+                    data-testid="button-get-gps"
+                    className="flex items-center gap-1"
+                  >
+                    <Navigation className="h-3 w-3" />
+                    {gpsLoading ? "Mencari..." : "Ambil GPS"}
+                  </Button>
+                </div>
                 <Input
                   id="address"
-                  placeholder="Alamat rumah/kantor Anda"
+                  placeholder="Alamat rumah/kantor Anda atau klik 'Ambil GPS'"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="mt-1"
