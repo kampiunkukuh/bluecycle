@@ -77,31 +77,11 @@ const mockActivities = [
   },
 ];
 
-const upcomingPickups = [
-  {
-    id: "1",
-    address: "Jl. Sudirman No. 123",
-    time: "10:00",
-    type: "Organik",
-    status: "scheduled",
-  },
-  {
-    id: "2",
-    address: "Jl. Gatot Subroto No. 456",
-    time: "11:30",
-    type: "Daur Ulang",
-    status: "in-progress",
-  },
-  {
-    id: "3",
-    address: "Jl. Thamrin No. 789",
-    time: "14:00",
-    type: "Umum",
-    status: "scheduled",
-  },
-];
-
-interface AdminPickup extends typeof upcomingPickups[0] {
+interface AdminPickup {
+  id: string;
+  address: string;
+  time: string;
+  type: string;
   requestedBy?: string;
   status: "pending" | "accepted" | "in-progress" | "completed" | "cancelled";
 }
