@@ -9,11 +9,17 @@ export async function registerRoutes(app: Express) {
 
 // Pickups endpoints
 api.get("/api/pickups", async (req, res) => {
-  const { status, requestedById } = req.query;
-  const pickups = await storage.listPickups({
+  const { status, requestedById, assignedDriverId } = req.query;
+  let pickups = await storage.listPickups({
     status: status as string,
     requestedById: requestedById ? parseInt(requestedById as string) : undefined,
+    assignedDriverId: assignedDriverId ? parseInt(assignedDriverId as string) : undefined,
   });
+  // Handle multiple statuses (comma-separated)
+  if (status && typeof status === 'string' && status.includes(',')) {
+    const statuses = status.split(',').map(s => s.trim());
+    pickups = pickups.filter(p => statuses.includes(p.status));
+  }
   res.json(pickups);
 });
 
