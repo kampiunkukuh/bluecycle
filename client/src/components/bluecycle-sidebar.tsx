@@ -12,6 +12,7 @@ import {
   Leaf,
   Archive,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import {
   Sidebar,

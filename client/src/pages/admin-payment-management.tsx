@@ -207,7 +207,7 @@ export default function AdminPaymentManagement() {
           <TabsTrigger value="completed">Selesai ({stats.completed})</TabsTrigger>
         </TabsList>
 
-        <TabsContent className="space-y-3">
+        <TabsContent value={filterStatus} className="space-y-3">
           {loading ? (
             <div>Memuat...</div>
           ) : filteredPayments.length === 0 ? (
