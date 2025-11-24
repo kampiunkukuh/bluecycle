@@ -382,11 +382,13 @@ export class DrizzleStorage implements IStorage {
   }
 
   async listWasteDisposals(filters?: { collectionPointId?: number; wasteType?: string }) {
-    let query = this.db.select().from(schema.wasteDisposals);
     if (filters?.collectionPointId) {
-      query = query.where(eq(schema.wasteDisposals.collectionPointId, filters.collectionPointId));
+      return await this.db
+        .select()
+        .from(schema.wasteDisposals)
+        .where(eq(schema.wasteDisposals.collectionPointId, filters.collectionPointId));
     }
-    return await query;
+    return await this.db.select().from(schema.wasteDisposals);
   }
 
   async updateWasteDisposal(id: number, disposal: Partial<InsertWasteDisposal>) {
