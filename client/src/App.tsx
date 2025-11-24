@@ -27,6 +27,8 @@ import CollectionPoints from "@/pages/collection-points";
 import WasteDisposalTracking from "@/pages/waste-disposal-tracking";
 import QRTracking from "@/pages/qr-tracking";
 import ComplianceReports from "@/pages/compliance-reports";
+import BulkDataManagement from "@/pages/bulk-data-management";
+import NotificationLog from "@/pages/notification-log";
 import AdminPaymentManagement from "@/pages/admin-payment-management";
 import FleetManagement from "@/pages/fleet-management";
 import NotFound from "@/pages/not-found";
@@ -148,6 +150,8 @@ function Router() {
               <Route path="/waste-disposal" component={WasteDisposalTracking} />
               <Route path="/compliance" component={ComplianceReports} />
               <Route path="/qr-tracking" component={QRTracking} />
+              <Route path="/bulk-data" component={BulkDataManagement} />
+              <Route path="/notifications" component={NotificationLog} />
               <Route path="/environmental-impact" component={EnvironmentalImpact} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={FleetManagement} />

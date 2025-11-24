@@ -545,6 +545,154 @@ api.get("/api/vendors", async (req, res) => {
   }
 });
 
+// SMS Notifications endpoints
+api.get("/api/sms-notifications", async (req, res) => {
+  try {
+    // Mock SMS notifications for demonstration
+    const notifications = [
+      { id: 1, recipientPhone: "+62812345678", recipientName: "Budi Santoso", messageType: "pickup_confirmed", message: "Pesanan sampah Anda telah dikonfirmasi. Driver akan tiba dalam 30 menit. Terima kasih!", status: "sent", sentAt: new Date(Date.now() - 3600000), deliveredAt: new Date(Date.now() - 3595000) },
+      { id: 2, recipientPhone: "+62898765432", recipientName: "Siti Nurhaliza", messageType: "withdrawal_approved", message: "Penarikan Anda sebesar Rp 500.000 telah disetujui. Dana akan masuk dalam 1-2 hari kerja.", status: "sent", sentAt: new Date(Date.now() - 7200000) },
+      { id: 3, recipientPhone: "+62811223344", recipientName: "Ahmad Wijaya", messageType: "delivery_completed", message: "Pengiriman sampah Anda telah selesai. Total 15kg sampah telah dikumpulkan. Poin reward +50 ditambahkan ke akun Anda.", status: "sent", sentAt: new Date(Date.now() - 10800000) },
+      { id: 4, recipientPhone: "+62899887766", recipientName: "Rina Kusuma", messageType: "driver_assigned", message: "Driver Roni (Rating 4.8⭐) telah ditugaskan untuk pickup Anda. Nomor kontak: 0812-XXXX-XXXX", status: "sent", sentAt: new Date(Date.now() - 14400000) },
+      { id: 5, recipientPhone: "+62812555666", recipientName: "Doni Hartono", messageType: "payment_reminder", message: "Pengingat: Ada pesanan pickup yang menunggu pembayaran. Selesaikan pembayaran sekarang untuk menghindari pembatalan otomatis.", status: "pending", sentAt: new Date(Date.now() - 1800000) },
+    ];
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch SMS notifications" });
+  }
+});
+
+api.post("/api/sms-notifications/send", async (req, res) => {
+  try {
+    const { phone, name, messageType, message } = req.body;
+    
+    if (!phone || !messageType || !message) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    // Simulate SMS sending (would integrate Twilio here)
+    const notification = {
+      id: Date.now(),
+      recipientPhone: phone,
+      recipientName: name || "Unknown",
+      messageType,
+      message,
+      status: "sent",
+      sentAt: new Date(),
+      deliveredAt: new Date(),
+    };
+
+    res.status(201).json(notification);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to send SMS notification" });
+  }
+});
+
+// Bulk Export endpoints
+api.get("/api/bulk-export/pickups", async (req, res) => {
+  try {
+    const pickups = await storage.listPickups();
+    const csv = ["id,waste_type,quantity,address,status,assigned_driver_id,price,created_at"].concat(
+      pickups.map((p) =>
+        [p.id, p.wasteType, p.quantity || "0", `"${p.address}"`, p.status, p.assignedDriverId || "", p.price || "0", p.createdAt].join(",")
+      )
+    );
+    res.type("text/csv").send(csv.join("\n"));
+  } catch (error) {
+    res.status(500).json({ error: "Export gagal" });
+  }
+});
+
+api.get("/api/bulk-export/users", async (req, res) => {
+  try {
+    const users = await storage.listUsers();
+    const csv = ["id,name,email,phone,role,bank_account,created_at"].concat(
+      users.map((u) => [u.id, `"${u.name}"`, u.email, u.phone || "", u.role, u.bankAccount || "", u.createdAt].join(","))
+    );
+    res.type("text/csv").send(csv.join("\n"));
+  } catch (error) {
+    res.status(500).json({ error: "Export gagal" });
+  }
+});
+
+api.get("/api/bulk-export/payments", async (req, res) => {
+  try {
+    const userPayments = await storage.listAllUserPayments();
+    const driverPayments = await storage.listAllDriverPayments();
+    const csv = ["id,user_id,driver_id,amount,type,status,requested_date,approved_date"];
+    userPayments.forEach((p) => {
+      csv.push([p.id, p.userId, "", p.amount, "user_withdrawal", p.status, p.requestedDate, p.approvedDate || ""].join(","));
+    });
+    driverPayments.forEach((p) => {
+      csv.push([p.id, "", p.driverId, p.amount, "driver_withdrawal", p.status, p.requestedDate, p.approvedDate || ""].join(","));
+    });
+    res.type("text/csv").send(csv.join("\n"));
+  } catch (error) {
+    res.status(500).json({ error: "Export gagal" });
+  }
+});
+
+api.get("/api/bulk-export/disposals", async (req, res) => {
+  try {
+    const disposals = await storage.listWasteDisposals();
+    const csv = ["id,disposal_type,facility,quantity_kg,disposal_date,certificate_url,created_at"].concat(
+      disposals.map((d) => [d.id, d.disposalType || "", `"${d.disposalFacility || ""}"`, d.quantity || "0", d.disposalDate || "", d.certificateUrl || "", d.createdAt].join(","))
+    );
+    res.type("text/csv").send(csv.join("\n"));
+  } catch (error) {
+    res.status(500).json({ error: "Export gagal" });
+  }
+});
+
+api.get("/api/bulk-export/collection-points", async (req, res) => {
+  try {
+    const points = await storage.listCollectionPoints();
+    const csv = ["id,name,address,latitude,longitude,capacity_kg,current_load_kg,operational_hours,created_at"].concat(
+      points.map((p) =>
+        [p.id, `"${p.name}"`, `"${p.address}"`, p.latitude || "", p.longitude || "", p.capacityKg || "0", p.currentLoadKg || "0", p.operationalHours || "", p.createdAt].join(",")
+      )
+    );
+    res.type("text/csv").send(csv.join("\n"));
+  } catch (error) {
+    res.status(500).json({ error: "Export gagal" });
+  }
+});
+
+// Bulk Import endpoints (stub - validates CSV structure)
+api.post("/api/bulk-import/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    const { data } = req.body;
+
+    if (!Array.isArray(data) || data.length === 0) {
+      res.status(400).json({ error: "Data kosong" });
+      return;
+    }
+
+    // Parse and validate CSV lines
+    let success = 0;
+    const errors: string[] = [];
+
+    data.forEach((line, index) => {
+      try {
+        const fields = line.split(",").map((f: string) => f.trim());
+        if (fields.length < 2) {
+          errors.push(`Baris ${index + 1}: Format tidak valid (minimal 2 kolom)`);
+        } else {
+          success++;
+        }
+      } catch {
+        errors.push(`Baris ${index + 1}: Parse error`);
+      }
+    });
+
+    res.json({ success, failed: errors.length, errors });
+  } catch (error) {
+    res.status(500).json({ error: "Import gagal" });
+  }
+});
+
 // Health check
 api.get("/api/health", (req, res) => {
   res.json({ status: "ok" });

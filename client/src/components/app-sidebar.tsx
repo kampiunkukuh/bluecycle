@@ -11,6 +11,8 @@ import {
   MapPin,
   FileText,
   CreditCard,
+  Database,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
@@ -98,6 +100,18 @@ export function AppSidebar({ userRole, userName, userEmail, onLogout }: AppSideb
       title: "Manajemen Pembayaran",
       url: "/payment-management",
       icon: CreditCard,
+      roles: ["admin"],
+    },
+    {
+      title: "Data Bulk Management",
+      url: "/bulk-data",
+      icon: Database,
+      roles: ["admin"],
+    },
+    {
+      title: "Notifikasi SMS",
+      url: "/notifications",
+      icon: Bell,
       roles: ["admin"],
     },
     {
