@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BlueCycleSidebar } from "@/components/bluecycle-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Login from "@/pages/login";
 import LoginUser from "@/pages/login-user";
 import LoginDriver from "@/pages/login-driver";
@@ -48,6 +48,24 @@ function Router() {
     name: string;
     email: string;
   } | null>(null);
+
+  // Fetch current user from API on mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch("/api/me");
+        if (res.ok) {
+          const user = await res.json();
+          setCurrentUser(user);
+        }
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+      }
+    };
+    if (!currentUser) {
+      fetchCurrentUser();
+    }
+  }, []);
 
   const [notifications, setNotifications] = useState([
     {
@@ -113,8 +131,8 @@ function Router() {
   if (isAuthPage) {
     return (
       <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/landing" component={Landing} />
+        <Route path="/" component={() => <Landing currentUser={currentUser} />} />
+        <Route path="/landing" component={() => <Landing currentUser={currentUser} />} />
         <Route path="/login" component={Login} />
         <Route path="/login-user" component={() => <LoginUser onLogin={handleLogin} />} />
         <Route path="/login-driver" component={() => <LoginDriver onLogin={handleLogin} />} />
@@ -163,9 +181,9 @@ function Router() {
                 return <BlueCycleDashboard />;
               }} />
               <Route path="/pickups" component={() => <PickupRequests userId={currentUser?.id} userName={currentUser?.name} />} />
-              <Route path="/catalog" component={() => <WasteCatalog userRole={currentUser?.role} />} />
+              <Route path="/catalog" component={() => <WasteCatalog userRole={currentUser?.role} currentUser={currentUser} />} />
               <Route path="/admin/catalog" component={() => {
-                if (currentUser?.role === "admin") return <AdminCatalog />;
+                if (currentUser?.role === "admin") return <AdminCatalog currentUser={currentUser} />;
                 return <NotFound />;
               }} />
               <Route path="/catalog/:id" component={(props) => {

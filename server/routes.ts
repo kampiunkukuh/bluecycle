@@ -7,6 +7,27 @@ import { z } from "zod";
 export async function registerRoutes(app: Express) {
   const api = Router();
 
+// Current user endpoint - SINGLE SOURCE OF TRUTH
+api.get("/api/me", async (req, res) => {
+  try {
+    // For now, return the first user from database (or could use session)
+    const users = await storage.listUsers();
+    if (users.length === 0) {
+      return res.status(401).json({ error: "No user found" });
+    }
+    // Return user with role "user" as default
+    const user = users.find(u => u.role === 'user') || users[0];
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch current user" });
+  }
+});
+
 // Login endpoint
 api.post("/api/login", async (req, res) => {
   try {
