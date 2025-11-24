@@ -1,0 +1,21 @@
+import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.bluecycle.app',
+  appName: 'BlueCycle',
+  webDir: 'dist',
+  server: {
+    androidScheme: 'https',
+    iosPadStatusbarBackground: '#000000',
+  },
+  plugins: {
+    Geolocation: {
+      permissions: ['LOCATION_COARSE', 'LOCATION_FINE'],
+    },
+    Camera: {
+      permissions: ['CAMERA', 'PHOTOS'],
+    },
+  },
+};
+
+export default config;
