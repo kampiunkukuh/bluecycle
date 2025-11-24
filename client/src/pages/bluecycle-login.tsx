@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Recycle } from "lucide-react";
+import { Recycle, Shield, Truck, User } from "lucide-react";
 
 export default function BlueCycleLogin() {
   const [, setLocation] = useLocation();
@@ -15,108 +15,148 @@ export default function BlueCycleLogin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login attempt:", { email, password });
-    // TODO: Implement real authentication
     setLocation("/dashboard");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto h-16 w-16 rounded-lg bg-primary flex items-center justify-center">
-            <Recycle className="h-10 w-10 text-primary-foreground" />
+    <div className="min-h-screen flex items-center justify-center p-4" style={{
+      background: "linear-gradient(135deg, hsl(168, 76%, 42%) 0%, hsl(168, 76%, 36%) 100%)"
+    }}>
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="mx-auto h-20 w-20 rounded-2xl bg-white shadow-lg flex items-center justify-center mb-4">
+            <Recycle className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-semibold">BlueCycle</CardTitle>
-          <CardDescription>Waste Management Platform - Sign in to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="email">Email</TabsTrigger>
-              <TabsTrigger value="demo">Demo Login</TabsTrigger>
-            </TabsList>
-            <TabsContent value="email" className="space-y-4 mt-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    data-testid="input-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    data-testid="input-password"
-                  />
-                </div>
-                <Button type="submit" className="w-full" data-testid="button-login">
-                  Sign In
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="demo" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground text-center">
-                Try BlueCycle with a demo account
-              </p>
-              <div className="space-y-2">
+          <h1 className="text-4xl font-bold text-white mb-2">BlueCycle</h1>
+          <p className="text-white/90 text-lg">Smart Waste Management</p>
+        </div>
+
+        <Card className="shadow-xl border-0">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardDescription className="text-base">
+              Sign in to manage your waste collection
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="demo" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="demo">Quick Demo</TabsTrigger>
+                <TabsTrigger value="email">Email Login</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="demo" className="space-y-3 mt-0">
+                <p className="text-sm text-muted-foreground text-center mb-4">
+                  Choose your role to explore BlueCycle
+                </p>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as Admin");
                     setLocation("/dashboard");
                   }}
                   data-testid="button-demo-admin"
                 >
-                  <div className="flex flex-col items-start flex-1">
-                    <span className="font-medium">Admin Account</span>
-                    <span className="text-xs text-muted-foreground">Full platform access & analytics</span>
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Shield className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="font-semibold text-base">Admin</span>
+                      <span className="text-sm text-muted-foreground">Manage users & analytics</span>
+                    </div>
                   </div>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as User");
                     setLocation("/dashboard");
                   }}
                   data-testid="button-demo-user"
                 >
-                  <div className="flex flex-col items-start flex-1">
-                    <span className="font-medium">User Account</span>
-                    <span className="text-xs text-muted-foreground">Request pickups & track waste</span>
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                      <User className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="font-semibold text-base">User</span>
+                      <span className="text-sm text-muted-foreground">Request & track pickups</span>
+                    </div>
                   </div>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full h-auto py-4 justify-start hover-elevate"
                   onClick={() => {
                     console.log("Demo login as Driver");
                     setLocation("/dashboard");
                   }}
                   data-testid="button-demo-driver"
                 >
-                  <div className="flex flex-col items-start flex-1">
-                    <span className="font-medium">Driver Account</span>
-                    <span className="text-xs text-muted-foreground">Manage routes & pickups</span>
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                      <Truck className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="font-semibold text-base">Driver</span>
+                      <span className="text-sm text-muted-foreground">Complete routes & pickups</span>
+                    </div>
                   </div>
                 </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </TabsContent>
+
+              <TabsContent value="email" className="space-y-4 mt-0">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-base">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12"
+                      data-testid="input-email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-base">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-12"
+                      data-testid="input-password"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full h-12 text-base font-semibold" data-testid="button-login">
+                    Sign In
+                  </Button>
+                </form>
+                <div className="text-center">
+                  <a href="#" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-white/80 text-sm mt-6">
+          New to BlueCycle?{" "}
+          <a href="#" className="font-semibold text-white hover:underline">
+            Create an account
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

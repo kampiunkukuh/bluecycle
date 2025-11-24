@@ -1,28 +1,44 @@
 # Design Guidelines: BlueCycle - Waste Management Platform
 
 ## Design Approach
-**Clean, Eco-Focused, and Mission-Driven**
+**Modern, Clean, and User-Centric (Inspired by Gojek & Premium Apps)**
 
-Primary: Material Design principles with environmental color scheme
-Secondary influences: Modern logistics platforms, sustainability apps
+Primary: Modern mobile-first design with vibrant colors and generous spacing
+Secondary influences: Gojek, Grab, modern waste management platforms
 
-Rationale: Waste management platform prioritizes clarity, real-time tracking, and operational efficiency. The design should inspire trust and environmental consciousness while maintaining professional utility.
+Rationale: Professional waste management platform that feels accessible and modern. Design emphasizes visual clarity, engaging interactions, and delightful user experience while maintaining operational efficiency.
+
+Key Characteristics:
+- Generous whitespace and breathing room
+- Bold, clear typography with strong hierarchy
+- Vibrant accent colors with professional neutrals
+- Card-based layouts with subtle shadows
+- Visual status indicators (colors, icons, badges)
+- Mobile-friendly touch targets
 
 ## Core Design Elements
 
 ### Typography
-**Font Family:** Inter (primary), Roboto Mono (code/data)
-- Headings: 600 weight, sizes 24px (h1), 20px (h2), 16px (h3)
-- Body: 400 weight, 14px (main text), 12px (secondary/metadata)
-- Data/Tables: 400 weight, 13px (tabular data)
-- Line height: 1.5 for body, 1.2 for headings
+**Font Family:** Inter (primary), rounded and modern
+- Headings: 700 weight (bold), sizes 32px (h1), 24px (h2), 18px (h3)
+- Body: 400 weight, 15px (main text), 13px (secondary/metadata)
+- Buttons/CTAs: 600 weight (semibold)
+- Line height: 1.6 for body, 1.2 for headings
+- Use sentence case for most UI text, Title Case for major headings
 
 ### Layout System
-**Spacing Units:** Tailwind primitives 2, 4, 6, 8, 12, 16
-- Component padding: p-4 to p-6
+**Spacing Units:** Generous spacing for modern feel
+- Component padding: p-6 to p-8
 - Section gaps: gap-6 to gap-8
 - Page margins: p-6 on mobile, p-8 on desktop
-- Card spacing: p-6 internal, gap-4 between cards
+- Card spacing: p-6 to p-8 internal, gap-6 between cards
+- Minimum touch target: 44px x 44px for mobile
+
+**Visual Design:**
+- Card shadows: Subtle elevation (shadow-sm to shadow-md)
+- Border radius: Larger radius for modern feel (rounded-lg to rounded-xl)
+- Status indicators: Color-coded with icons
+- Accent colors used strategically for CTAs and important elements
 
 **Grid Structure:**
 - Dashboard: Sidebar (256px fixed) + Main content (flex-1)
