@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle } from "lucide-react";
+import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Leaf, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
@@ -322,21 +322,58 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-primary text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Siap Bergabung dengan BlueCycle?</h2>
-          <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-            Mulai hari ini dan jadilah bagian dari revolusi manajemen sampah yang berkelanjutan
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/register">
-              <Button size="lg" variant="secondary" className="rounded-full h-14 px-8" data-testid="button-start-now">
+      <section className="px-6 py-24 relative overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/80 -z-10" />
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
+        
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Leaf className="h-8 w-8 text-white" />
+              <span className="text-sm font-bold text-white/80 uppercase tracking-widest">Bergabunglah Sekarang</span>
+              <Leaf className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
+              Siap Bergabung dengan BlueCycle?
+            </h2>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+              Mulai hari ini dan jadilah bagian dari revolusi manajemen sampah yang berkelanjutan. Bersama kami, setiap pengambilan sampah berkontribusi pada planet yang lebih sehat.
+            </p>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
+              <div className="text-3xl font-bold mb-2">15,847+</div>
+              <p className="text-white/80">Pengambilan Berhasil</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
+              <div className="text-3xl font-bold mb-2">324</div>
+              <p className="text-white/80">Pengemudi Aktif</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white hover-elevate">
+              <div className="text-3xl font-bold mb-2">450+ Ton</div>
+              <p className="text-white/80">Sampah Terkelola</p>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/register" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 bg-white text-primary hover:bg-white/90 font-semibold text-lg shadow-lg hover-elevate" data-testid="button-start-now">
+                <Sparkles className="h-5 w-5 mr-2" />
                 Daftar Sekarang
               </Button>
             </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="rounded-full h-14 px-8 border-white text-white hover:bg-white/10" data-testid="button-signin">
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 border-2 border-white text-white hover:bg-white/10 font-semibold text-lg" data-testid="button-signin">
                 Sudah Punya Akun?
+                <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
           </div>
