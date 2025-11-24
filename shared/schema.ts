@@ -223,6 +223,21 @@ export const tpaWasteStock = pgTable("tpa_waste_stock", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
+// Vendor/Supplier table (Pengepul Sampah)
+export const vendors = pgTable("vendors", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: text("address").notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  wasteTypes: text("waste_types"), // JSON array: ["Plastik", "Kertas", "Logam"]
+  totalCapacity: integer("total_capacity").notNull(), // kg
+  currentStock: integer("current_stock").notNull().default(0), // kg
+  status: varchar("status", { length: 50 }).default("active"), // "active", "inactive", "full"
+  contactPerson: varchar("contact_person", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
@@ -238,6 +253,10 @@ export const insertEnvironmentalMetricSchema = createInsertSchema(environmentalM
 export const insertQrTrackingSchema = createInsertSchema(qrTracking).omit({ id: true, createdAt: true });
 export const insertComplianceReportSchema = createInsertSchema(complianceReports).omit({ id: true, createdAt: true });
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true, timestamp: true });
+export const insertUserPaymentSchema = createInsertSchema(userPayments).omit({ id: true, requestedAt: true, approvedAt: true, completedAt: true });
+export const insertDriverPaymentSchema = createInsertSchema(driverPayments).omit({ id: true, requestedAt: true, approvedAt: true, completedAt: true });
+export const insertTpaWasteStockSchema = createInsertSchema(tpaWasteStock).omit({ id: true, lastUpdated: true });
+export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -281,3 +300,15 @@ export type InsertComplianceReport = z.infer<typeof insertComplianceReportSchema
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+
+export type UserPayment = typeof userPayments.$inferSelect;
+export type InsertUserPayment = z.infer<typeof insertUserPaymentSchema>;
+
+export type DriverPayment = typeof driverPayments.$inferSelect;
+export type InsertDriverPayment = z.infer<typeof insertDriverPaymentSchema>;
+
+export type TpaWasteStock = typeof tpaWasteStock.$inferSelect;
+export type InsertTpaWasteStock = z.infer<typeof insertTpaWasteStockSchema>;
+
+export type Vendor = typeof vendors.$inferSelect;
+export type InsertVendor = z.infer<typeof insertVendorSchema>;
