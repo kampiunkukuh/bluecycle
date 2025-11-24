@@ -49,10 +49,10 @@ export function BlueCycleSidebar({ userRole, userName, userEmail, onLogout }: Bl
       roles: ["admin", "user"],
     },
     {
-      title: "Rute Saya",
-      url: "/routes",
-      icon: MapPin,
-      roles: ["driver"],
+      title: "Katalog Sampah",
+      url: "/catalog",
+      icon: Recycle,
+      roles: ["user"],
     },
     {
       title: "Manajemen Armada",

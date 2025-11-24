@@ -1,10 +1,11 @@
 import { ModernStatsCard } from "@/components/modern-stats-card";
 import { ActivityFeed } from "@/components/activity-feed";
-import { Trash2, Truck, Users, TrendingUp, MapPin, Calendar, Clock } from "lucide-react";
+import { Trash2, Truck, Users, TrendingUp, MapPin, Calendar, Clock, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 const mockStats = [
   {
@@ -100,8 +101,24 @@ const upcomingPickups = [
   },
 ];
 
+interface AdminPickup extends typeof upcomingPickups[0] {
+  requestedBy?: string;
+  status: "pending" | "accepted" | "in-progress" | "completed" | "cancelled";
+}
+
+const adminPickups: AdminPickup[] = [
+  { id: "1", address: "Jl. Sudirman No. 123", time: "10:00", type: "Organik", status: "pending", requestedBy: "Budi Santoso" },
+  { id: "2", address: "Jl. Gatot Subroto No. 456", time: "11:30", type: "Daur Ulang", status: "in-progress", requestedBy: "Rina Wijaya" },
+  { id: "3", address: "Jl. Thamrin No. 789", time: "14:00", type: "Umum", status: "pending", requestedBy: "Hendra Kusuma" },
+];
+
 export default function BlueCycleDashboard() {
   const [, setLocation] = useLocation();
+  const [pickups, setPickups] = useState<AdminPickup[]>(adminPickups);
+
+  const handleCancelPickup = (id: string) => {
+    setPickups(pickups.map((p) => (p.id === id ? { ...p, status: "cancelled" } : p)));
+  };
 
   return (
     <div className="space-y-8">
@@ -144,10 +161,10 @@ export default function BlueCycleDashboard() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {upcomingPickups.map((pickup) => (
+              {pickups.map((pickup) => (
                 <div 
                   key={pickup.id} 
-                  className="flex items-center gap-4 p-4 rounded-lg border hover-elevate"
+                  className={`flex items-center gap-4 p-4 rounded-lg border hover-elevate ${pickup.status === "cancelled" ? "opacity-50 bg-red-50 dark:bg-red-950/20" : ""}`}
                   data-testid={`pickup-item-${pickup.id}`}
                 >
                   <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -163,13 +180,26 @@ export default function BlueCycleDashboard() {
                       <span>•</span>
                       <span>{pickup.type}</span>
                     </div>
+                    {pickup.requestedBy && <p className="text-xs text-gray-500 mt-1">Dari: {pickup.requestedBy}</p>}
                   </div>
-                  <Badge 
-                    variant={pickup.status === "in-progress" ? "default" : "secondary"}
-                    className="flex-shrink-0"
-                  >
-                    {pickup.status === "in-progress" ? "Sedang Proses" : "Terjadwal"}
-                  </Badge>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge 
+                      variant={pickup.status === "in-progress" ? "default" : pickup.status === "cancelled" ? "destructive" : "secondary"}
+                    >
+                      {pickup.status === "in-progress" ? "Proses" : pickup.status === "pending" ? "Tertunda" : "Dibatalkan"}
+                    </Badge>
+                    {pickup.status !== "cancelled" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCancelPickup(pickup.id)}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-950/30"
+                        data-testid={`button-cancel-pickup-${pickup.id}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </CardContent>

@@ -11,9 +11,11 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useState } from "react";
 import BlueCycleLogin from "@/pages/bluecycle-login";
 import BlueCycleDashboard from "@/pages/bluecycle-dashboard";
+import DriverDashboard from "@/pages/driver-dashboard";
 import PickupRequests from "@/pages/pickup-requests";
 import UserManagement from "@/pages/user-management";
 import Settings from "@/pages/settings";
+import WasteCatalog from "@/pages/waste-catalog";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -112,8 +114,9 @@ function Router() {
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Switch>
-              <Route path="/dashboard" component={BlueCycleDashboard} />
+              <Route path="/dashboard" component={() => currentUser?.role === "driver" ? <DriverDashboard /> : <BlueCycleDashboard />} />
               <Route path="/pickups" component={PickupRequests} />
+              <Route path="/catalog" component={WasteCatalog} />
               <Route path="/routes" component={BlueCycleDashboard} />
               <Route path="/fleet" component={BlueCycleDashboard} />
               <Route path="/users" component={UserManagement} />
