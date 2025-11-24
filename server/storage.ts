@@ -1,3 +1,6 @@
+import { eq, and, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/neon-http";
+import * as schema from "@shared/schema";
 import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest } from "@shared/schema";
 
 export interface IStorage {
@@ -45,282 +48,231 @@ export interface IStorage {
   updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private wasteCatalog: Map<number, WasteCatalogItem> = new Map();
-  private pickups: Map<number, Pickup> = new Map();
-  private routes: Map<number, Route> = new Map();
-  private driverEarnings: Map<number, DriverEarning> = new Map();
-  private userRewards: Map<number, UserReward> = new Map();
-  private withdrawalRequests: Map<number, WithdrawalRequest> = new Map();
-  private userCounter = 1;
-  private catalogCounter = 1;
-  private pickupCounter = 1;
-  private routeCounter = 1;
-  private earningCounter = 1;
-  private rewardCounter = 1;
-  private withdrawalCounter = 1;
+function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+  return url;
+}
+
+export class DrizzleStorage implements IStorage {
+  private db: ReturnType<typeof drizzle>;
+
+  constructor() {
+    this.db = drizzle(getDatabaseUrl(), { schema });
+  }
 
   // Users
   async getUser(id: number) {
-    return this.users.get(id);
+    const result = await this.db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
+    return result[0];
   }
 
   async getUserByEmail(email: string) {
-    return Array.from(this.users.values()).find((u) => u.email === email);
+    const result = await this.db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
+    return result[0];
   }
 
   async createUser(user: InsertUser) {
-    const id = this.userCounter++;
-    const newUser: User = {
-      id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      password: user.password || null,
-      phone: user.phone || null,
-      bankName: user.bankName || null,
-      bankAccount: user.bankAccount || null,
-      createdAt: new Date(),
-    };
-    this.users.set(id, newUser);
-    return newUser;
+    const result = await this.db.insert(schema.users).values(user).returning();
+    return result[0];
   }
 
   async listUsers() {
-    return Array.from(this.users.values());
+    return await this.db.select().from(schema.users);
   }
 
   async updateUser(id: number, user: Partial<InsertUser>) {
-    const existing = this.users.get(id);
-    if (!existing) return undefined;
-    const updated = { ...existing, ...user };
-    this.users.set(id, updated);
-    return updated;
+    const result = await this.db.update(schema.users).set(user).where(eq(schema.users.id, id)).returning();
+    return result[0];
   }
 
   async deleteUser(id: number) {
-    return this.users.delete(id);
+    const result = await this.db.delete(schema.users).where(eq(schema.users.id, id));
+    return result.rowCount > 0;
   }
 
   // Waste Catalog
   async getWasteCatalogItem(id: number) {
-    return this.wasteCatalog.get(id);
+    const result = await this.db.select().from(schema.wasteCatalog).where(eq(schema.wasteCatalog.id, id)).limit(1);
+    return result[0];
   }
 
   async createWasteCatalogItem(item: InsertWasteCatalogItem) {
-    const id = this.catalogCounter++;
-    const newItem: WasteCatalogItem = {
-      id,
-      userId: item.userId,
-      wasteType: item.wasteType,
-      description: item.description || null,
-      price: item.price || 0,
-      imageUrl: item.imageUrl || null,
-      createdAt: new Date(),
-    };
-    this.wasteCatalog.set(id, newItem);
-    return newItem;
+    const result = await this.db.insert(schema.wasteCatalog).values(item).returning();
+    return result[0];
   }
 
   async listWasteCatalog(userId: number) {
-    return Array.from(this.wasteCatalog.values()).filter((item) => item.userId === userId);
+    return await this.db.select().from(schema.wasteCatalog).where(eq(schema.wasteCatalog.userId, userId));
   }
 
   async deleteWasteCatalogItem(id: number) {
-    return this.wasteCatalog.delete(id);
+    const result = await this.db.delete(schema.wasteCatalog).where(eq(schema.wasteCatalog.id, id));
+    return result.rowCount > 0;
   }
 
   // Pickups
   async getPickup(id: number) {
-    return this.pickups.get(id);
+    const result = await this.db.select().from(schema.pickups).where(eq(schema.pickups.id, id)).limit(1);
+    return result[0];
   }
 
   async createPickup(pickup: InsertPickup) {
-    const id = this.pickupCounter++;
     const price = pickup.price || 0;
     const driverEarnings = Math.floor(price * 0.8);
     const adminCommission = Math.floor(price * 0.2);
-    const newPickup: Pickup = {
-      id,
-      address: pickup.address,
-      wasteType: pickup.wasteType,
-      quantity: pickup.quantity || null,
-      deliveryMethod: pickup.deliveryMethod || "pickup",
-      status: pickup.status || "pending",
-      requestedById: pickup.requestedById,
-      assignedDriverId: pickup.assignedDriverId || null,
-      scheduledDate: pickup.scheduledDate || null,
-      notes: pickup.notes || null,
-      price,
-      catalogItemId: pickup.catalogItemId || null,
-      driverEarnings,
-      adminCommission,
-      createdAt: new Date(),
-      completedAt: null,
-      cancelledAt: null,
-      cancellationReason: null,
-    };
-    this.pickups.set(id, newPickup);
-    return newPickup;
+    
+    const result = await this.db
+      .insert(schema.pickups)
+      .values({
+        ...pickup,
+        driverEarnings,
+        adminCommission,
+      })
+      .returning();
+    return result[0];
   }
 
   async listPickups(filters?: { status?: string; requestedById?: number; assignedDriverId?: number }) {
-    let result = Array.from(this.pickups.values());
+    let query = this.db.select().from(schema.pickups);
+    
+    const conditions = [];
     if (filters?.status) {
-      result = result.filter((p) => p.status === filters.status);
+      conditions.push(eq(schema.pickups.status, filters.status));
     }
     if (filters?.requestedById) {
-      result = result.filter((p) => p.requestedById === filters.requestedById);
+      conditions.push(eq(schema.pickups.requestedById, filters.requestedById));
     }
     if (filters?.assignedDriverId) {
-      result = result.filter((p) => p.assignedDriverId === filters.assignedDriverId);
+      conditions.push(eq(schema.pickups.assignedDriverId, filters.assignedDriverId));
     }
-    return result;
+    
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions));
+    }
+    return await query;
   }
 
   async updatePickup(id: number, pickup: Partial<InsertPickup>) {
-    const existing = this.pickups.get(id);
-    if (!existing) return undefined;
-    const updated = { ...existing, ...pickup };
-    this.pickups.set(id, updated);
-    return updated;
+    const result = await this.db.update(schema.pickups).set(pickup).where(eq(schema.pickups.id, id)).returning();
+    return result[0];
   }
 
   async deletePickup(id: number) {
-    return this.pickups.delete(id);
+    const result = await this.db.delete(schema.pickups).where(eq(schema.pickups.id, id));
+    return result.rowCount > 0;
   }
 
   // Routes
   async getRoute(id: number) {
-    return this.routes.get(id);
+    const result = await this.db.select().from(schema.routes).where(eq(schema.routes.id, id)).limit(1);
+    return result[0];
   }
 
   async createRoute(route: InsertRoute) {
-    const id = this.routeCounter++;
-    const newRoute: Route = {
-      id,
-      driverId: route.driverId,
-      name: route.name,
-      status: route.status || "pending",
-      pickupIds: route.pickupIds || null,
-      createdAt: new Date(),
-      startedAt: null,
-      completedAt: null,
-    };
-    this.routes.set(id, newRoute);
-    return newRoute;
+    const result = await this.db.insert(schema.routes).values(route).returning();
+    return result[0];
   }
 
   async listRoutes(driverId?: number) {
-    let result = Array.from(this.routes.values());
+    let query = this.db.select().from(schema.routes);
     if (driverId) {
-      result = result.filter((r) => r.driverId === driverId);
+      return await query.where(eq(schema.routes.driverId, driverId));
     }
-    return result;
+    return await query;
   }
 
   async updateRoute(id: number, route: Partial<InsertRoute>) {
-    const existing = this.routes.get(id);
-    if (!existing) return undefined;
-    const updated = { ...existing, ...route };
-    this.routes.set(id, updated);
-    return updated;
+    const result = await this.db.update(schema.routes).set(route).where(eq(schema.routes.id, id)).returning();
+    return result[0];
   }
 
   async deleteRoute(id: number) {
-    return this.routes.delete(id);
+    const result = await this.db.delete(schema.routes).where(eq(schema.routes.id, id));
+    return result.rowCount > 0;
   }
 
   // Driver Earnings
   async createDriverEarning(earning: InsertDriverEarning) {
-    const id = this.earningCounter++;
-    const newEarning: DriverEarning = {
-      id,
-      driverId: earning.driverId,
-      amount: earning.amount,
-      pickupId: earning.pickupId || null,
-      description: earning.description || null,
-      date: new Date(),
-    };
-    this.driverEarnings.set(id, newEarning);
-    return newEarning;
+    const result = await this.db.insert(schema.driverEarnings).values(earning).returning();
+    return result[0];
   }
 
   async listDriverEarnings(driverId: number, days = 30) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    return Array.from(this.driverEarnings.values()).filter(
-      (e) => e.driverId === driverId && (e.date instanceof Date ? e.date >= cutoffDate : true)
-    );
+    
+    return await this.db
+      .select()
+      .from(schema.driverEarnings)
+      .where(
+        and(
+          eq(schema.driverEarnings.driverId, driverId),
+          sql`${schema.driverEarnings.date} >= ${cutoffDate}`
+        )
+      );
   }
 
   async getDriverTotalEarnings(driverId: number) {
-    return Array.from(this.driverEarnings.values())
-      .filter((e) => e.driverId === driverId)
-      .reduce((sum, e) => sum + e.amount, 0);
+    const result = await this.db
+      .select({ total: sql<number>`CAST(COALESCE(SUM(${schema.driverEarnings.amount}), 0) AS INTEGER)` })
+      .from(schema.driverEarnings)
+      .where(eq(schema.driverEarnings.driverId, driverId));
+    return result[0]?.total || 0;
   }
 
   // User Rewards
   async createUserReward(reward: InsertUserReward) {
-    const id = this.rewardCounter++;
-    const newReward: UserReward = {
-      id,
-      userId: reward.userId,
-      amount: reward.amount,
-      pickupId: reward.pickupId || null,
-      description: reward.description || null,
-      date: new Date(),
-    };
-    this.userRewards.set(id, newReward);
-    return newReward;
+    const result = await this.db.insert(schema.userRewards).values(reward).returning();
+    return result[0];
   }
 
   async listUserRewards(userId: number, days = 30) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    return Array.from(this.userRewards.values()).filter(
-      (r) => r.userId === userId && (r.date instanceof Date ? r.date >= cutoffDate : true)
-    );
+    
+    return await this.db
+      .select()
+      .from(schema.userRewards)
+      .where(
+        and(
+          eq(schema.userRewards.userId, userId),
+          sql`${schema.userRewards.date} >= ${cutoffDate}`
+        )
+      );
   }
 
   async getUserTotalRewards(userId: number) {
-    return Array.from(this.userRewards.values())
-      .filter((r) => r.userId === userId)
-      .reduce((sum, r) => sum + r.amount, 0);
+    const result = await this.db
+      .select({ total: sql<number>`CAST(COALESCE(SUM(${schema.userRewards.amount}), 0) AS INTEGER)` })
+      .from(schema.userRewards)
+      .where(eq(schema.userRewards.userId, userId));
+    return result[0]?.total || 0;
   }
 
   // Withdrawal Requests
   async createWithdrawalRequest(request: InsertWithdrawalRequest) {
-    const id = this.withdrawalCounter++;
-    const newRequest: WithdrawalRequest = {
-      id,
-      userId: request.userId,
-      userRole: request.userRole,
-      amount: request.amount,
-      status: "pending",
-      bankAccount: request.bankAccount || null,
-      bankName: request.bankName || null,
-      reason: request.reason || null,
-      requestedAt: new Date(),
-      approvedAt: null,
-      completedAt: null,
-    };
-    this.withdrawalRequests.set(id, newRequest);
-    return newRequest;
+    const result = await this.db.insert(schema.withdrawalRequests).values(request).returning();
+    return result[0];
   }
 
   async listWithdrawalRequests(userId: number) {
-    return Array.from(this.withdrawalRequests.values()).filter((r) => r.userId === userId);
+    return await this.db
+      .select()
+      .from(schema.withdrawalRequests)
+      .where(eq(schema.withdrawalRequests.userId, userId));
   }
 
   async updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>) {
-    const existing = this.withdrawalRequests.get(id);
-    if (!existing) return undefined;
-    const updated = { ...existing, ...request };
-    this.withdrawalRequests.set(id, updated);
-    return updated;
+    const result = await this.db
+      .update(schema.withdrawalRequests)
+      .set(request)
+      .where(eq(schema.withdrawalRequests.id, id))
+      .returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DrizzleStorage();
