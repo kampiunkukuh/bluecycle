@@ -184,7 +184,7 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
       )}
 
       {/* Stats */}
-      {outstandingPickups.length > 0 && (
+      {orderHistory.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Ringkasan</CardTitle>
@@ -193,22 +193,22 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Pesanan</p>
-                <p className="text-2xl font-bold">{outstandingPickups.length}</p>
+                <p className="text-2xl font-bold">{orderHistory.length}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Nilai</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  Rp {outstandingPickups.reduce((sum, p) => sum + p.price, 0).toLocaleString("id-ID")}
+                  Rp {orderHistory.reduce((sum, p) => sum + p.price, 0).toLocaleString("id-ID")}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Delivery Methods</p>
                 <div className="flex gap-2 mt-2">
-                  {outstandingPickups.some((p) => p.deliveryMethod === "pickup") && (
-                    <span className="text-xs font-semibold">Pickup: {outstandingPickups.filter((p) => p.deliveryMethod === "pickup").length}</span>
+                  {orderHistory.some((p) => p.deliveryMethod === "pickup") && (
+                    <span className="text-xs font-semibold">Pickup: {orderHistory.filter((p) => p.deliveryMethod === "pickup").length}</span>
                   )}
-                  {outstandingPickups.some((p) => p.deliveryMethod === "dropoff") && (
-                    <span className="text-xs font-semibold">Drop Off: {outstandingPickups.filter((p) => p.deliveryMethod === "dropoff").length}</span>
+                  {orderHistory.some((p) => p.deliveryMethod === "dropoff") && (
+                    <span className="text-xs font-semibold">Drop Off: {orderHistory.filter((p) => p.deliveryMethod === "dropoff").length}</span>
                   )}
                 </div>
               </div>
