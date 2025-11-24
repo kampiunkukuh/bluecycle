@@ -6,6 +6,11 @@ import {
   Settings,
   LogOut,
   Users,
+  QrCode,
+  Trash2,
+  MapPin,
+  FileText,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,10 +63,41 @@ export function AppSidebar({ userRole, userName, userEmail, onLogout }: AppSideb
       icon: TrendingUp,
       roles: ["user", "driver"],
     },
+    // Admin-only features
     {
       title: "Users",
       url: "/users",
       icon: Users,
+      roles: ["admin"],
+    },
+    {
+      title: "Lokasi Pengumpulan",
+      url: "/collection-points",
+      icon: MapPin,
+      roles: ["admin"],
+    },
+    {
+      title: "Pembuangan Sampah",
+      url: "/waste-disposal",
+      icon: Trash2,
+      roles: ["admin"],
+    },
+    {
+      title: "QR Verification",
+      url: "/qr-tracking",
+      icon: QrCode,
+      roles: ["admin"],
+    },
+    {
+      title: "Laporan Kepatuhan",
+      url: "/compliance",
+      icon: FileText,
+      roles: ["admin"],
+    },
+    {
+      title: "Manajemen Pembayaran",
+      url: "/payment-management",
+      icon: CreditCard,
       roles: ["admin"],
     },
     {
