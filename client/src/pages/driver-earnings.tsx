@@ -101,6 +101,15 @@ export default function DriverEarnings({ driverId = 3 }: { driverId?: number }) 
             approvedAt: p.approvedAt ? new Date(p.approvedAt).toLocaleDateString("id-ID") : undefined,
             adminNotes: p.adminNotes,
           })));
+          // Also set withdrawals from payments data
+          setWithdrawals(paymentsData.map((p: any) => ({
+            id: p.id.toString(),
+            date: new Date(p.requestedAt).toLocaleDateString("id-ID"),
+            amount: p.amount,
+            status: p.status as any,
+            bankName: p.bankName,
+            bankAccount: p.bankAccount,
+          })));
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);

@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreditCard, Check } from "lucide-react";
+import { CreditCard, Check, Clock, Loader } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PaymentMethod {
   bankName: string;
@@ -13,7 +14,17 @@ interface PaymentMethod {
   accountHolder: string;
 }
 
-export default function DriverPaymentSettings() {
+interface Payment {
+  id: number;
+  amount: number;
+  status: "pending" | "approved" | "rejected" | "completed";
+  bankName: string;
+  bankAccount: string;
+  requestedAt: string;
+  approvedAt?: string;
+}
+
+export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: number }) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>({
     bankName: "BCA",
     bankAccount: "1234567890",
@@ -21,10 +32,35 @@ export default function DriverPaymentSettings() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(paymentMethod);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/driver-payments/${driverId}`);
+        const data = await response.json();
+        setPayments(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch payments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPayments();
+  }, [driverId]);
 
   const handleSave = () => {
     setPaymentMethod(formData);
     setIsEditing(false);
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === "completed") return "bg-green-100 text-green-800 dark:bg-green-900";
+    if (status === "approved") return "bg-blue-100 text-blue-800 dark:bg-blue-900";
+    if (status === "pending") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900";
+    return "bg-red-100 text-red-800 dark:bg-red-900";
   };
 
   return (
@@ -34,6 +70,13 @@ export default function DriverPaymentSettings() {
         <p className="text-gray-600 dark:text-gray-400">Kelola metode pembayaran Anda sebagai Mitra BlueCycle</p>
       </div>
 
+      <Tabs defaultValue="settings" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="settings">Pengaturan Bank</TabsTrigger>
+          <TabsTrigger value="history">Riwayat Penarikan</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="settings">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -128,6 +171,42 @@ export default function DriverPaymentSettings() {
           </p>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Riwayat Penarikan Dana</span>
+                {loading && <Loader className="h-4 w-4 animate-spin" />}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {payments.length === 0 ? (
+                <p className="text-center text-gray-500">Tidak ada riwayat penarikan</p>
+              ) : (
+                <div className="space-y-2">
+                  {payments.map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
+                      <div className="flex-1">
+                        <p className="font-semibold">{payment.bankName}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Rp {payment.amount.toLocaleString("id-ID")}</p>
+                        <p className="text-xs text-gray-500">{payment.requestedAt}</p>
+                      </div>
+                      <Badge className={getStatusBadge(payment.status)}>
+                        {payment.status === "pending" && "Tertunda"}
+                        {payment.status === "approved" && "Disetujui"}
+                        {payment.status === "completed" && "Selesai"}
+                        {payment.status === "rejected" && "Ditolak"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
