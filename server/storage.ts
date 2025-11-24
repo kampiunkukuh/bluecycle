@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport } from "@shared/schema";
 
 export interface IStorage {
   // Users
@@ -70,6 +70,11 @@ export interface IStorage {
   createWasteDisposal(disposal: InsertWasteDisposal): Promise<WasteDisposal>;
   listWasteDisposals(filters?: { collectionPointId?: number; wasteType?: string }): Promise<WasteDisposal[]>;
   updateWasteDisposal(id: number, disposal: Partial<InsertWasteDisposal>): Promise<WasteDisposal | undefined>;
+
+  // Compliance Reports
+  createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport>;
+  listComplianceReports(filters?: { reportMonth?: string; reportType?: string }): Promise<ComplianceReport[]>;
+  updateComplianceReport(id: number, report: Partial<InsertComplianceReport>): Promise<ComplianceReport | undefined>;
 }
 
 function getDatabaseUrl(): string {
@@ -406,6 +411,32 @@ export class DrizzleStorage implements IStorage {
       .update(schema.wasteDisposals)
       .set(disposal)
       .where(eq(schema.wasteDisposals.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Compliance Reports
+  async createComplianceReport(report: InsertComplianceReport) {
+    const result = await this.db.insert(schema.complianceReports).values(report).returning();
+    return result[0];
+  }
+
+  async listComplianceReports(filters?: { reportMonth?: string; reportType?: string }) {
+    let query = this.db.select().from(schema.complianceReports);
+    if (filters?.reportMonth) {
+      query = query.where(eq(schema.complianceReports.reportMonth, filters.reportMonth));
+    }
+    if (filters?.reportType) {
+      query = query.where(eq(schema.complianceReports.reportType, filters.reportType));
+    }
+    return await query;
+  }
+
+  async updateComplianceReport(id: number, report: Partial<InsertComplianceReport>) {
+    const result = await this.db
+      .update(schema.complianceReports)
+      .set(report)
+      .where(eq(schema.complianceReports.id, id))
       .returning();
     return result[0];
   }

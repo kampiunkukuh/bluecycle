@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema, insertComplianceReportSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -404,6 +404,92 @@ api.get("/api/tpa-waste", async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch TPA data" });
+  }
+});
+
+// Compliance Reports endpoints
+api.get("/api/compliance-reports", async (req, res) => {
+  try {
+    const { reportMonth, reportType } = req.query;
+    const reports = await storage.listComplianceReports({
+      reportMonth: reportMonth as string | undefined,
+      reportType: reportType as string | undefined,
+    });
+    res.json(reports);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch compliance reports" });
+  }
+});
+
+api.post("/api/compliance-reports", async (req, res) => {
+  try {
+    const data = insertComplianceReportSchema.parse(req.body);
+    const report = await storage.createComplianceReport(data);
+    res.status(201).json(report);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid compliance report data" });
+  }
+});
+
+api.patch("/api/compliance-reports/:id", async (req, res) => {
+  try {
+    const partial = insertComplianceReportSchema.partial().parse(req.body);
+    const report = await storage.updateComplianceReport(parseInt(req.params.id), partial);
+    if (!report) {
+      res.status(404).json({ error: "Report not found" });
+      return;
+    }
+    res.json(report);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid report data" });
+  }
+});
+
+api.post("/api/compliance-reports/generate/:month/:year", async (req, res) => {
+  try {
+    const { month, year } = req.params;
+    const monthStr = `${year}-${String(month).padStart(2, "0")}`;
+    
+    const pickups = await storage.listPickups({ status: "completed" });
+    const disposals = await storage.listWasteDisposals();
+    
+    const monthPickups = pickups.filter(p => {
+      const pDate = new Date(p.completedAt || p.createdAt);
+      return pDate.getMonth() + 1 === parseInt(month) && pDate.getFullYear() === parseInt(year);
+    });
+    
+    const totalOrders = monthPickups.length;
+    const totalRevenue = monthPickups.reduce((sum, p) => sum + (p.price || 0), 0);
+    const adminCommission = Math.round(totalRevenue * 0.2);
+    const driverEarnings = Math.round(totalRevenue * 0.8);
+    const totalKgCollected = monthPickups.reduce((sum, p) => {
+      const qty = parseInt(p.quantity || "0") || 0;
+      return sum + qty;
+    }, 0);
+    
+    const recycledDisposals = disposals.filter(d => d.disposalType === "recycling");
+    const landfillDisposals = disposals.filter(d => d.disposalType === "landfill");
+    const totalWasteRecycled = recycledDisposals.reduce((sum, d) => sum + (d.quantity || 0), 0);
+    const wasteLandfilled = landfillDisposals.reduce((sum, d) => sum + (d.quantity || 0), 0);
+    const recyclablePercentage = totalKgCollected > 0 ? Math.round((totalWasteRecycled / totalKgCollected) * 100) : 0;
+    
+    const users = await storage.listUsers();
+    const activeUsers = users.filter(u => u.role === "user").length;
+    const activeDrivers = users.filter(u => u.role === "driver").length;
+    
+    const report = await storage.createComplianceReport({
+      reportMonth: monthStr,
+      reportType: "monthly",
+      totalOrders,
+      totalKgCollected,
+      totalRevenue,
+      recyclablePercentage,
+    });
+    
+    res.status(201).json(report);
+  } catch (error) {
+    console.error("Error generating report:", error);
+    res.status(500).json({ error: "Failed to generate report" });
   }
 });
 
