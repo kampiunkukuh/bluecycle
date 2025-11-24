@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Truck, MapPin, ArrowLeft, Zap, Loader } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Truck, MapPin, ArrowLeft, Zap, Loader, Clock, Phone } from "lucide-react";
 
 interface OrderItem {
   id: string;
   name: string;
   price: number;
   image?: string;
+}
+
+interface CollectionPoint {
+  id: number;
+  name: string;
+  address: string;
+  capacity?: number;
+  currentKg: number;
+  status: "available" | "full" | "maintenance";
+  operatingHours?: string;
+  contactPerson?: string;
+  phone?: string;
 }
 
 const mockItems: Record<string, OrderItem> = {
@@ -29,6 +42,27 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
   const [formData, setFormData] = useState({ address: "", quantity: "", notes: "" });
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([]);
+  const [selectedPoint, setSelectedPoint] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (orderType === "dropoff") {
+      const fetchPoints = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch("/api/collection-points");
+          const data = await response.json();
+          setCollectionPoints(Array.isArray(data) ? data : []);
+        } catch (error) {
+          console.error("Failed to fetch collection points:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPoints();
+    }
+  }, [orderType]);
 
   if (!item) {
     return (
@@ -47,8 +81,16 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
   }
 
   const handleSubmitOrder = () => {
-    if (!formData.address || !formData.quantity) {
-      alert("Alamat dan jumlah harus diisi");
+    if (!formData.quantity) {
+      alert("Jumlah sampah harus diisi");
+      return;
+    }
+    if (orderType === "pickup" && !formData.address) {
+      alert("Alamat pengambilan harus diisi");
+      return;
+    }
+    if (orderType === "dropoff" && !selectedPoint) {
+      alert("Pilih lokasi pengumpulan terlebih dahulu");
       return;
     }
     setShowConfirm(true);
@@ -66,7 +108,7 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          address: formData.address,
+          address: orderType === "pickup" ? formData.address : selectedPoint,
           wasteType: item.name,
           quantity: formData.quantity,
           deliveryMethod: orderType,
@@ -170,19 +212,63 @@ export default function OrderCheckout({ itemId, userId }: { itemId: string; user
             </div>
 
             {/* Location */}
-            <div>
-              <Label htmlFor="address">
-                Alamat {orderType === "pickup" ? "Pengambilan" : "Tujuan"} *
-              </Label>
-              <Input
-                id="address"
-                placeholder={orderType === "pickup" ? "Alamat rumah/kantor Anda" : "Lokasi pengumpulan"}
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="mt-1"
-                data-testid="input-order-address"
-              />
-            </div>
+            {orderType === "pickup" ? (
+              <div>
+                <Label htmlFor="address">Alamat Pengambilan *</Label>
+                <Input
+                  id="address"
+                  placeholder="Alamat rumah/kantor Anda"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="mt-1"
+                  data-testid="input-order-address"
+                />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Label>Pilih Lokasi Pengumpulan *</Label>
+                {loading ? (
+                  <p className="text-gray-600">Memuat lokasi...</p>
+                ) : collectionPoints.length === 0 ? (
+                  <p className="text-gray-600">Tidak ada lokasi tersedia</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto">
+                    {collectionPoints.map((point) => (
+                      <Card 
+                        key={point.id} 
+                        className={`cursor-pointer hover-elevate ${selectedPoint === point.id ? "ring-2 ring-green-500" : ""}`}
+                        onClick={() => setSelectedPoint(point.id)}
+                        data-testid={`card-collection-point-select-${point.id}`}
+                      >
+                        <CardContent className="pt-4">
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm">{point.name}</h4>
+                                <p className="text-xs text-gray-600 flex items-center gap-1 mt-1">
+                                  <MapPin className="h-3 w-3" /> {point.address}
+                                </p>
+                              </div>
+                              <Badge className={point.status === "available" ? "bg-green-100 text-green-800 dark:bg-green-900" : "bg-red-100 text-red-800"}>
+                                {point.status === "available" ? "Buka" : "Penuh"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              {point.operatingHours && (
+                                <>
+                                  <Clock className="h-3 w-3" />
+                                  <span>{point.operatingHours}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quantity */}
             <div>

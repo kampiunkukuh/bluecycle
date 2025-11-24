@@ -162,105 +162,17 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
     setLocation(`/order/${item.id}?type=pickup`);
   };
 
-  const getCapacityColor = (used: number, capacity?: number) => {
-    if (!capacity) return "bg-green-500";
-    const percentage = (used / capacity) * 100;
-    if (percentage >= 90) return "bg-red-500";
-    if (percentage >= 70) return "bg-yellow-500";
-    return "bg-green-500";
-  };
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{getGreeting()} {userName || "Pelanggan"} 👋</h1>
-        <p className="text-gray-600 dark:text-gray-400">Dashboard komprehensif aktivitas BlueCycle Anda</p>
-      </div>
-
-      {/* Lokasi Drop-Off Pengumpulan */}
-      <div className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Lokasi Drop-Off Pengumpulan Sampah</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-x-auto pb-2">
-          {collectionPoints.length === 0 ? (
-            <p className="text-gray-500">Memuat lokasi pengumpulan...</p>
-          ) : (
-            collectionPoints.map((point) => (
-              <Card key={point.id} className="hover-elevate cursor-pointer min-w-[300px]" data-testid={`card-collection-point-${point.id}`}>
-                <CardContent className="pt-6">
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm leading-tight">{point.name}</h3>
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <MapPin className="h-3 w-3" /> {point.address}
-                        </p>
-                      </div>
-                      <Badge 
-                        className={
-                          point.status === "available" 
-                            ? "bg-green-100 text-green-800 dark:bg-green-900" 
-                            : point.status === "full"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900"
-                            : "bg-gray-100 text-gray-800"
-                        }
-                      >
-                        {point.status === "available" ? "Buka" : point.status === "full" ? "Penuh" : "Maintenance"}
-                      </Badge>
-                    </div>
-
-                    {/* Kapasitas */}
-                    {point.capacity && (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-600 dark:text-gray-400">Kapasitas:</span>
-                          <span className="font-medium">{point.currentKg} / {point.capacity} kg</span>
-                        </div>
-                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full ${getCapacityColor(point.currentKg, point.capacity)} transition-all`}
-                            style={{ width: `${Math.min((point.currentKg / point.capacity) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Jam Operasional */}
-                    {point.operatingHours && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                        <Clock className="h-3 w-3" />
-                        <span>{point.operatingHours}</span>
-                      </div>
-                    )}
-
-                    {/* Kontak */}
-                    {point.phone && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                        <Phone className="h-3 w-3" />
-                        <span>{point.phone}</span>
-                      </div>
-                    )}
-
-                    {/* Info Kontak */}
-                    {point.contactPerson && (
-                      <div className="text-xs text-gray-500 pt-2 border-t">
-                        <p>Pengelola: <span className="font-medium">{point.contactPerson}</span></p>
-                      </div>
-                    )}
-
-                    <Button 
-                      size="sm" 
-                      className="w-full mt-2"
-                      onClick={() => setLocation(`/order/1?type=dropoff&point=${point.id}`)}
-                      data-testid={`button-dropoff-${point.id}`}
-                    >
-                      Pilih Lokasi
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{getGreeting()} {userName || "Pelanggan"} 👋</h1>
+          <p className="text-gray-600 dark:text-gray-400">Dashboard komprehensif aktivitas BlueCycle Anda</p>
         </div>
+        <Button onClick={() => setLocation("/catalog")} variant="outline">
+          <Package className="h-4 w-4 mr-2" />
+          Pesan Sekarang
+        </Button>
       </div>
 
       {/* Main Statistics Cards */}
