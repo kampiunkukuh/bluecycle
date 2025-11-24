@@ -24,7 +24,7 @@ import UserDashboard from "@/pages/user-dashboard";
 import EnvironmentalImpact from "@/pages/environmental-impact";
 import OrderCheckout from "@/pages/order-checkout";
 import CollectionPoints from "@/pages/collection-points";
-import WasteDisposal from "@/pages/waste-disposal";
+import WasteDisposalTracking from "@/pages/waste-disposal-tracking";
 import ComplianceReports from "@/pages/compliance-reports";
 import AdminPaymentManagement from "@/pages/admin-payment-management";
 import FleetManagement from "@/pages/fleet-management";
@@ -141,7 +141,7 @@ function Router() {
               <Route path="/order/:itemId" component={(props) => <OrderCheckout itemId={props.params.itemId} userId={currentUser?.id} />} />
               <Route path="/payment-management" component={AdminPaymentManagement} />
               <Route path="/collection-points" component={CollectionPoints} />
-              <Route path="/waste-disposal" component={WasteDisposal} />
+              <Route path="/waste-disposal" component={WasteDisposalTracking} />
               <Route path="/compliance" component={ComplianceReports} />
               <Route path="/environmental-impact" component={EnvironmentalImpact} />
               <Route path="/routes" component={BlueCycleDashboard} />
