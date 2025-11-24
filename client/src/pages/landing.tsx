@@ -309,8 +309,11 @@ export default function Landing() {
             Unduh BlueCycle
           </h2>
           <div className="flex flex-col gap-4 max-w-sm mx-auto">
+            <a href="#" className="inline-block hover-elevate transition-transform" data-testid="button-download-android">
+              <img src="/assets/google-play-badge.png" alt="Get it on Google Play" className="w-full h-auto" />
+            </a>
             <a href="#" className="inline-block hover-elevate transition-transform" data-testid="button-download-ios">
-              <img src="/assets/app-store-badges.png" alt="Download on the App Store" className="w-full h-auto" />
+              <img src="/assets/app-store-badge.png" alt="Download on the App Store" className="w-full h-auto" />
             </a>
           </div>
         </div>
