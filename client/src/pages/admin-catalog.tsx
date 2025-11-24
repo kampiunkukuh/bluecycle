@@ -15,11 +15,11 @@ export default function AdminCatalog() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<InsertWasteCatalogItem>({
+    userId: 1, // Admin user
     wasteType: "",
     description: "",
-    pricePerKg: 0,
+    price: 0,
     imageUrl: "",
-    category: "",
   });
 
   const { data: items = [] } = useQuery<WasteCatalogItem[]>({
@@ -142,28 +142,16 @@ export default function AdminCatalog() {
                 />
               </div>
               <div>
-                <Label htmlFor="category">Kategori</Label>
+                <Label htmlFor="price">Harga per Kilogram (Rp)</Label>
                 <Input
-                  id="category"
-                  placeholder="contoh: Recyclable, Organic"
-                  value={formData.category || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  data-testid="input-category"
-                />
-              </div>
-              <div>
-                <Label htmlFor="pricePerKg">Harga per Kilogram (Rp)</Label>
-                <Input
-                  id="pricePerKg"
+                  id="price"
                   type="number"
                   placeholder="5000"
-                  value={formData.pricePerKg || 0}
+                  value={formData.price || 0}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      pricePerKg: parseFloat(e.target.value) || 0,
+                      price: parseFloat(e.target.value) || 0,
                     })
                   }
                   required
@@ -207,16 +195,10 @@ export default function AdminCatalog() {
                     <p className="text-muted-foreground mt-1">{item.description}</p>
                   )}
                   <div className="flex gap-4 mt-3 text-sm">
-                    {item.category && (
-                      <div>
-                        <span className="text-muted-foreground">Kategori:</span>
-                        <span className="ml-2 font-semibold">{item.category}</span>
-                      </div>
-                    )}
                     <div>
                       <span className="text-muted-foreground">Harga:</span>
                       <span className="ml-2 font-semibold">
-                        Rp {item.pricePerKg.toLocaleString("id-ID")}/kg
+                        Rp {item.price.toLocaleString("id-ID")}/kg
                       </span>
                     </div>
                   </div>
