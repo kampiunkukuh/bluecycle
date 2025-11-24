@@ -10,6 +10,9 @@ import { BlueCycleSidebar } from "@/components/bluecycle-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState } from "react";
 import Login from "@/pages/login";
+import LoginUser from "@/pages/login-user";
+import LoginDriver from "@/pages/login-driver";
+import LoginAdmin from "@/pages/login-admin";
 import Landing from "@/pages/landing";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -108,12 +111,11 @@ function Router() {
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/landing" component={Landing} />
-        <Route path="/login">
-          {() => <Login onLogin={handleLogin} />}
-        </Route>
-        <Route path="/register">
-          {() => <Register onRegister={handleRegister} />}
-        </Route>
+        <Route path="/login" component={Login} />
+        <Route path="/login-user" component={() => <LoginUser onLogin={handleLogin} />} />
+        <Route path="/login-driver" component={() => <LoginDriver onLogin={handleLogin} />} />
+        <Route path="/login-admin" component={() => <LoginAdmin onLogin={handleLogin} />} />
+        <Route path="/register" component={() => <Register onRegister={handleRegister} />} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route component={NotFound} />
       </Switch>
