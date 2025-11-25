@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle, MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Leaf, Sparkles, Coins, BarChart2, Headphones, Eye } from "lucide-react";
+import { MapPin, TrendingUp, Shield, Users, Zap, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Download, Briefcase, HelpCircle, Leaf, Sparkles, Coins, BarChart2, Headphones, Eye } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LandingNavbar from "@/components/landing-navbar";
+import bluecycleLogo from "@assets/bluecycle-logo.png";
 import partnershipImage from "@assets/stock_images/professional_busines_501d84a4.jpg";
 import pickupImage from "@assets/stock_images/truck_collecting_was_763e7111.jpg";
 import dropoffImage from "@assets/stock_images/waste_management_fac_8b505f6b.jpg";
@@ -105,6 +106,7 @@ export default function Landing({ currentUser }: LandingProps) {
       <section className="px-6 py-20 max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
+            <img src={bluecycleLogo} alt="BlueCycle" className="h-24 w-auto mb-8" />
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Kelola Sampah dengan <span className="text-primary">Cerdas</span>
             </h1>
@@ -126,8 +128,7 @@ export default function Landing({ currentUser }: LandingProps) {
           </div>
           <div className="relative h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl flex items-center justify-center">
             <div className="text-center">
-              <div className="text-6xl font-black text-primary mb-4">BlueCycle</div>
-              <Recycle className="h-32 w-32 text-primary/40 mx-auto" />
+              <img src={bluecycleLogo} alt="BlueCycle" className="h-40 w-auto mx-auto" />
             </div>
           </div>
         </div>

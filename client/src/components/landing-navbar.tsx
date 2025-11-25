@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Recycle } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import bluecycleLogo from "@assets/bluecycle-logo.png";
 
 export default function LandingNavbar() {
   return (
@@ -9,10 +9,7 @@ export default function LandingNavbar() {
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
         <Link href="/">
           <div className="flex items-center gap-3 cursor-pointer hover:opacity-80">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <Recycle className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold">BlueCycle</span>
+            <img src={bluecycleLogo} alt="BlueCycle" className="h-10 w-auto" />
           </div>
         </Link>
         
