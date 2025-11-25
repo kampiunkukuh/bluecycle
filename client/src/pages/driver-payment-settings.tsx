@@ -49,7 +49,7 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
   const [loading, setLoading] = useState(true);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showAddBankDialog, setShowAddBankDialog] = useState(false);
-  const [withdrawalData, setWithdrawalData] = useState({ amount: "", selectedAccount: "" });
+  const [withdrawalData, setWithdrawalData] = useState({ amount: "", selectedAccount: "", bankTujuan: "" });
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [driverBalance, setDriverBalance] = useState(0);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
@@ -175,7 +175,7 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
 
       if (response.ok) {
         alert("Permintaan penarikan berhasil dibuat!");
-        setWithdrawalData({ amount: "", selectedAccount: "" });
+        setWithdrawalData({ amount: "", selectedAccount: "", bankTujuan: "" });
         setShowWithdrawDialog(false);
         // Refresh data
         const paymentsRes = await fetch(`/api/driver-payments/${driverId}`);
@@ -231,6 +231,7 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Ajukan Penarikan Dana</DialogTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Tarik penghasilan Anda ke rekening bank</p>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -261,62 +262,49 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Akun Pembayaran *</Label>
-                  {bankAccounts.length === 0 ? (
-                    <div className="text-sm text-gray-600 dark:text-gray-400 p-3 border rounded-lg">
-                      <p className="mb-2">Belum ada akun pembayaran terdaftar</p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full" 
-                        onClick={() => setShowAddBankDialog(true)}
-                        data-testid="button-add-account-in-dialog"
-                      >
-                        + Tambah Akun Pembayaran
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {bankAccounts.map((account) => (
-                        <div
-                          key={account.id}
-                          onClick={() => setWithdrawalData({ ...withdrawalData, selectedAccount: account.id })}
-                          className={`p-3 border rounded-lg cursor-pointer transition hover-elevate ${
-                            withdrawalData.selectedAccount === account.id
-                              ? "border-primary bg-primary/5"
-                              : "border-gray-200 dark:border-gray-700"
-                          }`}
-                          data-testid={`button-select-account-${account.id}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">{account.bankName}</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{account.bankAccount}</p>
-                            </div>
-                            {account.isDefault && <Badge variant="secondary" className="ml-2">Utama</Badge>}
-                          </div>
-                        </div>
+                  <Label htmlFor="bank-select">Bank Tujuan *</Label>
+                  <Select value={withdrawalData.bankTujuan} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, bankTujuan: val, selectedAccount: "" })}>
+                    <SelectTrigger id="bank-select" data-testid="select-bank-tujuan">
+                      <SelectValue placeholder="Pilih bank" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from(new Set(bankAccounts.map(acc => acc.bankName))).map((bankName) => (
+                        <SelectItem key={bankName} value={bankName}>
+                          {bankName}
+                        </SelectItem>
                       ))}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-2" 
-                        onClick={() => setShowAddBankDialog(true)}
-                        data-testid="button-add-account-more"
-                      >
-                        + Tambah Akun Lainnya
-                      </Button>
-                    </div>
-                  )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="account-select">Akun Pembayaran *</Label>
+                  <Select value={withdrawalData.selectedAccount} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, selectedAccount: val })}>
+                    <SelectTrigger id="account-select" data-testid="select-akun-pembayaran">
+                      <SelectValue placeholder="Pilih akun pembayaran" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bankAccounts.length === 0 ? (
+                        <div className="p-2 text-sm text-gray-600">Belum ada akun pembayaran</div>
+                      ) : (
+                        bankAccounts
+                          .filter(acc => !withdrawalData.bankTujuan || acc.bankName === withdrawalData.bankTujuan)
+                          .map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.bankName} - {account.bankAccount}
+                            </SelectItem>
+                          ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setShowWithdrawDialog(false)}>
                     Batal
                   </Button>
-                  <Button className="flex-1" onClick={handleWithdrawalSubmit} data-testid="button-submit-withdrawal-driver">
-                    <Check className="h-4 w-4 mr-2" />
-                    Ajukan
+                  <Button className="flex-1 bg-teal-600 hover:bg-teal-700" onClick={handleWithdrawalSubmit} data-testid="button-submit-withdrawal-driver">
+                    Ajukan Penarikan
                   </Button>
                 </div>
               </div>
