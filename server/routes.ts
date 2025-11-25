@@ -343,13 +343,32 @@ api.post("/api/user-payments", async (req, res) => {
 api.patch("/api/user-payments/:id", async (req, res) => {
   try {
     const partial = insertUserPaymentSchema.partial().parse(req.body);
-    const payment = await storage.updateUserPayment(parseInt(req.params.id), partial);
+    const paymentId = parseInt(req.params.id);
+    
+    // Get current payment to check if status is changing to "approved"
+    const allPayments = await storage.listAllUserPayments();
+    const currentPayment = allPayments.find(p => p.id === paymentId);
+    
+    // Update the payment
+    const payment = await storage.updateUserPayment(paymentId, partial);
     if (!payment) {
       res.status(404).json({ error: "User payment not found" });
       return;
     }
+    
+    // If status changed to "approved" and wasn't approved before, deduct from user rewards
+    if (partial.status === "approved" && currentPayment && currentPayment.status !== "approved") {
+      await storage.createUserReward({
+        userId: payment.userId,
+        amount: -payment.amount, // Negative amount to represent withdrawal/deduction
+        description: `Withdrawal of Rp ${payment.amount.toLocaleString("id-ID")} approved`,
+        date: new Date(),
+      });
+    }
+    
     res.json(payment);
   } catch (error) {
+    console.error("Error updating user payment:", error);
     res.status(400).json({ error: "Invalid user payment data" });
   }
 });
