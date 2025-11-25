@@ -26,6 +26,11 @@ interface User {
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"];
 
+// Helper function to format rupiah
+const formatRupiah = (amount: number): string => {
+  return amount.toLocaleString("id-ID");
+};
+
 export default function AdminDashboard() {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -153,7 +158,7 @@ Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">Rp {(adminBalance / 1000000).toFixed(2)}M</div>
+            <div className="text-2xl font-bold text-red-600">Rp {formatRupiah(adminBalance)}</div>
             <p className="text-xs text-gray-600 dark:text-gray-400">Komisi 20%</p>
           </CardContent>
         </Card>
@@ -290,8 +295,12 @@ Tanggal: ${new Date(p.createdAt).toLocaleDateString("id-ID")}
                     </p>
                     <p className="text-xs text-gray-500">Dari: {users.find((u) => u.id === pickup.requestedById)?.name || "Unknown"}</p>
                   </div>
-                  <Badge className={pickup.status === "pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900" : "bg-blue-100 text-blue-800 dark:bg-blue-900"}>
-                    {pickup.status === "pending" ? "Tertunda" : "Proses"}
+                  <Badge className={
+                    pickup.status === "pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900" :
+                    pickup.status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900" :
+                    "bg-blue-100 text-blue-800 dark:bg-blue-900"
+                  }>
+                    {pickup.status === "pending" ? "Tertunda" : pickup.status === "completed" ? "Selesai" : "Proses"}
                   </Badge>
                 </div>
               ))
