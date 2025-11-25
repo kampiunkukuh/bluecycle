@@ -128,21 +128,49 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending", "approved"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalRewards - totalWithdrawn;
 
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+
   const handleAddBankAccount = () => {
     if (newBankData.bankName && newBankData.bankAccount) {
-      const newAccount: BankAccount = {
-        id: Date.now().toString(),
-        bankName: newBankData.bankName,
-        bankAccount: newBankData.bankAccount,
-        isDefault: bankAccounts.length === 0,
-      };
-      const updatedAccounts = [newAccount, ...bankAccounts];
-      setBankAccounts(updatedAccounts);
-      localStorage.setItem(`user_bank_accounts_${userId}`, JSON.stringify(updatedAccounts));
+      if (editingAccountId) {
+        // Update existing account
+        const updatedAccounts = bankAccounts.map(acc => 
+          acc.id === editingAccountId ? { ...acc, ...newBankData } : acc
+        );
+        setBankAccounts(updatedAccounts);
+        localStorage.setItem(`user_bank_accounts_${userId}`, JSON.stringify(updatedAccounts));
+        setEditingAccountId(null);
+      } else {
+        // Add new account
+        const newAccount: BankAccount = {
+          id: Date.now().toString(),
+          bankName: newBankData.bankName,
+          bankAccount: newBankData.bankAccount,
+          isDefault: bankAccounts.length === 0,
+        };
+        const updatedAccounts = [newAccount, ...bankAccounts];
+        setBankAccounts(updatedAccounts);
+        localStorage.setItem(`user_bank_accounts_${userId}`, JSON.stringify(updatedAccounts));
+      }
       setNewBankData({ bankName: "", bankAccount: "" });
       setShowAddBankDialog(false);
     }
   };
+
+  const handleDeleteAccount = (accountId: string) => {
+    const updatedAccounts = bankAccounts.filter(acc => acc.id !== accountId);
+    setBankAccounts(updatedAccounts);
+    localStorage.setItem(`user_bank_accounts_${userId}`, JSON.stringify(updatedAccounts));
+  };
+
+  const handleEditAccount = (account: BankAccount) => {
+    setEditingAccountId(account.id);
+    setNewBankData({ bankName: account.bankName, bankAccount: account.bankAccount });
+    setShowAddBankDialog(true);
+  };
+
+  const MIN_WITHDRAWAL = 20000;
+  const MAX_WITHDRAWAL = 100000000;
 
   const handleWithdrawal = async () => {
     if (!withdrawalData.amount || !withdrawalData.bankName || !withdrawalData.bankAccount) {
@@ -150,6 +178,14 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
       return;
     }
     const amount = parseInt(withdrawalData.amount);
+    if (amount < MIN_WITHDRAWAL) {
+      alert(`Minimum penarikan adalah Rp ${MIN_WITHDRAWAL.toLocaleString("id-ID")}`);
+      return;
+    }
+    if (amount > MAX_WITHDRAWAL) {
+      alert(`Maximum penarikan adalah Rp ${MAX_WITHDRAWAL.toLocaleString("id-ID")}`);
+      return;
+    }
     if (amount > availableBalance) {
       alert("Jumlah penarikan melebihi saldo tersedia");
       return;
@@ -297,11 +333,19 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
             <div className="space-y-3">
               {bankAccounts.map((account) => (
                 <div key={account.id} className="p-3 border rounded-lg flex items-center justify-between hover-elevate">
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-sm">{account.bankName}</p>
                     <p className="text-xs text-gray-600 dark:text-gray-400">{account.bankAccount}</p>
                   </div>
-                  {account.isDefault && <Badge variant="secondary">Utama</Badge>}
+                  <div className="flex items-center gap-2">
+                    {account.isDefault && <Badge variant="secondary">Utama</Badge>}
+                    <Button size="sm" variant="outline" onClick={() => handleEditAccount(account)} data-testid={`button-edit-account-${account.id}`}>
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDeleteAccount(account.id)} data-testid={`button-delete-account-${account.id}`}>
+                      Hapus
+                    </Button>
+                  </div>
                 </div>
               ))}
               <Button variant="outline" size="sm" onClick={() => setShowAddBankDialog(true)} className="w-full mt-2" data-testid="button-add-bank-more">
