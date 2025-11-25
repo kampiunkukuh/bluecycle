@@ -120,10 +120,10 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
         // Fetch and set total saldo from user rewards
         const rewardsData = await rewardsRes.json();
         console.log("User rewards data:", rewardsData);
-        if (rewardsData && typeof rewardsData === 'object' && 'total' in rewardsData) {
-          setTotalSaldo(rewardsData.total || 0);
-        } else if (typeof rewardsData === 'number') {
-          setTotalSaldo(rewardsData);
+        if (Array.isArray(rewardsData)) {
+          // Sum all reward amounts (including negative ones for withdrawals)
+          const total = rewardsData.reduce((sum: number, reward: any) => sum + (reward.amount || 0), 0);
+          setTotalSaldo(Math.max(0, total)); // Ensure non-negative
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -551,7 +551,7 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
               <div className="mt-3">
                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Pilih nominal:</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {WITHDRAWAL_PRESETS.filter(p => p <= availableBalance).map((preset) => (
+                  {WITHDRAWAL_PRESETS.map((preset) => (
                     <Button
                       key={preset}
                       size="sm"
