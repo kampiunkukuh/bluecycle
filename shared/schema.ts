@@ -12,6 +12,8 @@ export const users = pgTable("users", {
   phone: varchar("phone", { length: 20 }),
   bankName: varchar("bank_name", { length: 100 }), // For drivers - payment method
   bankAccount: varchar("bank_account", { length: 255 }), // For drivers - account number
+  profilePhoto: varchar("profile_photo", { length: 500 }), // Driver profile photo URL
+  motorbikeplate: varchar("motorbike_plate", { length: 20 }), // Driver motorbike plate number
   createdAt: timestamp("created_at").defaultNow(),
 });
 
