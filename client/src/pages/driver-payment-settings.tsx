@@ -63,6 +63,14 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
       } catch (e) {
         console.error("Failed to load bank accounts:", e);
       }
+    } else {
+      // Pre-populate with sample data for demo
+      const sampleAccounts: BankAccount[] = [
+        { id: "1", bankName: "Mandiri", bankAccount: "1090021091350", isDefault: true },
+        { id: "2", bankName: "BCA", bankAccount: "8550272025", isDefault: false },
+      ];
+      setBankAccounts(sampleAccounts);
+      localStorage.setItem(`driver_bank_accounts_${driverId}`, JSON.stringify(sampleAccounts));
     }
   }, [driverId]);
 
@@ -268,11 +276,12 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
                       <SelectValue placeholder="Pilih bank" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from(new Set(bankAccounts.map(acc => acc.bankName))).map((bankName) => (
+                      {bankAccounts.length > 0 && Array.from(new Set(bankAccounts.map(acc => acc.bankName))).map((bankName) => (
                         <SelectItem key={bankName} value={bankName}>
                           {bankName}
                         </SelectItem>
                       ))}
+                      {bankAccounts.length === 0 && <div className="p-2 text-sm text-gray-600">Belum ada akun</div>}
                     </SelectContent>
                   </Select>
                 </div>
@@ -284,17 +293,14 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
                       <SelectValue placeholder="Pilih akun pembayaran" />
                     </SelectTrigger>
                     <SelectContent>
-                      {bankAccounts.length === 0 ? (
-                        <div className="p-2 text-sm text-gray-600">Belum ada akun pembayaran</div>
-                      ) : (
-                        bankAccounts
-                          .filter(acc => !withdrawalData.bankTujuan || acc.bankName === withdrawalData.bankTujuan)
-                          .map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.bankName} - {account.bankAccount}
-                            </SelectItem>
-                          ))
-                      )}
+                      {bankAccounts
+                        .filter(acc => !withdrawalData.bankTujuan || acc.bankName === withdrawalData.bankTujuan)
+                        .map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.bankName} - {account.bankAccount}
+                          </SelectItem>
+                        ))}
+                      {bankAccounts.length === 0 && <div className="p-2 text-sm text-gray-600">Belum ada akun pembayaran</div>}
                     </SelectContent>
                   </Select>
                 </div>
