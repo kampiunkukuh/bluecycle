@@ -28,6 +28,11 @@ allprojects {
             targetCompatibility = JavaVersion.VERSION_17
             options.compilerArgs += ['-source', '17', '-target', '17']
         }
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+            kotlinOptions {
+                jvmTarget = '17'
+            }
+        }
     }
 }
 
