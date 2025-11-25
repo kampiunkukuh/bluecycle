@@ -165,6 +165,15 @@ api.patch("/api/users/:id", async (req, res) => {
   }
 });
 
+api.delete("/api/users/:id", async (req, res) => {
+  const success = await storage.deleteUser(parseInt(req.params.id));
+  if (!success) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json({ success: true });
+});
+
 // Routes endpoints
 api.get("/api/routes", async (req, res) => {
   const { driverId } = req.query;

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit2, Lock, User, Mail, Phone } from "lucide-react";
+import { Search, Edit2, Lock, User, Mail, Phone, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editData, setEditData] = useState({ name: "", email: "", phone: "" });
   const [passwordData, setPasswordData] = useState({ newPassword: "", confirmPassword: "" });
 
@@ -105,6 +106,26 @@ export default function UserManagement() {
       }
     } catch (error) {
       console.error("Gagal ubah password:", error);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    try {
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setUsers(users.filter((u) => u.id !== selectedUser.id));
+        setSelectedUser(null);
+        setShowDeleteDialog(false);
+        alert("Pengguna berhasil dihapus!");
+      } else {
+        alert("Gagal menghapus pengguna!");
+      }
+    } catch (error) {
+      console.error("Gagal menghapus pengguna:", error);
+      alert("Terjadi kesalahan saat menghapus pengguna!");
     }
   };
 
@@ -293,6 +314,19 @@ export default function UserManagement() {
                   >
                     <Lock className="h-4 w-4 mr-2" /> Ubah Password
                   </Button>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      Hapus akun pengguna secara permanen dari sistem.
+                    </p>
+                    <Button 
+                      onClick={() => setShowDeleteDialog(true)}
+                      variant="destructive"
+                      className="w-full"
+                      data-testid="button-delete-user"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" /> Hapus Akun Pengguna
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -381,6 +415,25 @@ export default function UserManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>Batal</Button>
             <Button onClick={handlePasswordChange} data-testid="button-save-password">Ubah Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Akun Pengguna</DialogTitle>
+            <DialogDescription>Anda yakin ingin menghapus akun {selectedUser?.name}? Tindakan ini tidak dapat dibatalkan.</DialogDescription>
+          </DialogHeader>
+          <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg">
+            <p className="text-sm text-red-900 dark:text-red-100">
+              ⚠️ Akun akan dihapus secara permanen dan semua data yang terkait akan hilang.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Batal</Button>
+            <Button variant="destructive" onClick={handleDeleteUser} data-testid="button-confirm-delete">Hapus Akun</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
