@@ -116,6 +116,15 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
             bankAccount: payment.bankAccount,
           })));
         }
+
+        // Fetch and set total saldo from user rewards
+        const rewardsData = await rewardsRes.json();
+        console.log("User rewards data:", rewardsData);
+        if (rewardsData && typeof rewardsData === 'object' && 'total' in rewardsData) {
+          setTotalSaldo(rewardsData.total || 0);
+        } else if (typeof rewardsData === 'number') {
+          setTotalSaldo(rewardsData);
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
