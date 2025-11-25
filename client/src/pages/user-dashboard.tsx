@@ -57,6 +57,8 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
     queryKey: ["/api/waste-catalog"],
   });
 
+  const [totalSaldo, setTotalSaldo] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!userId) {
@@ -64,14 +66,23 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
         return;
       }
       try {
-        const [pickupsRes, pointsRes] = await Promise.all([
+        const [pickupsRes, pointsRes, rewardsRes] = await Promise.all([
           fetch(`/api/pickups?requestedById=${userId}`),
           fetch("/api/collection-points"),
+          fetch(`/api/user-rewards/${userId}`),
         ]);
         const pickupsData = await pickupsRes.json();
         const pointsData = await pointsRes.json();
+        const rewardsData = await rewardsRes.json();
+        
         setPickups(Array.isArray(pickupsData) ? pickupsData : []);
         setCollectionPoints(Array.isArray(pointsData) ? pointsData : []);
+        
+        // Calculate total saldo from user rewards (includes withdrawals as negative amounts)
+        if (Array.isArray(rewardsData)) {
+          const netRewards = rewardsData.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
+          setTotalSaldo(Math.max(0, netRewards)); // Ensure it's never negative
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
         setPickups([]);
@@ -89,9 +100,7 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   const outstandingSaldo = pickups
     .filter((p) => ["pending", "accepted", "in-progress"].includes(p.status))
     .reduce((sum, p) => sum + p.price, 0);
-  const completedEarnings = completedOrders.reduce((sum, p) => sum + p.price, 0);
-  const totalSaldo = completedEarnings;
-  const availableSaldo = totalSaldo - outstandingSaldo;
+  const availableSaldo = totalSaldo;
 
   // Calculate kg collected (estimate based on quantity field)
   const totalKgCollected = completedOrders.reduce((sum, p) => {
