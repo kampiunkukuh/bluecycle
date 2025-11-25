@@ -115,7 +115,12 @@ api.get("/api/users", async (req, res) => {
 });
 
 api.get("/api/users/:id", async (req, res) => {
-  const user = await storage.getUser(parseInt(req.params.id));
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+  const user = await storage.getUser(id);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
