@@ -32,6 +32,19 @@ export default function UserManagement() {
   const [passwordData, setPasswordData] = useState({ newPassword: "", confirmPassword: "" });
 
   // Fetch users dari database
+  const refetchUsers = async () => {
+    try {
+      const res = await fetch("/api/users");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setUsers(data);
+        setFilteredUsers(data);
+      }
+    } catch (error) {
+      console.error("Gagal fetch users:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -116,10 +129,11 @@ export default function UserManagement() {
         method: "DELETE",
       });
       if (res.ok) {
-        setUsers(users.filter((u) => u.id !== selectedUser.id));
         setSelectedUser(null);
         setShowDeleteDialog(false);
         alert("Pengguna berhasil dihapus!");
+        // Refresh data dari server setelah delete
+        await refetchUsers();
       } else {
         alert("Gagal menghapus pengguna!");
       }
