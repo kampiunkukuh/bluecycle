@@ -1,0 +1,39 @@
+workflows:
+  ios-build:
+    name: iOS Build
+    max_build_duration: 120
+    environment:
+      ios: latest
+      xcode: latest
+    steps:
+      - name: Install Node dependencies
+        run: npm install
+      
+      - name: Build web assets
+        run: npm run build
+      
+      - name: Sync iOS
+        run: npx cap sync ios
+      
+      - name: Pod install
+        run: |
+          cd ios/App
+          pod install --repo-update
+      
+      - name: Build iOS app
+        run: |
+          cd ios/App
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+    
+    artifacts:
+      - build/Build/Products/Release-iphoneos/App.app
+    publishing:
+      email:
+        recipients:
+          - $CM_EMAIL

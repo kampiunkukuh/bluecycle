@@ -14,20 +14,8 @@
     "preview": {
       "distribution": "internal",
       "ios": {
-        "resourceClass": "medium"
-      }
-    },
-    "production": {
-      "distribution": "store",
-      "ios": {
-        "resourceClass": "large"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "ascAppId": "com.bluecycle.app"
+        "resourceClass": "medium",
+        "simulator": true
       }
     }
   }
