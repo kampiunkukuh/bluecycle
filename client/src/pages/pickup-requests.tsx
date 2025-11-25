@@ -48,17 +48,17 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
 
         // Fetch driver info for in-progress pickups
         const driversMap: Record<number, Driver> = {};
-        for (const pickup of pickupsArray) {
-          if (pickup.assignedDriverId && !driversMap[pickup.assignedDriverId]) {
-            try {
-              const driverRes = await fetch(`/api/users/${pickup.assignedDriverId}`);
-              if (driverRes.ok) {
-                const driverData = await driverRes.json();
-                driversMap[pickup.assignedDriverId] = driverData;
-              }
-            } catch (err) {
-              console.error("Failed to fetch driver:", err);
+        const driverIds = [...new Set(pickupsArray.map((p) => p.assignedDriverId).filter(Boolean))];
+        
+        for (const driverId of driverIds) {
+          try {
+            const driverRes = await fetch(`/api/users/${driverId}`);
+            if (driverRes.ok) {
+              const driverData = await driverRes.json();
+              driversMap[driverId] = driverData;
             }
+          } catch (err) {
+            console.error("Failed to fetch driver:", err);
           }
         }
         setDrivers(driversMap);
@@ -71,6 +71,9 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
     };
 
     fetchPickups();
+    // Re-fetch every 10 seconds to keep driver info updated
+    const interval = setInterval(fetchPickups, 10000);
+    return () => clearInterval(interval);
   }, [userId]);
 
   const orderHistory = pickups.filter((p) =>

@@ -136,6 +136,23 @@ export default function DriverDashboard({ driverId }: { driverId?: number }) {
         if (completed) {
           setHistory([...history, completed]);
         }
+        
+        // Re-fetch my pickups and history to ensure consistency
+        if (driverId) {
+          const [myRes, historyRes] = await Promise.all([
+            fetch(`/api/pickups?status=accepted,in-progress&assignedDriverId=${driverId}`),
+            fetch(`/api/pickups?status=completed&assignedDriverId=${driverId}`)
+          ]);
+          
+          if (myRes.ok) {
+            const myData = await myRes.json();
+            setMyPickups(Array.isArray(myData) ? myData : []);
+          }
+          if (historyRes.ok) {
+            const historyData = await historyRes.json();
+            setHistory(Array.isArray(historyData) ? historyData : []);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to complete pickup:", error);
