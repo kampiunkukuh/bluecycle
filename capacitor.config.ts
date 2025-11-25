@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosPadStatusbarBackground: '#000000',
-    cleartext: 'http://localhost:*',
+    cleartext: true,
   },
   plugins: {
     Geolocation: {
