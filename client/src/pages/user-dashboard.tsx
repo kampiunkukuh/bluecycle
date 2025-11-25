@@ -97,6 +97,7 @@ export default function UserDashboard({ userId, userName }: UserDashboardProps) 
   // Calculate statistics
   const pendingRequests = pickups.filter((p) => ["pending", "accepted", "in-progress"].includes(p.status)).length;
   const completedOrders = pickups.filter((p) => p.status === "completed");
+  const completedEarnings = completedOrders.reduce((sum, p) => sum + p.price, 0);
   const outstandingSaldo = pickups
     .filter((p) => ["pending", "accepted", "in-progress"].includes(p.status))
     .reduce((sum, p) => sum + p.price, 0);
