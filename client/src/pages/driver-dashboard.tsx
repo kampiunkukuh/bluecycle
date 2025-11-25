@@ -27,7 +27,7 @@ interface MyPickup {
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"];
 
-export default function DriverDashboard({ driverId = 3 }: { driverId?: number }) {
+export default function DriverDashboard({ driverId }: { driverId?: number }) {
   const [outstanding, setOutstanding] = useState<OutstandingPickup[]>([]);
   const [myPickups, setMyPickups] = useState<MyPickup[]>([]);
   const [history, setHistory] = useState<MyPickup[]>([]);
@@ -36,7 +36,9 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [takingOrder, setTakingOrder] = useState<number | null>(null);
 
+  // Only fetch if we have a valid driver ID
   useEffect(() => {
+    if (!driverId) return;
     const fetchData = async () => {
       setLoadingOutstanding(true);
       try {
@@ -50,9 +52,10 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
       }
     };
     fetchData();
-  }, []);
+  }, [driverId]);
 
   useEffect(() => {
+    if (!driverId) return;
     const fetchMyPickups = async () => {
       setLoadingMy(true);
       try {
@@ -69,6 +72,7 @@ export default function DriverDashboard({ driverId = 3 }: { driverId?: number })
   }, [driverId]);
 
   useEffect(() => {
+    if (!driverId) return;
     const fetchHistory = async () => {
       setLoadingHistory(true);
       try {
