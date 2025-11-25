@@ -53,16 +53,29 @@ api.post("/api/login", async (req, res) => {
 // Pickups endpoints
 api.get("/api/pickups", async (req, res) => {
   const { status, requestedById, assignedDriverId } = req.query;
+  
+  // Handle multiple statuses (comma-separated)
+  let statusFilter: string | undefined;
+  let statusArray: string[] | undefined;
+  
+  if (status && typeof status === 'string' && status.includes(',')) {
+    statusArray = status.split(',').map(s => s.trim());
+    statusFilter = undefined; // Don't pass to storage, will filter after
+  } else {
+    statusFilter = status as string;
+  }
+  
   let pickups = await storage.listPickups({
-    status: status as string,
+    status: statusFilter,
     requestedById: requestedById ? parseInt(requestedById as string) : undefined,
     assignedDriverId: assignedDriverId ? parseInt(assignedDriverId as string) : undefined,
   });
-  // Handle multiple statuses (comma-separated)
-  if (status && typeof status === 'string' && status.includes(',')) {
-    const statuses = status.split(',').map(s => s.trim());
-    pickups = pickups.filter(p => statuses.includes(p.status));
+  
+  // Filter by multiple statuses if provided
+  if (statusArray) {
+    pickups = pickups.filter(p => statusArray!.includes(p.status));
   }
+  
   res.json(pickups);
 });
 

@@ -50,6 +50,17 @@ function Router() {
     email: string;
   } | null>(null);
 
+  // Load currentUser from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("currentUser");
+    if (saved) {
+      try {
+        setCurrentUser(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved user:", e);
+      }
+    }
+  }, []);
 
   const [notifications, setNotifications] = useState([
     {
