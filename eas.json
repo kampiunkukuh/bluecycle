@@ -8,26 +8,26 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "resourceClass": "m-1"
+        "resourceClass": "medium"
       }
     },
     "preview": {
       "distribution": "internal",
       "ios": {
-        "resourceClass": "m-1"
+        "resourceClass": "medium"
       }
     },
     "production": {
       "distribution": "store",
       "ios": {
-        "resourceClass": "m-1"
+        "resourceClass": "large"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": null
+        "ascAppId": "com.bluecycle.app"
       }
     }
   }
