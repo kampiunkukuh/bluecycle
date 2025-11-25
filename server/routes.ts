@@ -356,14 +356,28 @@ api.patch("/api/user-payments/:id", async (req, res) => {
       return;
     }
     
-    // If status changed to "approved" and wasn't approved before, deduct from user rewards
+    // If status changed to "approved" and wasn't approved before
     if (partial.status === "approved" && currentPayment && currentPayment.status !== "approved") {
+      // 1. Deduct from user rewards
       await storage.createUserReward({
         userId: payment.userId,
         amount: -payment.amount, // Negative amount to represent withdrawal/deduction
         description: `Withdrawal of Rp ${payment.amount.toLocaleString("id-ID")} approved`,
-        date: new Date(),
       });
+      
+      // 2. Update related withdrawal request status if it exists
+      const withdrawals = await storage.listWithdrawalRequests(payment.userId);
+      const relatedWithdrawal = withdrawals.find(w => 
+        w.amount === payment.amount && 
+        (w.status === "pending" || w.status === "approved")
+      );
+      
+      if (relatedWithdrawal) {
+        await storage.updateWithdrawalRequest(relatedWithdrawal.id, {
+          status: "approved",
+          approvedAt: new Date(),
+        });
+      }
     }
     
     res.json(payment);
