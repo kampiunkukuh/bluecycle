@@ -1,7 +1,7 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QrTracking, InsertQrTracking, Notification, InsertNotification } from "@shared/schema";
+import { User, Pickup, Route, InsertUser, InsertPickup, InsertRoute, WasteCatalogItem, InsertWasteCatalogItem, DriverEarning, InsertDriverEarning, UserReward, InsertUserReward, WithdrawalRequest, InsertWithdrawalRequest, UserPayment, InsertUserPayment, DriverPayment, InsertDriverPayment, CollectionPoint, InsertCollectionPoint, WasteDisposal, InsertWasteDisposal, ComplianceReport, InsertComplianceReport, QrTracking, InsertQrTracking, Notification, InsertNotification, DriverLocation, InsertDriverLocation, DriverRating, InsertDriverRating } from "@shared/schema";
 
 export interface IStorage {
   // Users

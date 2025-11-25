@@ -252,6 +252,28 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Driver Locations table - for real-time tracking
+export const driverLocations = pgTable("driver_locations", {
+  id: serial("id").primaryKey(),
+  pickupId: integer("pickup_id").notNull(),
+  driverId: integer("driver_id").notNull(),
+  latitude: varchar("latitude", { length: 50 }).notNull(),
+  longitude: varchar("longitude", { length: 50 }).notNull(),
+  accuracy: integer("accuracy"), // accuracy in meters
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Driver Ratings table
+export const driverRatings = pgTable("driver_ratings", {
+  id: serial("id").primaryKey(),
+  pickupId: integer("pickup_id").notNull(),
+  driverId: integer("driver_id").notNull(),
+  userId: integer("user_id").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  review: text("review"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertWasteCatalogSchema = createInsertSchema(wasteCatalog).omit({ id: true, createdAt: true });
@@ -272,6 +294,8 @@ export const insertDriverPaymentSchema = createInsertSchema(driverPayments).omit
 export const insertTpaWasteStockSchema = createInsertSchema(tpaWasteStock).omit({ id: true, lastUpdated: true });
 export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true, isRead: true });
+export const insertDriverLocationSchema = createInsertSchema(driverLocations).omit({ id: true, timestamp: true });
+export const insertDriverRatingSchema = createInsertSchema(driverRatings).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -330,3 +354,9 @@ export type InsertVendor = z.infer<typeof insertVendorSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type DriverLocation = typeof driverLocations.$inferSelect;
+export type InsertDriverLocation = z.infer<typeof insertDriverLocationSchema>;
+
+export type DriverRating = typeof driverRatings.$inferSelect;
+export type InsertDriverRating = z.infer<typeof insertDriverRatingSchema>;
