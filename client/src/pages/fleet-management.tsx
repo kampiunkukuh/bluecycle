@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Truck, Users, TrendingUp, Phone, Mail, Wallet, DollarSign, Search, Edit2 } from "lucide-react";
+import { Truck, Users, TrendingUp, Phone, Mail, Wallet, DollarSign, Search, Edit2, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,36 +30,44 @@ export default function FleetManagement() {
   const [loading, setLoading] = useState(true);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [editData, setEditData] = useState({ name: "", phone: "", bankName: "", bankAccount: "" });
+  const [newDriverData, setNewDriverData] = useState({ name: "", email: "", password: "", phone: "", bankName: "", bankAccount: "" });
 
   // Fetch drivers dari database
+  const refetchDrivers = async () => {
+    try {
+      const usersRes = await fetch("/api/users");
+      const usersData = await usersRes.json();
+      
+      // Filter hanya drivers
+      const driversData = Array.isArray(usersData) ? usersData.filter((u: any) => u.role === "driver") : [];
+      setDrivers(driversData);
+      setFilteredDrivers(driversData);
+
+      // Fetch earnings untuk setiap driver
+      const earningsMap: DriverEarnings = {};
+      for (const driver of driversData) {
+        try {
+          const earningsRes = await fetch(`/api/driver-earnings/${driver.id}`);
+          const earningsData = await earningsRes.json();
+          if (Array.isArray(earningsData)) {
+            earningsMap[driver.id] = earningsData.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+          }
+        } catch (err) {
+          earningsMap[driver.id] = 0;
+        }
+      }
+      setEarnings(earningsMap);
+    } catch (error) {
+      console.error("Gagal fetch driver data:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersRes = await fetch("/api/users");
-        const usersData = await usersRes.json();
-        
-        // Filter hanya drivers
-        const driversData = Array.isArray(usersData) ? usersData.filter((u: any) => u.role === "driver") : [];
-        setDrivers(driversData);
-        setFilteredDrivers(driversData);
-
-        // Fetch earnings untuk setiap driver
-        const earningsMap: DriverEarnings = {};
-        for (const driver of driversData) {
-          try {
-            const earningsRes = await fetch(`/api/driver-earnings/${driver.id}`);
-            const earningsData = await earningsRes.json();
-            if (Array.isArray(earningsData)) {
-              earningsMap[driver.id] = earningsData.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
-            }
-          } catch (err) {
-            earningsMap[driver.id] = 0;
-          }
-        }
-        setEarnings(earningsMap);
-      } catch (error) {
-        console.error("Gagal fetch driver data:", error);
+        await refetchDrivers();
       } finally {
         setLoading(false);
       }
@@ -111,6 +119,39 @@ export default function FleetManagement() {
     }
   };
 
+  const handleAddDriver = async () => {
+    if (!newDriverData.name || !newDriverData.email || !newDriverData.password) {
+      alert("Nama, email, dan password harus diisi!");
+      return;
+    }
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newDriverData.name,
+          email: newDriverData.email,
+          password: newDriverData.password,
+          phone: newDriverData.phone,
+          bankName: newDriverData.bankName,
+          bankAccount: newDriverData.bankAccount,
+          role: "driver",
+        }),
+      });
+      if (res.ok) {
+        alert("Driver berhasil ditambahkan!");
+        setShowAddDialog(false);
+        setNewDriverData({ name: "", email: "", password: "", phone: "", bankName: "", bankAccount: "" });
+        await refetchDrivers();
+      } else {
+        alert("Gagal menambahkan driver!");
+      }
+    } catch (error) {
+      console.error("Gagal menambahkan driver:", error);
+      alert("Terjadi kesalahan saat menambahkan driver!");
+    }
+  };
+
   const totalEarnings = Object.values(earnings).reduce((sum, val) => sum + val, 0);
   const avgEarnings = drivers.length > 0 ? Math.floor(totalEarnings / drivers.length) : 0;
 
@@ -158,9 +199,18 @@ export default function FleetManagement() {
       {!selectedDriver ? (
         // Daftar Driver
         <div className="space-y-4">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Daftar Driver</h2>
-            <p className="text-gray-600 dark:text-gray-400">Kelola seluruh driver dan kendaraan armada</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Daftar Driver</h2>
+              <p className="text-gray-600 dark:text-gray-400">Kelola seluruh driver dan kendaraan armada</p>
+            </div>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              className="gap-2"
+              data-testid="button-add-driver"
+            >
+              <Plus className="h-4 w-4" /> Tambah Driver
+            </Button>
           </div>
 
           <div className="relative max-w-md">
@@ -330,6 +380,84 @@ export default function FleetManagement() {
           </Tabs>
         </div>
       )}
+
+      {/* Add Driver Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Driver Baru</DialogTitle>
+            <DialogDescription>Buat akun driver baru untuk armada BlueCycle</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="addName">Nama Driver</Label>
+              <Input
+                id="addName"
+                value={newDriverData.name}
+                onChange={(e) => setNewDriverData({ ...newDriverData, name: e.target.value })}
+                placeholder="Nama lengkap driver"
+                data-testid="input-add-driver-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addEmail">Email</Label>
+              <Input
+                id="addEmail"
+                type="email"
+                value={newDriverData.email}
+                onChange={(e) => setNewDriverData({ ...newDriverData, email: e.target.value })}
+                placeholder="driver@example.com"
+                data-testid="input-add-driver-email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addPassword">Password</Label>
+              <Input
+                id="addPassword"
+                type="password"
+                value={newDriverData.password}
+                onChange={(e) => setNewDriverData({ ...newDriverData, password: e.target.value })}
+                placeholder="Masukkan password"
+                data-testid="input-add-driver-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addPhone">Nomor Telepon</Label>
+              <Input
+                id="addPhone"
+                value={newDriverData.phone}
+                onChange={(e) => setNewDriverData({ ...newDriverData, phone: e.target.value })}
+                placeholder="08xx xxxx xxxx"
+                data-testid="input-add-driver-phone"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addBank">Bank</Label>
+              <Input
+                id="addBank"
+                value={newDriverData.bankName}
+                onChange={(e) => setNewDriverData({ ...newDriverData, bankName: e.target.value })}
+                placeholder="Nama bank"
+                data-testid="input-add-driver-bank"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addAccount">Nomor Rekening</Label>
+              <Input
+                id="addAccount"
+                value={newDriverData.bankAccount}
+                onChange={(e) => setNewDriverData({ ...newDriverData, bankAccount: e.target.value })}
+                placeholder="Nomor rekening"
+                data-testid="input-add-driver-account"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Batal</Button>
+            <Button onClick={handleAddDriver} data-testid="button-save-new-driver">Tambah Driver</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

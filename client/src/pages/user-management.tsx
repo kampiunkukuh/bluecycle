@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit2, Lock, User, Mail, Phone, Trash2 } from "lucide-react";
+import { Search, Edit2, Lock, User, Mail, Phone, Trash2, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DBUser {
   id: number;
@@ -28,8 +29,10 @@ export default function UserManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [editData, setEditData] = useState({ name: "", email: "", phone: "" });
   const [passwordData, setPasswordData] = useState({ newPassword: "", confirmPassword: "" });
+  const [newUserData, setNewUserData] = useState({ name: "", email: "", password: "", role: "user" as const });
 
   // Fetch users dari database
   const refetchUsers = async () => {
@@ -143,6 +146,31 @@ export default function UserManagement() {
     }
   };
 
+  const handleAddUser = async () => {
+    if (!newUserData.name || !newUserData.email || !newUserData.password) {
+      alert("Semua field harus diisi!");
+      return;
+    }
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUserData),
+      });
+      if (res.ok) {
+        alert("Pengguna berhasil ditambahkan!");
+        setShowAddDialog(false);
+        setNewUserData({ name: "", email: "", password: "", role: "user" });
+        await refetchUsers();
+      } else {
+        alert("Gagal menambahkan pengguna!");
+      }
+    } catch (error) {
+      console.error("Gagal menambahkan pengguna:", error);
+      alert("Terjadi kesalahan saat menambahkan pengguna!");
+    }
+  };
+
   const getRoleColor = (role: string) => {
     if (role === "admin") return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
     if (role === "driver") return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
@@ -189,9 +217,18 @@ export default function UserManagement() {
       {!selectedUser ? (
         // Daftar Users
         <div className="space-y-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Pengguna & Driver</h1>
-            <p className="text-gray-600 dark:text-gray-400">Kelola data pengguna, driver, dan akun mereka</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Pengguna & Driver</h1>
+              <p className="text-gray-600 dark:text-gray-400">Kelola data pengguna, driver, dan akun mereka</p>
+            </div>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              className="gap-2"
+              data-testid="button-add-user"
+            >
+              <Plus className="h-4 w-4" /> Tambah Pengguna
+            </Button>
           </div>
 
           <div className="relative max-w-md">
@@ -448,6 +485,67 @@ export default function UserManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Batal</Button>
             <Button variant="destructive" onClick={handleDeleteUser} data-testid="button-confirm-delete">Hapus Akun</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+            <DialogDescription>Buat akun pengguna, driver, atau admin baru</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="newName">Nama Lengkap</Label>
+              <Input
+                id="newName"
+                value={newUserData.name}
+                onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+                placeholder="Nama lengkap"
+                data-testid="input-new-user-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="newEmail">Email</Label>
+              <Input
+                id="newEmail"
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                placeholder="user@example.com"
+                data-testid="input-new-user-email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="newPassword">Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                placeholder="Masukkan password"
+                data-testid="input-new-user-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="newRole">Role / Status</Label>
+              <Select value={newUserData.role} onValueChange={(value: any) => setNewUserData({ ...newUserData, role: value })}>
+                <SelectTrigger id="newRole" data-testid="select-new-user-role">
+                  <SelectValue placeholder="Pilih role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User (Reward Points)</SelectItem>
+                  <SelectItem value="driver">Driver (80% Earnings)</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Batal</Button>
+            <Button onClick={handleAddUser} data-testid="button-save-new-user">Tambah Pengguna</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
