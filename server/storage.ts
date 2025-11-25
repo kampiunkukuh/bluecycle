@@ -86,6 +86,15 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   listNotifications(recipientId: number): Promise<Notification[]>;
   markNotificationAsRead(id: number): Promise<Notification | undefined>;
+
+  // Driver Locations (Real-time Tracking)
+  updateDriverLocation(location: InsertDriverLocation): Promise<DriverLocation>;
+  getLatestDriverLocation(pickupId: number): Promise<DriverLocation | undefined>;
+
+  // Driver Ratings
+  createDriverRating(rating: InsertDriverRating): Promise<DriverRating>;
+  getDriverRatings(driverId: number): Promise<DriverRating[]>;
+  getDriverAverageRating(driverId: number): Promise<number>;
 }
 
 function getDatabaseUrl(): string {
@@ -490,6 +499,34 @@ export class DrizzleStorage implements IStorage {
   async markNotificationAsRead(id: number) {
     const result = await this.db.update(schema.notifications).set({ isRead: true }).where(eq(schema.notifications.id, id)).returning();
     return result[0];
+  }
+
+  // Driver Locations
+  async updateDriverLocation(location: InsertDriverLocation) {
+    const result = await this.db.insert(schema.driverLocations).values(location).returning();
+    return result[0];
+  }
+
+  async getLatestDriverLocation(pickupId: number) {
+    const result = await this.db.select().from(schema.driverLocations).where(eq(schema.driverLocations.pickupId, pickupId)).orderBy(desc(schema.driverLocations.timestamp)).limit(1);
+    return result[0];
+  }
+
+  // Driver Ratings
+  async createDriverRating(rating: InsertDriverRating) {
+    const result = await this.db.insert(schema.driverRatings).values(rating).returning();
+    return result[0];
+  }
+
+  async getDriverRatings(driverId: number) {
+    return await this.db.select().from(schema.driverRatings).where(eq(schema.driverRatings.driverId, driverId));
+  }
+
+  async getDriverAverageRating(driverId: number) {
+    const result = await this.db.select({
+      avg: sql<number>`COALESCE(AVG(${schema.driverRatings.rating}), 0)`
+    }).from(schema.driverRatings).where(eq(schema.driverRatings.driverId, driverId));
+    return result[0]?.avg || 0;
   }
 }
 

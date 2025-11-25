@@ -1,7 +1,7 @@
 import { Router, Express } from "express";
 import { createServer } from "node:http";
 import { storage } from "./storage";
-import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema, insertComplianceReportSchema, insertQrTrackingSchema } from "@shared/schema";
+import { insertPickupSchema, insertUserSchema, insertWasteCatalogSchema, insertDriverEarningsSchema, insertUserRewardsSchema, insertWithdrawalRequestSchema, insertUserPaymentSchema, insertDriverPaymentSchema, insertCollectionPointSchema, insertWasteDisposalSchema, insertComplianceReportSchema, insertQrTrackingSchema, insertDriverLocationSchema, insertDriverRatingSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
@@ -798,6 +798,64 @@ api.get("/api/collection-points", async (req, res) => {
     res.json(points);
   } catch (error) {
     res.json([]);
+  }
+});
+
+// Driver Location tracking
+api.post("/api/driver-location", async (req, res) => {
+  try {
+    const { pickupId, driverId, latitude, longitude, accuracy } = req.body;
+    const location = await storage.updateDriverLocation({
+      pickupId,
+      driverId,
+      latitude,
+      longitude,
+      accuracy,
+    });
+    res.json(location);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update driver location" });
+  }
+});
+
+api.get("/api/driver-location/:pickupId", async (req, res) => {
+  try {
+    const location = await storage.getLatestDriverLocation(parseInt(req.params.pickupId));
+    if (!location) {
+      return res.status(404).json({ error: "No location data found" });
+    }
+    res.json(location);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch driver location" });
+  }
+});
+
+// Driver Ratings
+api.post("/api/driver-ratings", async (req, res) => {
+  try {
+    const validated = insertDriverRatingSchema.parse(req.body);
+    const rating = await storage.createDriverRating(validated);
+    res.json(rating);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: "Invalid request data", issues: error.issues });
+      return;
+    }
+    res.status(500).json({ error: "Failed to create rating" });
+  }
+});
+
+api.get("/api/driver/:driverId/ratings", async (req, res) => {
+  try {
+    const ratings = await storage.getDriverRatings(parseInt(req.params.driverId));
+    const average = await storage.getDriverAverageRating(parseInt(req.params.driverId));
+    res.json({
+      ratings,
+      average: Math.round(average * 10) / 10,
+      count: ratings.length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch ratings" });
   }
 });
 
