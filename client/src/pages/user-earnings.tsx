@@ -527,7 +527,7 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
               <Input
                 id="amount"
                 type="number"
-                placeholder="Contoh: 50000"
+                placeholder="Contoh: 50.000"
                 value={withdrawalData.amount}
                 onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
                 data-testid="input-withdrawal-amount"
@@ -551,7 +551,7 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
                       className="text-xs"
                       data-testid={`button-preset-${preset}`}
                     >
-                      {(preset / 1000).toFixed(0)}k
+                      {preset.toLocaleString("id-ID")}
                     </Button>
                   ))}
                 </div>
