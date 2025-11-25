@@ -49,7 +49,7 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
   const [loading, setLoading] = useState(true);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showAddBankDialog, setShowAddBankDialog] = useState(false);
-  const [withdrawalData, setWithdrawalData] = useState({ amount: "", paymentType: "bank", selectedAccount: "", ewalletType: "" });
+  const [withdrawalData, setWithdrawalData] = useState({ amount: "", selectedAccount: "" });
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [driverBalance, setDriverBalance] = useState(0);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
@@ -149,19 +149,16 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
       return;
     }
 
+    if (!withdrawalData.selectedAccount) {
+      alert("Pilih akun pembayaran");
+      return;
+    }
+
     try {
-      let bankName = "", bankAccount = "";
-      if (withdrawalData.paymentType === "bank") {
-        const account = bankAccounts.find(acc => acc.id === withdrawalData.selectedAccount);
-        if (!account) {
-          alert("Pilih rekening bank");
-          return;
-        }
-        bankName = account.bankName;
-        bankAccount = account.bankAccount;
-      } else {
-        bankName = withdrawalData.ewalletType;
-        bankAccount = "E-Wallet";
+      const account = bankAccounts.find(acc => acc.id === withdrawalData.selectedAccount);
+      if (!account) {
+        alert("Akun tidak ditemukan");
+        return;
       }
 
       const response = await fetch(`/api/driver-payments`, {
@@ -170,15 +167,15 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
         body: JSON.stringify({
           driverId: driverId,
           amount: amount,
-          bankName: bankName,
-          bankAccount: bankAccount,
+          bankName: account.bankName,
+          bankAccount: account.bankAccount,
           status: "pending",
         }),
       });
 
       if (response.ok) {
         alert("Permintaan penarikan berhasil dibuat!");
-        setWithdrawalData({ amount: "", paymentType: "bank", selectedAccount: "", ewalletType: "" });
+        setWithdrawalData({ amount: "", selectedAccount: "" });
         setShowWithdrawDialog(false);
         // Refresh data
         const paymentsRes = await fetch(`/api/driver-payments/${driverId}`);
@@ -237,17 +234,15 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Jumlah Penarikan *</Label>
+                  <Label>Jumlah Penarikan (Rp) *</Label>
                   <Input
                     type="number"
                     value={withdrawalData.amount}
                     onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
-                    placeholder="Masukkan jumlah"
+                    placeholder="Contoh: 500000"
                     data-testid="input-withdrawal-amount-driver"
                   />
-                  {driverBalance < MIN_WITHDRAWAL && (
-                    <p className="text-xs text-red-600 mt-1">Saldo minimal Rp {formatRupiah(MIN_WITHDRAWAL)}</p>
-                  )}
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Saldo tersedia: Rp {formatRupiah(driverBalance)}</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -266,53 +261,54 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Metode Pembayaran *</Label>
-                  <Select value={withdrawalData.paymentType} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, paymentType: val })}>
-                    <SelectTrigger data-testid="select-payment-type-driver">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bank">Transfer Bank</SelectItem>
-                      <SelectItem value="ewallet">E-Wallet</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Akun Pembayaran *</Label>
+                  {bankAccounts.length === 0 ? (
+                    <div className="text-sm text-gray-600 dark:text-gray-400 p-3 border rounded-lg">
+                      <p className="mb-2">Belum ada akun pembayaran terdaftar</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full" 
+                        onClick={() => setShowAddBankDialog(true)}
+                        data-testid="button-add-account-in-dialog"
+                      >
+                        + Tambah Akun Pembayaran
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {bankAccounts.map((account) => (
+                        <div
+                          key={account.id}
+                          onClick={() => setWithdrawalData({ ...withdrawalData, selectedAccount: account.id })}
+                          className={`p-3 border rounded-lg cursor-pointer transition hover-elevate ${
+                            withdrawalData.selectedAccount === account.id
+                              ? "border-primary bg-primary/5"
+                              : "border-gray-200 dark:border-gray-700"
+                          }`}
+                          data-testid={`button-select-account-${account.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{account.bankName}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">{account.bankAccount}</p>
+                            </div>
+                            {account.isDefault && <Badge variant="secondary" className="ml-2">Utama</Badge>}
+                          </div>
+                        </div>
+                      ))}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mt-2" 
+                        onClick={() => setShowAddBankDialog(true)}
+                        data-testid="button-add-account-more"
+                      >
+                        + Tambah Akun Lainnya
+                      </Button>
+                    </div>
+                  )}
                 </div>
-
-                {withdrawalData.paymentType === "bank" ? (
-                  <div className="space-y-2">
-                    <Label>Pilih Rekening Bank *</Label>
-                    <Select value={withdrawalData.selectedAccount} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, selectedAccount: val })}>
-                      <SelectTrigger data-testid="select-bank-account-driver">
-                        <SelectValue placeholder="Pilih rekening" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bankAccounts.map((acc) => (
-                          <SelectItem key={acc.id} value={acc.id}>
-                            {acc.bankName} - {acc.bankAccount}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {bankAccounts.length === 0 && (
-                      <p className="text-xs text-red-600">Tambah rekening bank terlebih dahulu</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label>Pilih E-Wallet *</Label>
-                    <Select value={withdrawalData.ewalletType} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, ewalletType: val })}>
-                      <SelectTrigger data-testid="select-ewallet-driver">
-                        <SelectValue placeholder="Pilih e-wallet" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OVO">OVO</SelectItem>
-                        <SelectItem value="GoPay">GoPay</SelectItem>
-                        <SelectItem value="Dana">Dana</SelectItem>
-                        <SelectItem value="LinkAja">Link Aja</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setShowWithdrawDialog(false)}>
