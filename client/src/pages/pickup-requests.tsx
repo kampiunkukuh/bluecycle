@@ -3,6 +3,17 @@ import { Search, MapPin, Package, AlertCircle, CheckCircle, Clock } from "lucide
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { OrderTracking } from "@/components/order-tracking";
+
+interface Driver {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  profilePhoto?: string;
+  motorbikeplate?: string;
+}
 
 interface PickupRequest {
   id: number;
@@ -14,10 +25,12 @@ interface PickupRequest {
   price: number;
   notes?: string | null;
   createdAt: Date;
+  assignedDriverId?: number;
 }
 
 export default function PickupRequests({ userId, userName }: { userId?: number; userName?: string }) {
   const [pickups, setPickups] = useState<PickupRequest[]>([]);
+  const [drivers, setDrivers] = useState<Record<number, Driver>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -30,7 +43,25 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
       try {
         const response = await fetch(`/api/pickups?requestedById=${userId}`);
         const data = await response.json();
-        setPickups(Array.isArray(data) ? data : []);
+        const pickupsArray = Array.isArray(data) ? data : [];
+        setPickups(pickupsArray);
+
+        // Fetch driver info for in-progress pickups
+        const driversMap: Record<number, Driver> = {};
+        for (const pickup of pickupsArray) {
+          if (pickup.assignedDriverId && !driversMap[pickup.assignedDriverId]) {
+            try {
+              const driverRes = await fetch(`/api/users/${pickup.assignedDriverId}`);
+              if (driverRes.ok) {
+                const driverData = await driverRes.json();
+                driversMap[pickup.assignedDriverId] = driverData;
+              }
+            } catch (err) {
+              console.error("Failed to fetch driver:", err);
+            }
+          }
+        }
+        setDrivers(driversMap);
       } catch (error) {
         console.error("Failed to fetch pickups:", error);
         setPickups([]);
