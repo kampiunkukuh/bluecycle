@@ -201,6 +201,18 @@ export default function PickupRequests({ userId, userName }: { userId?: number; 
                   </div>
                 </div>
 
+                {/* Driver Tracking - Show when in-progress and driver assigned */}
+                {pickup.status === "in-progress" && pickup.assignedDriverId && drivers[pickup.assignedDriverId] && (
+                  <div className="mt-6 pt-6 border-t">
+                    <OrderTracking
+                      pickupId={pickup.id}
+                      driverId={pickup.assignedDriverId}
+                      driver={drivers[pickup.assignedDriverId]}
+                      driverRating={4.5}
+                    />
+                  </div>
+                )}
+
                 {/* Notes */}
                 {pickup.notes && (
                   <div className="mt-4 pt-4 border-t">
