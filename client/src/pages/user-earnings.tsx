@@ -72,9 +72,10 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [pickupsRes, paymentsRes] = await Promise.all([
+        const [pickupsRes, paymentsRes, rewardsRes] = await Promise.all([
           fetch(`/api/pickups?requestedById=${userId}`),
           fetch(`/api/user-payments/${userId}`),
+          fetch(`/api/user-rewards/${userId}`),
         ]);
         
         const pickupsData = await pickupsRes.json();
@@ -116,11 +117,15 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
       }
     };
     fetchData();
+    
+    // Set up interval to refresh data every 5 seconds to reflect admin approvals
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, [userId]);
 
   const completedPickups = pickups.filter((p) => p.status === "completed");
   const totalRewards = completedPickups.reduce((sum, p) => sum + p.price, 0);
-  const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
+  const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending", "approved"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalRewards - totalWithdrawn;
 
   const handleAddBankAccount = () => {
@@ -359,7 +364,7 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
                     <div className="flex justify-between mb-1">
                       <span className="font-medium">{w.bankName}</span>
                       <Badge className={getStatusBadge(w.status)}>
-                        {w.status === "completed" ? "Selesai" : "Tertunda"}
+                        {w.status === "completed" ? "Selesai" : w.status === "approved" ? "Disetujui" : "Tertunda"}
                       </Badge>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">Rp {w.amount.toLocaleString("id-ID")}</p>
