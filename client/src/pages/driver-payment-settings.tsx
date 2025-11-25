@@ -325,6 +325,128 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
         </CardContent>
       </Card>
 
+      {/* Sistem Komisi */}
+      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-lg">Sistem Komisi</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="space-y-2">
+            <p>
+              <strong className="text-blue-600 dark:text-blue-400">Komisi Partner:</strong> 80% dari harga order
+            </p>
+            <p>
+              <strong className="text-gray-600 dark:text-gray-400">Komisi Admin:</strong> 20% dari harga order (untuk operasional BlueCycle)
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-900 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="font-medium text-gray-900 dark:text-white mb-2">Contoh Perhitungan:</p>
+            <p className="text-gray-700 dark:text-gray-300">
+              Order Rp 100.000 → Anda dapat <span className="font-semibold text-blue-600 dark:text-blue-400">Rp 80.000 (80%)</span>, Admin dapat <span className="font-semibold">Rp 20.000 (20%)</span>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Akun Pembayaran */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">Akun Pembayaran</CardTitle>
+          <Dialog open={showAddBankDialog} onOpenChange={setShowAddBankDialog}>
+            <DialogTrigger asChild>
+              <Button size="sm" data-testid="button-add-payment-account">
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Akun
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingAccountId ? "Edit Rekening" : "Tambah Rekening Baru"}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="bank-type">Bank *</Label>
+                  <Select value={newBankData.bankName} onValueChange={(val) => setNewBankData({ ...newBankData, bankName: val })}>
+                    <SelectTrigger data-testid="select-bank-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BCA">BCA</SelectItem>
+                      <SelectItem value="Mandiri">Mandiri</SelectItem>
+                      <SelectItem value="BNI">BNI</SelectItem>
+                      <SelectItem value="CIMB">CIMB Niaga</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="account-number">Nomor Rekening *</Label>
+                  <Input
+                    id="account-number"
+                    value={newBankData.bankAccount}
+                    onChange={(e) => setNewBankData({ ...newBankData, bankAccount: e.target.value })}
+                    placeholder="Nomor rekening"
+                    data-testid="input-account-number"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => { setShowAddBankDialog(false); setEditingAccountId(null); }}>
+                    Batal
+                  </Button>
+                  <Button className="flex-1" onClick={handleAddBankAccount} data-testid="button-save-bank">
+                    {editingAccountId ? "Update" : "Tambah"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {bankAccounts.length === 0 ? (
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada akun pembayaran terdaftar</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowAddBankDialog(true)} 
+                className="w-full"
+                data-testid="button-add-account-empty"
+              >
+                + Tambah Akun Pembayaran
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bankAccounts.map((account) => (
+                <div key={account.id} className="p-3 border rounded-lg flex items-center justify-between hover-elevate">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{account.bankName}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{account.bankAccount}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {account.isDefault && <Badge variant="secondary">Utama</Badge>}
+                    <Button size="sm" variant="ghost" onClick={() => handleEditAccount(account)} data-testid={`button-edit-account-${account.id}`}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleDeleteAccount(account.id)} data-testid={`button-delete-account-${account.id}`}>
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowAddBankDialog(true)} 
+                className="w-full mt-2"
+                data-testid="button-add-account-more"
+              >
+                + Tambah Akun Lainnya
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="settings" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="settings">Pengaturan Bank</TabsTrigger>
