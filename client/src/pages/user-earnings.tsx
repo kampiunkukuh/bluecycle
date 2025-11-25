@@ -126,7 +126,7 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const completedPickups = pickups.filter((p) => p.status === "completed");
   const totalRewards = completedPickups.reduce((sum, p) => sum + p.price, 0);
   const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending", "approved"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
-  const availableBalance = totalRewards - totalWithdrawn;
+  const availableBalance = totalSaldo;
 
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
 
@@ -534,16 +534,20 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
               <p className="text-xs text-gray-500 mt-1">Saldo tersedia: Rp {availableBalance.toLocaleString("id-ID")}</p>
             </div>
             <div>
-              <Label htmlFor="bank">Bank Tujuan *</Label>
+              <Label htmlFor="bank">Metode Pembayaran *</Label>
               <Select value={withdrawalData.bankName} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, bankName: val })}>
                 <SelectTrigger data-testid="select-bank">
-                  <SelectValue placeholder="Pilih bank" />
+                  <SelectValue placeholder="Pilih metode pembayaran" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="BCA">BCA</SelectItem>
                   <SelectItem value="Mandiri">Mandiri</SelectItem>
                   <SelectItem value="BNI">BNI</SelectItem>
                   <SelectItem value="CIMB">CIMB Niaga</SelectItem>
+                  <SelectItem value="OVO">OVO E-Wallet</SelectItem>
+                  <SelectItem value="GoPay">GoPay E-Wallet</SelectItem>
+                  <SelectItem value="Dana">Dana E-Wallet</SelectItem>
+                  <SelectItem value="LinkAja">Link Aja E-Wallet</SelectItem>
                 </SelectContent>
               </Select>
             </div>
