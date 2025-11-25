@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginDriverProps {
-  onLogin: (role: "driver") => void;
+  onLogin: (user: { id: number; name: string; email: string; role: "driver" }) => void;
 }
 
 export default function LoginDriver({ onLogin }: LoginDriverProps) {
@@ -37,7 +37,7 @@ export default function LoginDriver({ onLogin }: LoginDriverProps) {
       }
 
       const user = await response.json();
-      onLogin("driver");
+      onLogin({ ...user, role: "driver" });
     } catch (error) {
       toast({
         title: "Error",

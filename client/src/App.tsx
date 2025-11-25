@@ -95,21 +95,18 @@ function Router() {
   const handleLogout = () => {
     console.log("Logging out...");
     setCurrentUser(null);
+    localStorage.removeItem("currentUser");
     setLocation("/");
   };
 
-  const handleLogin = (role: "admin" | "user" | "driver") => {
-    const userData = {
-      admin: { id: 1, name: "Admin BlueCycle", email: "admin@bluecycle.com", role: "admin" as const },
-      user: { id: 2, name: "Budi Santoso", email: "budi@example.com", role: "user" as const },
-      driver: { id: 3, name: "Joko Wijaya", email: "joko@bluecycle.com", role: "driver" as const },
-    };
-    setCurrentUser(userData[role]);
+  const handleLogin = (user: { id: number; name: string; email: string; role: "admin" | "user" | "driver" }) => {
+    setCurrentUser(user);
+    localStorage.setItem("currentUser", JSON.stringify(user));
     setLocation("/dashboard");
   };
 
-  const handleRegister = (role: "admin" | "user" | "driver") => {
-    handleLogin(role);
+  const handleRegister = (user: { id: number; name: string; email: string; role: "admin" | "user" | "driver" }) => {
+    handleLogin(user);
   };
 
   if (isAuthPage) {

@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginAdminProps {
-  onLogin: (role: "admin") => void;
+  onLogin: (user: { id: number; name: string; email: string; role: "admin" }) => void;
 }
 
 export default function LoginAdmin({ onLogin }: LoginAdminProps) {
@@ -37,7 +37,7 @@ export default function LoginAdmin({ onLogin }: LoginAdminProps) {
       }
 
       const user = await response.json();
-      onLogin("admin");
+      onLogin({ ...user, role: "admin" });
     } catch (error) {
       toast({
         title: "Error",
