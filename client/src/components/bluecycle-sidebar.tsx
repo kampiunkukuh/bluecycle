@@ -153,7 +153,7 @@ export function BlueCycleSidebar({ userRole, userName: initialUserName, userEmai
     item.roles.includes(userRole)
   );
 
-  const initials = userName
+  const initials = (userName || "User")
     .split(" ")
     .map((n) => n[0])
     .join("")
