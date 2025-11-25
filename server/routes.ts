@@ -100,12 +100,28 @@ api.post("/api/pickups", async (req, res) => {
 
 api.patch("/api/pickups/:id", async (req, res) => {
   try {
+    const pickupId = parseInt(req.params.id);
     const partial = insertPickupSchema.partial().parse(req.body);
-    const pickup = await storage.updatePickup(parseInt(req.params.id), partial);
+    
+    // Get the original pickup to check if status is changing to completed
+    const originalPickup = await storage.getPickup(pickupId);
+    
+    const pickup = await storage.updatePickup(pickupId, partial);
     if (!pickup) {
       res.status(404).json({ error: "Pickup not found" });
       return;
     }
+    
+    // If status is changed to "completed" and wasn't completed before, create a user reward
+    if (partial.status === "completed" && originalPickup?.status !== "completed") {
+      await storage.createUserReward({
+        userId: pickup.requestedById,
+        amount: pickup.price,
+        pickupId: pickupId,
+        description: `Reward untuk pickup ${pickup.address}`
+      });
+    }
+    
     res.json(pickup);
   } catch (error) {
     res.status(400).json({ error: "Invalid pickup data" });
