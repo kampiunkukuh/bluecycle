@@ -132,3 +132,42 @@ Preferred communication style: Simple, everyday language.
 **Environment Variables Required**:
 - `DATABASE_URL`: PostgreSQL connection string (Neon serverless)
 - `NODE_ENV`: development or production
+
+## Mobile App Strategy (Capacitor Android)
+
+### Current Status
+- Capacitor v7.4.4 already configured with Android platform
+- Plugins: Geolocation, Camera enabled with proper permissions
+- App config: `com.bluecycle.app` (BlueCycle)
+- Build output: `dist/` directory
+
+### Mobile Optimization Features
+- **Responsive Design**: Mobile-first Tailwind CSS with touch-friendly buttons (min-h-9)
+- **Viewport Meta Tags**: Safe area support, notch awareness (`viewport-fit=cover`)
+- **Theme Color**: Teal (#16a88a) for Android status bar
+- **Safe Touch Targets**: Minimum 44px height for all interactive elements
+- **Storage**: localStorage for bank accounts and driver preferences
+- **Features**: GPS tracking (Geolocation), Photo capture (Camera), Real-time pickup tracking
+
+### Building Android APK
+```bash
+# 1. Build web assets
+npm run build
+
+# 2. Sync to Android platform
+npx cap sync android
+
+# 3. Build APK (from android/ directory)
+cd android && ./gradlew assembleDebug
+
+# Or release APK
+cd android && ./gradlew assembleRelease
+```
+
+### Mobile-First Design Principles Applied
+- Generous spacing for touch interactions (p-6, p-8)
+- Large readable fonts for outdoor use
+- High contrast teal accent colors for visibility
+- Simplified navigation with bottom nav (suitable for mobile)
+- Modal dialogs instead of page overlays
+- Optimized for 360px-480px minimum widths (older Android devices)
