@@ -104,6 +104,15 @@ export default function DriverDashboard({ driverId }: { driverId?: number }) {
         const updated = await response.json();
         setOutstanding(outstanding.filter((p) => p.id !== id));
         setMyPickups([...myPickups, updated]);
+        
+        // Re-fetch my pickups to ensure consistency
+        if (driverId) {
+          const refetchRes = await fetch(`/api/pickups?status=accepted,in-progress&assignedDriverId=${driverId}`);
+          if (refetchRes.ok) {
+            const refetchData = await refetchRes.json();
+            setMyPickups(Array.isArray(refetchData) ? refetchData : []);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to take pickup:", error);
