@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreditCard, Check, Clock, Loader } from "lucide-react";
+import { CreditCard, Check, Clock, Loader, Plus, Trash2, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface PaymentMethod {
   bankName: string;
@@ -24,6 +25,17 @@ interface Payment {
   approvedAt?: string;
 }
 
+interface BankAccount {
+  id: string;
+  bankName: string;
+  bankAccount: string;
+  isDefault: boolean;
+}
+
+const WITHDRAWAL_PRESETS = [20000, 50000, 100000, 250000, 500000, 1000000];
+const MIN_WITHDRAWAL = 20000;
+const MAX_WITHDRAWAL = 100000000;
+
 export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: number }) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>({
     bankName: "BCA",
@@ -33,27 +45,156 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(paymentMethod);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+  const [showAddBankDialog, setShowAddBankDialog] = useState(false);
+  const [withdrawalData, setWithdrawalData] = useState({ amount: "", paymentType: "bank", selectedAccount: "", ewalletType: "" });
+  const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
+  const [driverBalance, setDriverBalance] = useState(0);
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+
+  // Load bank accounts from localStorage
+  useEffect(() => {
+    const savedAccounts = localStorage.getItem(`driver_bank_accounts_${driverId}`);
+    if (savedAccounts) {
+      try {
+        setBankAccounts(JSON.parse(savedAccounts));
+      } catch (e) {
+        console.error("Failed to load bank accounts:", e);
+      }
+    }
+  }, [driverId]);
 
   useEffect(() => {
-    const fetchPayments = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/driver-payments/${driverId}`);
-        const data = await response.json();
-        setPayments(Array.isArray(data) ? data : []);
+        const [paymentsRes, earningsRes] = await Promise.all([
+          fetch(`/api/driver-payments/${driverId}`),
+          fetch(`/api/driver-earnings/${driverId}`),
+        ]);
+        const paymentsData = await paymentsRes.json();
+        const earningsData = await earningsRes.json();
+        
+        setPayments(Array.isArray(paymentsData) ? paymentsData : []);
+        
+        // Calculate driver balance from earnings
+        if (Array.isArray(earningsData)) {
+          const totalEarnings = earningsData.reduce((sum: number, earning: any) => sum + (earning.amount || 0), 0);
+          setDriverBalance(Math.max(0, totalEarnings));
+        }
       } catch (error) {
-        console.error("Failed to fetch payments:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchPayments();
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, [driverId]);
 
   const handleSave = () => {
     setPaymentMethod(formData);
     setIsEditing(false);
+  };
+
+  const handleAddBankAccount = () => {
+    if (newBankData.bankName && newBankData.bankAccount) {
+      if (editingAccountId) {
+        const updatedAccounts = bankAccounts.map(acc => 
+          acc.id === editingAccountId ? { ...acc, ...newBankData } : acc
+        );
+        setBankAccounts(updatedAccounts);
+        localStorage.setItem(`driver_bank_accounts_${driverId}`, JSON.stringify(updatedAccounts));
+        setEditingAccountId(null);
+      } else {
+        const newAccount: BankAccount = {
+          id: Date.now().toString(),
+          bankName: newBankData.bankName,
+          bankAccount: newBankData.bankAccount,
+          isDefault: bankAccounts.length === 0,
+        };
+        const updatedAccounts = [newAccount, ...bankAccounts];
+        setBankAccounts(updatedAccounts);
+        localStorage.setItem(`driver_bank_accounts_${driverId}`, JSON.stringify(updatedAccounts));
+      }
+      setNewBankData({ bankName: "", bankAccount: "" });
+      setShowAddBankDialog(false);
+    }
+  };
+
+  const handleDeleteAccount = (accountId: string) => {
+    const updatedAccounts = bankAccounts.filter(acc => acc.id !== accountId);
+    setBankAccounts(updatedAccounts);
+    localStorage.setItem(`driver_bank_accounts_${driverId}`, JSON.stringify(updatedAccounts));
+  };
+
+  const handleEditAccount = (account: BankAccount) => {
+    setEditingAccountId(account.id);
+    setNewBankData({ bankName: account.bankName, bankAccount: account.bankAccount });
+    setShowAddBankDialog(true);
+  };
+
+  const handleWithdrawalSubmit = async () => {
+    const amount = parseInt(withdrawalData.amount);
+    if (!amount || amount < MIN_WITHDRAWAL || amount > MAX_WITHDRAWAL) {
+      alert(`Jumlah harus antara Rp ${MIN_WITHDRAWAL.toLocaleString("id-ID")} - Rp ${MAX_WITHDRAWAL.toLocaleString("id-ID")}`);
+      return;
+    }
+
+    if (amount > driverBalance) {
+      alert("Saldo tidak cukup untuk penarikan");
+      return;
+    }
+
+    try {
+      let bankName = "", bankAccount = "";
+      if (withdrawalData.paymentType === "bank") {
+        const account = bankAccounts.find(acc => acc.id === withdrawalData.selectedAccount);
+        if (!account) {
+          alert("Pilih rekening bank");
+          return;
+        }
+        bankName = account.bankName;
+        bankAccount = account.bankAccount;
+      } else {
+        bankName = withdrawalData.ewalletType;
+        bankAccount = "E-Wallet";
+      }
+
+      const response = await fetch(`/api/driver-payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driverId: driverId,
+          amount: amount,
+          bankName: bankName,
+          bankAccount: bankAccount,
+          status: "pending",
+        }),
+      });
+
+      if (response.ok) {
+        alert("Permintaan penarikan berhasil dibuat!");
+        setWithdrawalData({ amount: "", paymentType: "bank", selectedAccount: "", ewalletType: "" });
+        setShowWithdrawDialog(false);
+        // Refresh data
+        const paymentsRes = await fetch(`/api/driver-payments/${driverId}`);
+        const paymentsData = await paymentsRes.json();
+        setPayments(Array.isArray(paymentsData) ? paymentsData : []);
+      } else {
+        alert("Gagal membuat permintaan penarikan");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan");
+    }
+  };
+
+  const formatRupiah = (amount: number): string => {
+    return amount.toLocaleString("id-ID");
   };
 
   const getStatusBadge = (status: string) => {
@@ -70,9 +211,128 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
         <p className="text-gray-600 dark:text-gray-400">Kelola metode pembayaran Anda sebagai Mitra BlueCycle</p>
       </div>
 
+      {/* Balance Card */}
+      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Saldo Pengemudi
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <p className="text-2xl font-bold text-green-600">Rp {formatRupiah(driverBalance)}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Dari komisi 80% pickup selesai</p>
+          </div>
+          <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
+            <DialogTrigger asChild>
+              <Button className="w-full" data-testid="button-request-withdrawal-driver">
+                <Plus className="h-4 w-4 mr-2" />
+                Ajukan Penarikan
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Ajukan Penarikan Dana</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Jumlah Penarikan *</Label>
+                  <Input
+                    type="number"
+                    value={withdrawalData.amount}
+                    onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
+                    placeholder="Masukkan jumlah"
+                    data-testid="input-withdrawal-amount-driver"
+                  />
+                  {driverBalance < MIN_WITHDRAWAL && (
+                    <p className="text-xs text-red-600 mt-1">Saldo minimal Rp {formatRupiah(MIN_WITHDRAWAL)}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {WITHDRAWAL_PRESETS.map((preset) => (
+                    <Button
+                      key={preset}
+                      variant={withdrawalData.amount === String(preset) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setWithdrawalData({ ...withdrawalData, amount: String(preset) })}
+                      disabled={preset > driverBalance}
+                      data-testid={`button-preset-${preset}`}
+                    >
+                      Rp {formatRupiah(preset / 1000)}K
+                    </Button>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Metode Pembayaran *</Label>
+                  <Select value={withdrawalData.paymentType} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, paymentType: val })}>
+                    <SelectTrigger data-testid="select-payment-type-driver">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bank">Transfer Bank</SelectItem>
+                      <SelectItem value="ewallet">E-Wallet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {withdrawalData.paymentType === "bank" ? (
+                  <div className="space-y-2">
+                    <Label>Pilih Rekening Bank *</Label>
+                    <Select value={withdrawalData.selectedAccount} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, selectedAccount: val })}>
+                      <SelectTrigger data-testid="select-bank-account-driver">
+                        <SelectValue placeholder="Pilih rekening" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.map((acc) => (
+                          <SelectItem key={acc.id} value={acc.id}>
+                            {acc.bankName} - {acc.bankAccount}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {bankAccounts.length === 0 && (
+                      <p className="text-xs text-red-600">Tambah rekening bank terlebih dahulu</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Pilih E-Wallet *</Label>
+                    <Select value={withdrawalData.ewalletType} onValueChange={(val) => setWithdrawalData({ ...withdrawalData, ewalletType: val })}>
+                      <SelectTrigger data-testid="select-ewallet-driver">
+                        <SelectValue placeholder="Pilih e-wallet" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OVO">OVO</SelectItem>
+                        <SelectItem value="GoPay">GoPay</SelectItem>
+                        <SelectItem value="Dana">Dana</SelectItem>
+                        <SelectItem value="LinkAja">Link Aja</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowWithdrawDialog(false)}>
+                    Batal
+                  </Button>
+                  <Button className="flex-1" onClick={handleWithdrawalSubmit} data-testid="button-submit-withdrawal-driver">
+                    <Check className="h-4 w-4 mr-2" />
+                    Ajukan
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="settings">Pengaturan Bank</TabsTrigger>
+          <TabsTrigger value="accounts">Rekening Saya</TabsTrigger>
           <TabsTrigger value="history">Riwayat Penarikan</TabsTrigger>
         </TabsList>
 
@@ -171,6 +431,85 @@ export default function DriverPaymentSettings({ driverId = 3 }: { driverId?: num
           </p>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="accounts" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Daftar Rekening Bank</CardTitle>
+              <Dialog open={showAddBankDialog} onOpenChange={setShowAddBankDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" data-testid="button-add-bank-account">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Tambah Rekening
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{editingAccountId ? "Edit Rekening" : "Tambah Rekening Baru"}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="bank-type">Bank *</Label>
+                      <Select value={newBankData.bankName} onValueChange={(val) => setNewBankData({ ...newBankData, bankName: val })}>
+                        <SelectTrigger data-testid="select-bank-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="BCA">BCA</SelectItem>
+                          <SelectItem value="Mandiri">Mandiri</SelectItem>
+                          <SelectItem value="BNI">BNI</SelectItem>
+                          <SelectItem value="CIMB">CIMB Niaga</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="account-number">Nomor Rekening *</Label>
+                      <Input
+                        id="account-number"
+                        value={newBankData.bankAccount}
+                        onChange={(e) => setNewBankData({ ...newBankData, bankAccount: e.target.value })}
+                        placeholder="Nomor rekening"
+                        data-testid="input-account-number"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1" onClick={() => { setShowAddBankDialog(false); setEditingAccountId(null); }}>
+                        Batal
+                      </Button>
+                      <Button className="flex-1" onClick={handleAddBankAccount} data-testid="button-save-bank">
+                        {editingAccountId ? "Update" : "Tambah"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {bankAccounts.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">Belum ada rekening bank terdaftar</p>
+              ) : (
+                <div className="space-y-2">
+                  {bankAccounts.map((account) => (
+                    <div key={account.id} className="flex items-center justify-between p-3 border rounded-lg hover-elevate">
+                      <div className="flex-1">
+                        <p className="font-semibold">{account.bankName}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">{account.bankAccount}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => handleEditAccount(account)} data-testid={`button-edit-account-${account.id}`}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDeleteAccount(account.id)} data-testid={`button-delete-account-${account.id}`}>
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
