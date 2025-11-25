@@ -10,7 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface RegisterProps {
-  onRegister?: (role: "admin" | "user" | "driver") => void;
+  onRegister?: (user: { id: number; name: string; email: string; role: "admin" | "user" | "driver" }) => void;
 }
 
 export default function Register({ onRegister }: RegisterProps) {
@@ -57,7 +57,7 @@ export default function Register({ onRegister }: RegisterProps) {
         role: formData.role,
       };
       
-      await apiRequest("POST", "/api/users", userData);
+      const response = await apiRequest("POST", "/api/users", userData);
       
       toast({
         title: "Berhasil!",
@@ -65,7 +65,12 @@ export default function Register({ onRegister }: RegisterProps) {
       });
       
       if (onRegister) {
-        onRegister(formData.role);
+        onRegister({ 
+          id: response.id,
+          name: response.name,
+          email: response.email,
+          role: formData.role 
+        });
       } else {
         setLocation("/login");
       }
