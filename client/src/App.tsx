@@ -157,13 +157,13 @@ function Router() {
             <ScrollToTop />
             <Switch>
               <Route path="/" component={() => {
-                if (currentUser?.role === "driver") return <DriverDashboard />;
+                if (currentUser?.role === "driver") return <DriverDashboard driverId={currentUser?.id} />;
                 if (currentUser?.role === "user") return <UserDashboard userId={currentUser?.id} userName={currentUser?.name} />;
                 if (currentUser?.role === "admin") return <AdminDashboard />;
                 return <BlueCycleDashboard />;
               }} />
               <Route path="/dashboard" component={() => {
-                if (currentUser?.role === "driver") return <DriverDashboard />;
+                if (currentUser?.role === "driver") return <DriverDashboard driverId={currentUser?.id} />;
                 if (currentUser?.role === "user") return <UserDashboard userId={currentUser?.id} userName={currentUser?.name} />;
                 if (currentUser?.role === "admin") return <AdminDashboard />;
                 return <BlueCycleDashboard />;
