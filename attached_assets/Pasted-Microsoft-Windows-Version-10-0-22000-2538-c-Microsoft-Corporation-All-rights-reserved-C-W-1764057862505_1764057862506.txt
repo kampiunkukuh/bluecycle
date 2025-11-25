@@ -1,0 +1,61 @@
+Microsoft Windows [Version 10.0.22000.2538]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>cd C:\Users\user\Downloads
+
+C:\Users\user\Downloads>jdk-17_windows-x64_installer.exe
+The system cannot execute the specified program.
+
+C:\Users\user\Downloads>jdk-17.0.17_windows-x64_bin.exe
+
+C:\Users\user\Downloads>set JAVA_HOME=C:\Program Files\Java\jdk-17
+
+C:\Users\user\Downloads>bluecycle
+'bluecycle' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user\Downloads>cd C:\Users\user\Downloads\bluecycle
+
+C:\Users\user\Downloads\bluecycle>gradlew.bat assembleDebug
+'gradlew.bat' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user\Downloads\bluecycle>cd ..
+
+C:\Users\user\Downloads>cd ..
+
+C:\Users\user>cd ..
+
+C:\Users>cd.
+
+C:\Users>cd..
+
+C:\>cd C:\Users\user\Downloads\android
+
+C:\Users\user\Downloads\android>gradlew.bat assembleDebug
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+
+Exception in thread "main" java.net.UnknownHostException: release-assets.githubusercontent.com
+        at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:572)
+        at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+        at java.base/java.net.Socket.connect(Socket.java:633)
+        at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304)
+        at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+        at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:534)
+        at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:639)
+        at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:266)
+        at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:380)
+        at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:193)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1258)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1144)
+        at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:179)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.followRedirect0(HttpURLConnection.java:2957)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.followRedirect(HttpURLConnection.java:2866)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1965)
+        at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1627)
+        at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:224)
+        at org.gradle.wrapper.Install.forceFetch(SourceFile:2)
+        at org.gradle.wrapper.Install$1.call(SourceFile:8)
+        at org.gradle.wrapper.GradleWrapperMain.main(SourceFile:67)
+
+C:\Users\user\Downloads\android>
