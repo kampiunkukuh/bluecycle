@@ -6,7 +6,6 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    iosPadStatusbarBackground: '#000000',
     cleartext: true,
   },
   plugins: {
