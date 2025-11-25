@@ -45,6 +45,10 @@ interface BankAccount {
   isDefault: boolean;
 }
 
+const WITHDRAWAL_PRESETS = [20000, 50000, 100000, 250000, 500000, 1000000];
+const MIN_WITHDRAWAL = 20000;
+const MAX_WITHDRAWAL = 100000000;
+
 export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [pickups, setPickups] = useState<PickupOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
@@ -55,6 +59,8 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const [withdrawalData, setWithdrawalData] = useState({ amount: "", bankName: "", bankAccount: "" });
   const [newBankData, setNewBankData] = useState({ bankName: "", bankAccount: "" });
   const [loading, setLoading] = useState(true);
+  const [totalSaldo, setTotalSaldo] = useState(0);
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
 
   // Load bank accounts from localStorage only
   useEffect(() => {
@@ -128,8 +134,6 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
   const totalWithdrawn = withdrawals.filter((w) => ["completed", "pending", "approved"].includes(w.status)).reduce((sum, w) => sum + w.amount, 0);
   const availableBalance = totalSaldo;
 
-  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
-
   const handleAddBankAccount = () => {
     if (newBankData.bankName && newBankData.bankAccount) {
       if (editingAccountId) {
@@ -168,9 +172,6 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
     setNewBankData({ bankName: account.bankName, bankAccount: account.bankAccount });
     setShowAddBankDialog(true);
   };
-
-  const MIN_WITHDRAWAL = 20000;
-  const MAX_WITHDRAWAL = 100000000;
 
   const handleWithdrawal = async () => {
     if (!withdrawalData.amount || !withdrawalData.bankName || !withdrawalData.bankAccount) {
@@ -530,8 +531,31 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
                 value={withdrawalData.amount}
                 onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
                 data-testid="input-withdrawal-amount"
+                className={parseInt(withdrawalData.amount || "0") > 0 && parseInt(withdrawalData.amount) < MIN_WITHDRAWAL ? "border-red-500" : ""}
               />
-              <p className="text-xs text-gray-500 mt-1">Saldo tersedia: Rp {availableBalance.toLocaleString("id-ID")}</p>
+              <p className={`text-xs mt-1 ${availableBalance < MIN_WITHDRAWAL ? "text-red-600 dark:text-red-400 font-semibold" : "text-gray-500"}`}>
+                Saldo tersedia: Rp {availableBalance.toLocaleString("id-ID")}
+              </p>
+              {availableBalance < MIN_WITHDRAWAL && (
+                <p className="text-xs text-red-600 dark:text-red-400 font-semibold mt-1">⚠️ Saldo minimum Rp {MIN_WITHDRAWAL.toLocaleString("id-ID")}</p>
+              )}
+              <div className="mt-3">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Pilih nominal:</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {WITHDRAWAL_PRESETS.filter(p => p <= availableBalance).map((preset) => (
+                    <Button
+                      key={preset}
+                      size="sm"
+                      variant={withdrawalData.amount === preset.toString() ? "default" : "outline"}
+                      onClick={() => setWithdrawalData({ ...withdrawalData, amount: preset.toString() })}
+                      className="text-xs"
+                      data-testid={`button-preset-${preset}`}
+                    >
+                      {(preset / 1000).toFixed(0)}k
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div>
               <Label htmlFor="bank">Metode Pembayaran *</Label>
@@ -605,26 +629,30 @@ export default function UserEarnings({ userId = 2 }: { userId?: number }) {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="new-bank">Bank *</Label>
+              <Label htmlFor="new-bank">Metode Pembayaran *</Label>
               <Select value={newBankData.bankName} onValueChange={(val) => setNewBankData({ ...newBankData, bankName: val })}>
                 <SelectTrigger data-testid="select-new-bank">
-                  <SelectValue placeholder="Pilih bank" />
+                  <SelectValue placeholder="Pilih metode pembayaran" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="BCA">BCA</SelectItem>
-                  <SelectItem value="Mandiri">Mandiri</SelectItem>
-                  <SelectItem value="BNI">BNI</SelectItem>
-                  <SelectItem value="CIMB">CIMB Niaga</SelectItem>
-                  <SelectItem value="Permata">Permata Bank</SelectItem>
-                  <SelectItem value="Danamon">Danamon</SelectItem>
+                  <SelectItem value="BCA">🏦 BCA</SelectItem>
+                  <SelectItem value="Mandiri">🏦 Mandiri</SelectItem>
+                  <SelectItem value="BNI">🏦 BNI</SelectItem>
+                  <SelectItem value="CIMB">🏦 CIMB Niaga</SelectItem>
+                  <SelectItem value="Permata">🏦 Permata Bank</SelectItem>
+                  <SelectItem value="Danamon">🏦 Danamon</SelectItem>
+                  <SelectItem value="OVO">📱 OVO E-Wallet</SelectItem>
+                  <SelectItem value="GoPay">📱 GoPay E-Wallet</SelectItem>
+                  <SelectItem value="Dana">📱 Dana E-Wallet</SelectItem>
+                  <SelectItem value="LinkAja">📱 Link Aja E-Wallet</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="new-account">Nomor Rekening *</Label>
+              <Label htmlFor="new-account">{newBankData.bankName?.includes("E-Wallet") ? "Nomor Telepon/ID" : "Nomor Rekening"} *</Label>
               <Input
                 id="new-account"
-                placeholder="Masukkan nomor rekening"
+                placeholder={newBankData.bankName?.includes("E-Wallet") ? "Masukkan nomor telepon/ID" : "Masukkan nomor rekening"}
                 value={newBankData.bankAccount}
                 onChange={(e) => setNewBankData({ ...newBankData, bankAccount: e.target.value })}
                 data-testid="input-new-bank-account"
