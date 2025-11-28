@@ -1,0 +1,60 @@
+modules = ["nodejs-20", "web", "postgresql-16"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["jdk", "gradle"]
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 42045
+externalPort = 3000
+
+[[ports]]
+localPort = 43399
+externalPort = 3002
+
+[[ports]]
+localPort = 46201
+externalPort = 3001
+
+[env]
+PORT = "5000"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[agent]
+integrations = ["javascript_log_in_with_replit:1.0.0", "javascript_websocket:1.0.0", "javascript_database:1.0.0", "github:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+VITE_API_BASE_URL = "https://8de31127-cd50-4fa5-9dc9-e8bab9b2746b-00-2o2mqgcqlrtmk.riker.replit.dev"

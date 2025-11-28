@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BlueCycle</string>
+    <string name="title_activity_main">BlueCycle</string>
+    <string name="package_name">com.bluecycle.app</string>
+    <string name="custom_url_scheme">com.bluecycle.app</string>
+</resources>

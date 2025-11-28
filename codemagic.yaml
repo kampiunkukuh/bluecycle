@@ -1,0 +1,70 @@
+workflows:
+  android-build:
+    name: Android APK Build
+    max_build_duration: 120
+    environment:
+      android: latest
+      java: 17
+    triggering:
+      events:
+        - push
+    steps:
+      - name: Install Node dependencies
+        run: npm install
+      
+      - name: Build web assets
+        run: npm run build
+      
+      - name: Sync Android
+        run: npx cap sync android
+      
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+      
+    artifacts:
+      - android/app/build/outputs/apk/debug/app-debug.apk
+    publishing:
+      email:
+        recipients:
+          - $CM_EMAIL
+
+  ios-build:
+    name: iOS Build
+    max_build_duration: 120
+    environment:
+      ios: latest
+      xcode: latest
+    steps:
+      - name: Install Node dependencies
+        run: npm install
+      
+      - name: Build web assets
+        run: npm run build
+      
+      - name: Sync iOS
+        run: npx cap sync ios
+      
+      - name: Pod install
+        run: |
+          cd ios/App
+          pod install --repo-update
+      
+      - name: Build iOS app
+        run: |
+          cd ios/App
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+    
+    artifacts:
+      - build/Build/Products/Release-iphoneos/App.app
+    publishing:
+      email:
+        recipients:
+          - $CM_EMAIL
